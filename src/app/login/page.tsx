@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { login } from "./actions";
 
 type Role = "coordinador" | "docente" | "estudiante";
@@ -94,9 +95,12 @@ function MiniSchedule() {
 }
 
 /* ─── Página login ─────────────────────────────────────────── */
-export default function LoginPage() {
+function LoginPageContent() {
   const [role, setRole] = useState<Role>("coordinador");
   const [showPw, setShowPw] = useState(false);
+  const searchParams = useSearchParams();
+  const errorMsg = searchParams.get("error");
+  const infoMsg = searchParams.get("msg");
 
   return (
     <div className="login-wrap">
@@ -141,6 +145,36 @@ export default function LoginPage() {
               Selecciona tu rol y usa tus credenciales institucionales de la PUCE.
             </p>
           </div>
+
+          {/* Mensaje informativo (p.ej. confirma tu correo) */}
+          {infoMsg && (
+            <div style={{
+              background: "color-mix(in oklab, #1D3FD9 10%, transparent)",
+              border: "1px solid color-mix(in oklab, #1D3FD9 30%, transparent)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontSize: 14,
+              color: "#1D3FD9",
+              fontWeight: 500,
+            }}>
+              {infoMsg}
+            </div>
+          )}
+
+          {/* Error */}
+          {errorMsg && (
+            <div style={{
+              background: "color-mix(in oklab, #C8523B 12%, transparent)",
+              border: "1px solid color-mix(in oklab, #C8523B 35%, transparent)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontSize: 14,
+              color: "#C8523B",
+              fontWeight: 500,
+            }}>
+              {errorMsg}
+            </div>
+          )}
 
           {/* Role picker */}
           <div className="s-field" style={{ gap: 10 }}>
@@ -240,5 +274,13 @@ export default function LoginPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
   );
 }
