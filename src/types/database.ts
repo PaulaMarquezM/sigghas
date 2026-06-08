@@ -1,7 +1,7 @@
 export type RolUsuario = "coordinador" | "docente" | "estudiante" | "administrador" | "apoyo";
-export type TipoContrato = "tiempo_completo" | "por_horas";
-export type ModalidadClase = "presencial" | "virtual";
-export type TipoEspacio = "aula" | "laboratorio";
+export type TipoContrato = "tiempo_completo" | "por_horas" | "titular" | "contratado" | "honorarios";
+export type ModalidadClase = "presencial" | "hibrida" | "virtual";
+export type TipoEspacio = "aula" | "laboratorio" | "sala_reuniones" | "auditorio";
 export type EstadoHorario = "borrador" | "aprobado" | "publicado";
 
 export interface Database {
@@ -40,6 +40,8 @@ export interface Database {
         Row: {
           id: string; codigo: string; nombre: string; semestre: number;
           horas_semana: number; requiere_laboratorio: boolean; creado_en: string;
+          nivel: number; horas_teoria: number; horas_practica: number;
+          modalidad: ModalidadClase; activo: boolean;
         };
         Insert: Omit<Database["public"]["Tables"]["materias"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["materias"]["Insert"]>;
@@ -56,6 +58,7 @@ export interface Database {
         Row: {
           id: string; nombre: string; tipo: TipoEspacio; capacidad: number;
           accesible: boolean; sede_id: string; disponible: boolean; creado_en: string;
+          tiene_proyector: boolean; tiene_internet: boolean; activo: boolean;
         };
         Insert: Omit<Database["public"]["Tables"]["espacios"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["espacios"]["Insert"]>;

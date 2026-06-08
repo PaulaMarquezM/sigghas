@@ -126,13 +126,12 @@ export default function LandingPage() {
             <a href="#funciones">Funciones</a>
             <a href="#roles">Roles</a>
             <a href="#reglas">Reglas</a>
-            <a href="#fases">Fases</a>
           </nav>
 
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link href="/login" className="s-btn s-btn-ghost">Iniciar sesión</Link>
-            <Link href="/login" className="s-btn s-btn-primary">
-              Solicitar acceso <ArrowRight />
+            <Link href="/registro" className="s-btn s-btn-primary">
+              Crear cuenta <ArrowRight />
             </Link>
           </div>
         </div>
@@ -433,55 +432,114 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PHASES ── */}
+      {/* ── TECH ── */}
       <section className="sigghas-section" id="fases">
         <div className="wrap">
-          <div className="sec-head">
-            <div><span className="sec-num">[ 04 / Roadmap ]</span></div>
-            <div>
-              <h2 style={{ fontSize: 40, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0 }}>Seis fases de desarrollo,<br />una en curso.</h2>
-              <p className="s-body" style={{ marginTop: 16 }}>El proyecto avanza por fases incrementales: cada fase deja un sistema utilizable antes de pasar a la siguiente.</p>
-            </div>
-          </div>
-          <div className="phases-grid">
-            {[
-              { n: "Fase 01", name: "Fundación · Setup, Auth, Layout base", cls: "done", state: "Completada" },
-              { n: "Fase 02", name: "Gestión de entidades académicas", cls: "now", state: "En progreso" },
-              { n: "Fase 03", name: "Motor de generación automática", cls: "", state: "Pendiente" },
-              { n: "Fase 04", name: "Edición manual y validaciones", cls: "", state: "Pendiente" },
-              { n: "Fase 05", name: "Consultas y exportación PDF", cls: "", state: "Pendiente" },
-              { n: "Fase 06", name: "Calidad y pruebas", cls: "", state: "Pendiente" },
-            ].map(({ n, name, cls, state }) => (
-              <div key={n} className={`phase ${cls}`}>
-                <span className="pnum">{n}</span>
-                <span className="pname">{name}</span>
-                <span className="pstate"><span className="pdot" />{state}</span>
-                <div className="phase-bar" />
-              </div>
-            ))}
-          </div>
-
           {/* Tech */}
           <div style={{ marginTop: 80 }}>
             <span className="s-eyebrow">Stack técnico</span>
             <h2 style={{ marginTop: 14, maxWidth: 620, fontSize: 28, fontWeight: 600, letterSpacing: "-0.015em", lineHeight: 1.2 }}>Las herramientas elegidas para entregar rápido sin sacrificar calidad.</h2>
             <div className="tech-grid" style={{ marginTop: 32 }}>
-              {[
-                { layer: "Frontend + Backend", name: "Next.js 14", why: "App Router y Server Actions — todo en un monorepo con TypeScript." },
-                { layer: "Base de datos", name: "Supabase", why: "PostgreSQL gestionado con auth y tiempo real, listo en minutos." },
-                { layer: "UI / Componentes", name: "Tailwind + shadcn/ui", why: "Diseño consistente sin esfuerzo extra, totalmente personalizable." },
-                { layer: "Datos cliente", name: "TanStack Query", why: "Caché y sincronización eficiente de datos del servidor." },
-                { layer: "Exportación", name: "@react-pdf/renderer", why: "PDFs renderizados desde el servidor con el formato institucional." },
-                { layer: "Motor", name: "Algoritmo propio", why: "Greedy con backtracking en TypeScript — testeable y predecible." },
-                { layer: "Autenticación", name: "Supabase Auth", why: "Sesiones seguras con manejo de roles y permisos por usuario." },
-                { layer: "Calidad", name: "Tests + CI", why: "Suite de pruebas sobre cada regla de negocio antes de mergear." },
-              ].map(({ layer, name, why }) => (
-                <div key={name} className="tech-card">
-                  <span className="tlayer">{layer}</span>
-                  <span className="tname">{name}</span>
-                  <span className="twhy">{why}</span>
+
+              {/* Next.js */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 128 128" width="38" height="38" fill="none">
+                    <circle cx="64" cy="64" r="64" fill="#000"/>
+                    <path d="M38 96V32h12l36 48V32h12v64H86L50 48v48z" fill="white"/>
+                  </svg>
                 </div>
-              ))}
+                <span className="tname">Next.js 14</span>
+                <span className="tlayer">Framework</span>
+              </div>
+
+              {/* TypeScript */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 64 64" width="38" height="38" fill="none">
+                    <rect width="64" height="64" rx="6" fill="#3178C6"/>
+                    <path d="M14 34h10v-4H8v4h10v22h6V34h-10zm18-4v4h8v22h6V34h8v-4z" fill="white"/>
+                  </svg>
+                </div>
+                <span className="tname">TypeScript</span>
+                <span className="tlayer">Lenguaje</span>
+              </div>
+
+              {/* Supabase */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="38" height="38" fill="none">
+                    <path d="M11.9 2.1L3.5 13.6h8.4v8.3L20.5 10.4h-8.6z" fill="#3ECF8E"/>
+                  </svg>
+                </div>
+                <span className="tname">Supabase</span>
+                <span className="tlayer">Base de datos</span>
+              </div>
+
+              {/* Tailwind */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 54 33" width="44" height="27" fill="none">
+                    <path d="M27 0C19.8 0 15.3 3.6 13.5 10.8c2.7-3.6 5.85-4.95 9.45-4.05 2.05.51 3.52 2 5.15 3.65C30.74 12.72 33.65 15.75 40.5 15.75c7.2 0 11.7-3.6 13.5-10.8-2.7 3.6-5.85 4.95-9.45 4.05-2.05-.51-3.52-2-5.15-3.65C37.26 3.03 34.35 0 27 0z" fill="#38BDF8"/>
+                    <path d="M13.5 15.75C6.3 15.75 1.8 19.35 0 26.55c2.7-3.6 5.85-4.95 9.45-4.05 2.05.51 3.52 2 5.15 3.65C16.74 28.47 19.65 31.5 26.5 31.5c7.2 0 11.7-3.6 13.5-10.8-2.7 3.6-5.85 4.95-9.45 4.05-2.05-.51-3.52-2-5.15-3.65C23.76 18.78 20.85 15.75 13.5 15.75z" fill="#38BDF8"/>
+                  </svg>
+                </div>
+                <span className="tname">Tailwind CSS</span>
+                <span className="tlayer">Estilos</span>
+              </div>
+
+              {/* shadcn/ui */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="38" height="38" fill="none">
+                    <rect x="3" y="3" width="8" height="8" rx="1.5" fill="#0E1116"/>
+                    <rect x="13" y="3" width="8" height="8" rx="1.5" fill="#0E1116" opacity=".4"/>
+                    <rect x="3" y="13" width="8" height="8" rx="1.5" fill="#0E1116" opacity=".4"/>
+                    <rect x="13" y="13" width="8" height="8" rx="1.5" fill="#0E1116" opacity=".15"/>
+                  </svg>
+                </div>
+                <span className="tname">shadcn/ui</span>
+                <span className="tlayer">Componentes</span>
+              </div>
+
+              {/* TanStack Query */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 64 64" width="38" height="38" fill="none">
+                    <circle cx="32" cy="32" r="30" stroke="#EF4444" strokeWidth="4"/>
+                    <path d="M20 32c0-6.6 5.4-12 12-12s12 5.4 12 12-5.4 12-12 12" stroke="#EF4444" strokeWidth="4" strokeLinecap="round"/>
+                    <path d="M38 26l6-6M38 26h6M38 26v-6" stroke="#EF4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="tname">TanStack Query</span>
+                <span className="tlayer">Datos cliente</span>
+              </div>
+
+              {/* React PDF */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 40 48" width="32" height="38" fill="none">
+                    <path d="M4 0h22l10 10v34a4 4 0 01-4 4H4a4 4 0 01-4-4V4a4 4 0 014-4z" fill="#C8523B"/>
+                    <path d="M26 0l10 10H26z" fill="white" opacity=".4"/>
+                    <text x="5" y="36" fill="white" fontSize="10" fontWeight="700" fontFamily="monospace">PDF</text>
+                  </svg>
+                </div>
+                <span className="tname">React PDF</span>
+                <span className="tlayer">Exportación</span>
+              </div>
+
+              {/* Tests + CI */}
+              <div className="tech-card">
+                <div className="tech-icon-wrap">
+                  <svg viewBox="0 0 24 24" width="38" height="38" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="#2E7D5B" strokeWidth="2"/>
+                    <path d="M7 12l3.5 3.5L17 9" stroke="#2E7D5B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="tname">Tests + CI</span>
+                <span className="tlayer">Calidad</span>
+              </div>
+
             </div>
           </div>
         </div>
@@ -525,16 +583,16 @@ export default function LandingPage() {
             <div>
               <span className="s-eyebrow">Listo para usarse</span>
               <h2 style={{ fontSize: 44, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.1, margin: "14px 0 0", maxWidth: 520 }}>Entra al sistema y empieza a generar horarios sin choques.</h2>
-              <p className="s-lead" style={{ marginTop: 18, maxWidth: 480 }}>Las credenciales son las institucionales. Si no las tienes, contacta al coordinador de la Carrera de Software.</p>
+              <p className="s-lead" style={{ marginTop: 18, maxWidth: 480 }}>Crea tu cuenta con tu correo institucional y empieza a usar SIGGHAS hoy.</p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
-              <Link href="/login" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "space-between" }}>
-                Iniciar sesión <ArrowRight size={16} />
+              <Link href="/registro" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "space-between" }}>
+                Crear cuenta <ArrowRight size={16} />
               </Link>
-              <a href="#" className="s-btn s-btn-ghost s-btn-lg" style={{ width: "100%", justifyContent: "space-between" }}>
-                Solicitar acceso
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-              </a>
+              <Link href="/login" className="s-btn s-btn-ghost s-btn-lg" style={{ width: "100%", justifyContent: "space-between" }}>
+                Ya tengo cuenta
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M10 14L21 3M21 14v7H3V3h7"/></svg>
+              </Link>
             </div>
           </div>
         </div>
@@ -562,7 +620,6 @@ export default function LandingPage() {
                 <li><a href="#funciones">Funciones</a></li>
                 <li><a href="#roles">Roles</a></li>
                 <li><a href="#reglas">Reglas de negocio</a></li>
-                <li><a href="#fases">Roadmap</a></li>
               </ul>
             </div>
             <div>

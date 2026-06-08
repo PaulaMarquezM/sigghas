@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { login } from "./actions";
+import { useSearchParams } from "next/navigation";
+import { register } from "./actions";
 
 type Role = "coordinador" | "docente" | "estudiante";
 
@@ -36,67 +37,11 @@ const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-/* ── Mini schedule preview (panel izquierdo) ─── */
-function MiniSchedule() {
-  const textMuted = "color-mix(in oklab, #F5F1E8 60%, transparent)";
-  const textDim   = "color-mix(in oklab, #F5F1E8 55%, transparent)";
-  const cell = (bg: string, text: string, textColor = "white") => (
-    <div style={{ background: bg, borderRadius: 5, padding: "8px 6px", fontFamily: "Poppins, sans-serif", fontSize: 10, fontWeight: 600, color: textColor }}>{text}</div>
-  );
-  const empty = <div />;
-  return (
-    <div className="login-mini-sched">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: "color-mix(in oklab, #F5F1E8 85%, transparent)", display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#E0A93B", display: "inline-block" }} />
-          Vista previa · 2026-I
-        </span>
-        <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 10, color: textDim, letterSpacing: "0.08em" }}>SW-5A · PORTOVIEJO</span>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "44px repeat(5, 1fr)", fontFamily: "JetBrains Mono, monospace", fontSize: 10, gap: 2 }}>
-        <div />
-        {["L","M","X","J","V"].map(d => (
-          <div key={d} style={{ textAlign: "center", color: textMuted, padding: "4px 0" }}>{d}</div>
-        ))}
-
-        <div style={{ color: textDim, padding: "8px 0", fontSize: 10 }}>07:00</div>
-        {cell("#1D3FD9","Calidad")}
-        {empty}
-        {cell("#1D3FD9","Calidad")}
-        {empty}
-        <div style={{ background: "transparent", border: "1px dashed color-mix(in oklab, #F5F1E8 30%, transparent)", borderRadius: 5, padding: "8px 6px", fontFamily: "Poppins, sans-serif", fontSize: 10, color: textDim }}>Tut.</div>
-
-        <div style={{ color: textDim, padding: "8px 0", fontSize: 10 }}>09:00</div>
-        {empty}
-        {cell("#E0A93B","BD II","#2a1e00")}
-        {empty}
-        {cell("#E0A93B","BD II","#2a1e00")}
-        {empty}
-
-        <div style={{ color: textDim, padding: "8px 0", fontSize: 10 }}>11:00</div>
-        {cell("color-mix(in oklab, #F5F1E8 92%, transparent)","IA","#0E1116")}
-        {empty}
-        {cell("color-mix(in oklab, #F5F1E8 92%, transparent)","IA","#0E1116")}
-        {empty}
-        {cell("#2E7D5B","Arq.")}
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "1px solid color-mix(in oklab, #F5F1E8 14%, transparent)", fontFamily: "JetBrains Mono, monospace", fontSize: 10, color: textMuted }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Sin conflictos
-        </span>
-        <span>43 / 43 reglas OK</span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Página login ─────────────────────────────────────────── */
-export default function LoginPage() {
-  const [role, setRole] = useState<Role>("coordinador");
+function RegisterFormContent() {
+  const [role, setRole] = useState<Role>("estudiante");
   const [showPw, setShowPw] = useState(false);
+  const searchParams = useSearchParams();
+  const errorMsg = searchParams.get("error");
 
   return (
     <div className="login-wrap">
@@ -117,13 +62,17 @@ export default function LoginPage() {
         </Link>
 
         <div className="login-quote">
-          <span className="s-eyebrow" style={{ color: "color-mix(in oklab, #F5F1E8 60%, transparent)" }}>Sistema Inteligente de Horarios</span>
+          <span className="s-eyebrow" style={{ color: "color-mix(in oklab, #F5F1E8 60%, transparent)" }}>
+            Únete al sistema
+          </span>
           <h2>
-            Acceso seguro<br />
-            a la planificación<br />
-            <em>de la Carrera de Software.</em>
+            Tu horario,<br />
+            siempre<br />
+            <em>sin conflictos.</em>
           </h2>
-          <MiniSchedule />
+          <p style={{ color: "color-mix(in oklab, #F5F1E8 60%, transparent)", fontSize: 15, lineHeight: 1.6, marginTop: 20, maxWidth: 400 }}>
+            Crea tu cuenta con tu correo institucional de la PUCE y accede a tu horario académico actualizado en tiempo real.
+          </p>
           <div className="login-foot">
             <span>Pontificia Universidad Católica del Ecuador</span>
             <span>Portoviejo</span>
@@ -133,14 +82,29 @@ export default function LoginPage() {
 
       {/* ── Panel derecho: formulario ── */}
       <main className="login-form-wrap">
-        <form className="login-form" action={login}>
+        <form className="login-form" action={register}>
           <div>
             <span className="s-eyebrow">Acceso institucional</span>
-            <h1>Inicia sesión<br />en SIGGHAS.</h1>
+            <h1>Crea tu cuenta<br />en SIGGHAS.</h1>
             <p className="s-body" style={{ marginTop: 14, maxWidth: 380 }}>
-              Selecciona tu rol y usa tus credenciales institucionales de la PUCE.
+              Completa tus datos y selecciona tu rol dentro de la Carrera de Software.
             </p>
           </div>
+
+          {/* Error */}
+          {errorMsg && (
+            <div style={{
+              background: "color-mix(in oklab, #C8523B 12%, transparent)",
+              border: "1px solid color-mix(in oklab, #C8523B 35%, transparent)",
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontSize: 14,
+              color: "#C8523B",
+              fontWeight: 500,
+            }}>
+              {errorMsg}
+            </div>
+          )}
 
           {/* Role picker */}
           <div className="s-field" style={{ gap: 10 }}>
@@ -159,7 +123,18 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <input type="hidden" name="role" value={role} />
+            <input type="hidden" name="rol" value={role} />
+          </div>
+
+          {/* Nombre */}
+          <div className="s-field">
+            <label htmlFor="nombre">Nombre completo</label>
+            <div className="s-input-shell">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 10 }}>
+                <circle cx="12" cy="8" r="4"/><path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/>
+              </svg>
+              <input id="nombre" name="nombre" type="text" placeholder="Nombre Apellido" autoComplete="name" required />
+            </div>
           </div>
 
           {/* Email */}
@@ -181,7 +156,7 @@ export default function LoginPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 10 }}>
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
               </svg>
-              <input id="password" name="password" type={showPw ? "text" : "password"} placeholder="••••••••" autoComplete="current-password" required />
+              <input id="password" name="password" type={showPw ? "text" : "password"} placeholder="Mínimo 6 caracteres" autoComplete="new-password" minLength={6} required />
               <button type="button" className="s-toggle-btn" aria-label="Mostrar contraseña" onClick={() => setShowPw(v => !v)}>
                 {showPw ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -197,35 +172,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Row */}
-          <div className="s-field-row">
-            <label className="s-checkbox">
-              <input type="checkbox" name="remember" />
-              Mantener sesión iniciada
-            </label>
-            <a href="#">¿Olvidaste tu contraseña?</a>
-          </div>
-
           {/* Submit */}
           <button type="submit" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "center", height: 48 }}>
-            Iniciar sesión
+            Crear cuenta
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
           </button>
 
-          <div className="s-divider">o continuar con</div>
-
-          <button type="button" className="s-alt-login">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            SSO institucional PUCE
-          </button>
-
           <p className="s-small" style={{ textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-            ¿No tienes cuenta?{" "}
-            <a href="/registro" style={{ color: "#1D3FD9", fontWeight: 500 }}>Crear cuenta</a>
+            ¿Ya tienes cuenta?{" "}
+            <Link href="/login" style={{ color: "#1D3FD9", fontWeight: 500 }}>Iniciar sesión</Link>
           </p>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16, paddingTop: 24, borderTop: "1px solid #D8D1BD", fontFamily: "JetBrains Mono, monospace", fontSize: 10.5, color: "#8A8F99", letterSpacing: "0.05em" }}>
@@ -240,5 +197,15 @@ export default function LoginPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterFormContent />
+    </Suspense>
   );
 }

@@ -373,12 +373,29 @@
   gap: 14px;
 }
 .tech-card {
-  border: 1px solid #D8D1BD; border-radius: 12px; padding: 22px;
-  background: #EFEAD9; display: flex; flex-direction: column; gap: 10px; min-height: 150px;
+  border: 1px solid #D8D1BD;
+  border-radius: 14px;
+  padding: 28px 20px 24px;
+  background: #EFEAD9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  transition: border-color .15s, transform .15s;
 }
-.tech-card .tlayer { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #4A515E; letter-spacing: 0.1em; text-transform: uppercase; }
-.tech-card .tname { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.tech-card .twhy { font-size: 13px; color: #4A515E; line-height: 1.45; }
+.tech-card:hover { border-color: #A89F8C; transform: translateY(-2px); }
+.tech-icon-wrap {
+  width: 64px; height: 64px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid #E5DFCC;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.tech-card .tname { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+.tech-card .tlayer { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #8A8F99; letter-spacing: 0.08em; text-transform: uppercase; }
 
 /* ---------- Scope ---------- */
 .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
