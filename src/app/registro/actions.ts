@@ -33,9 +33,15 @@ export async function register(formData: FormData) {
 
   if (error || !data.user) {
     console.error("[registro] signUp falló:", error);
-    const msg = error?.message?.includes("already registered")
-      ? "Este correo ya tiene una cuenta. Inicia sesión."
-      : `No se pudo crear la cuenta: ${error?.message ?? "respuesta vacía de Supabase"}`;
+    const raw = error?.message?.toLowerCase() ?? "";
+    let msg: string;
+    if (raw.includes("already registered")) {
+      msg = "Este correo ya tiene una cuenta. Inicia sesión.";
+    } else if (raw.includes("rate limit")) {
+      msg = "Demasiados intentos de registro seguidos. Espera unos minutos e inténtalo de nuevo.";
+    } else {
+      msg = `No se pudo crear la cuenta: ${error?.message ?? "respuesta vacía de Supabase"}`;
+    }
     redirect(`/registro?error=${encodeURIComponent(msg)}`);
   }
 
