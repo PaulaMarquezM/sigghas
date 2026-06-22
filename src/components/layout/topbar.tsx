@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const TITULO_RUTA: Record<string, string> = {
   "/dashboard":                          "Inicio",
@@ -26,13 +25,28 @@ export function Topbar() {
   const titulo = TITULO_RUTA[pathname] ?? "SIGGHAS";
 
   return (
-    <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-gray-200 shrink-0">
-      <h1 className="text-base font-semibold text-gray-800">{titulo}</h1>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
-          <Bell className="w-4 h-4" />
-        </Button>
-      </div>
+    <header style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "0 28px", height: 56,
+      background: "#F5F1E8",
+      borderBottom: "1px solid #D8D1BD",
+      flexShrink: 0,
+    }}>
+      <span style={{
+        fontFamily: "JetBrains Mono, monospace",
+        fontSize: 11, textTransform: "uppercase",
+        letterSpacing: "0.12em", color: "#4A515E", fontWeight: 500,
+      }}>
+        {titulo}
+      </span>
+      <button style={{
+        background: "transparent", border: "1px solid #D8D1BD",
+        borderRadius: 8, width: 34, height: 34,
+        display: "grid", placeItems: "center",
+        cursor: "pointer", color: "#4A515E",
+      }}>
+        <Bell style={{ width: 15, height: 15 }} />
+      </button>
     </header>
   );
 }

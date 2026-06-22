@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar }  from "@/components/layout/topbar";
@@ -10,13 +11,17 @@ export default async function DashboardLayout({
 }) {
   const { perfil } = await getSession();
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar nombre={perfil!.nombre} rol={perfil!.rol} />
+  if (!perfil) {
+    redirect("/registro?error=" + encodeURIComponent("Tu perfil no fue creado. Regístrate de nuevo."));
+  }
 
-      <div className="flex flex-col flex-1 min-w-0">
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F1E8" }}>
+      <Sidebar nombre={perfil.nombre} rol={perfil.rol} />
+
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <Topbar />
-        <main className="flex-1 p-6 overflow-auto">
+        <main style={{ flex: 1, padding: "32px 36px", overflowY: "auto" }}>
           {children}
         </main>
       </div>
