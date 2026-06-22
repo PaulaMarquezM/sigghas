@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "@/lib/nav";
 import type { RolUsuario } from "@/types/database";
 import { logout } from "@/app/login/actions";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 const LABEL_ROL: Record<RolUsuario, string> = {
   coordinador:   "Coordinador",
@@ -17,14 +14,6 @@ const LABEL_ROL: Record<RolUsuario, string> = {
   estudiante:    "Estudiante",
   administrador: "Administrador",
   apoyo:         "Personal Apoyo",
-};
-
-const COLOR_ROL: Record<RolUsuario, string> = {
-  coordinador:   "bg-indigo-100 text-indigo-700",
-  docente:       "bg-emerald-100 text-emerald-700",
-  estudiante:    "bg-blue-100 text-blue-700",
-  administrador: "bg-orange-100 text-orange-700",
-  apoyo:         "bg-gray-100 text-gray-700",
 };
 
 interface SidebarProps {
@@ -36,7 +25,7 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
   const pathname = usePathname();
   const items = NAV_ITEMS[rol] ?? [];
 
-  const initiales = nombre
+  const iniciales = nombre
     .split(" ")
     .map((n) => n[0])
     .slice(0, 2)
@@ -44,38 +33,70 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
     .toUpperCase();
 
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-white border-r border-gray-200 shrink-0">
+    <aside style={{
+      width: 240,
+      minHeight: "100vh",
+      background: "#0E1116",
+      color: "#F5F1E8",
+      display: "flex",
+      flexDirection: "column",
+      flexShrink: 0,
+      borderRight: "1px solid #1C2128",
+    }}>
 
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-600 shrink-0">
-          <GraduationCap className="w-5 h-5 text-white" />
+      <div style={{
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "20px 20px 18px",
+        borderBottom: "1px solid color-mix(in oklab, #F5F1E8 10%, transparent)",
+      }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 7,
+          background: "#F5F1E8", color: "#0E1116",
+          display: "grid", placeItems: "center", flexShrink: 0,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h2v2H8zM14 14h2v2h-2z"/>
+          </svg>
         </div>
         <div>
-          <p className="font-bold text-gray-900 text-sm leading-none">SIGGHAS</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">PUCE · Software</p>
+          <div style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>SIGGHAS</div>
+          <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 10, color: "color-mix(in oklab, #F5F1E8 45%, transparent)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 1 }}>PUCE · Software</div>
         </div>
       </div>
 
       {/* Perfil */}
-      <div className="px-4 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <Avatar className="w-9 h-9">
-            <AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-semibold">
-              {initiales}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{nombre}</p>
-            <Badge variant="secondary" className={cn("text-[10px] mt-0.5 font-medium px-1.5 py-0", COLOR_ROL[rol])}>
+      <div style={{
+        padding: "16px 20px",
+        borderBottom: "1px solid color-mix(in oklab, #F5F1E8 10%, transparent)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 8,
+            background: "#1D3FD9", color: "white",
+            display: "grid", placeItems: "center",
+            fontWeight: 600, fontSize: 12, flexShrink: 0,
+            fontFamily: "JetBrains Mono, monospace",
+          }}>
+            {iniciales}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {nombre}
+            </div>
+            <div style={{
+              fontFamily: "JetBrains Mono, monospace", fontSize: 10,
+              color: "color-mix(in oklab, #F5F1E8 50%, transparent)",
+              letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2,
+            }}>
               {LABEL_ROL[rol]}
-            </Badge>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Navegación */}
-      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+      <nav style={{ flex: 1, padding: "10px 10px", overflowY: "auto" }}>
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
@@ -83,14 +104,16 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              )}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "8px 12px", borderRadius: 8, marginBottom: 2,
+                fontSize: 13.5, fontWeight: 500, textDecoration: "none",
+                transition: "background .15s",
+                background: isActive ? "color-mix(in oklab, #1D3FD9 80%, transparent)" : "transparent",
+                color: isActive ? "#F5F1E8" : "color-mix(in oklab, #F5F1E8 65%, transparent)",
+              }}
             >
-              <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-indigo-600" : "text-gray-400")} />
+              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
               {item.label}
             </Link>
           );
@@ -98,16 +121,25 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
       </nav>
 
       {/* Logout */}
-      <div className="px-3 py-3 border-t border-gray-100">
+      <div style={{ padding: "10px", borderTop: "1px solid color-mix(in oklab, #F5F1E8 10%, transparent)" }}>
         <form action={logout}>
-          <Button
+          <button
             type="submit"
-            variant="ghost"
-            className="w-full justify-start gap-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 text-sm"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 12px", borderRadius: 8, border: 0,
+              background: "transparent", cursor: "pointer",
+              fontSize: 13.5, fontWeight: 500,
+              color: "color-mix(in oklab, #F5F1E8 45%, transparent)",
+              fontFamily: "Poppins, sans-serif",
+              transition: "background .15s, color .15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "color-mix(in oklab, #C8523B 25%, transparent)"; (e.currentTarget as HTMLButtonElement).style.color = "#F5F1E8"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "color-mix(in oklab, #F5F1E8 45%, transparent)"; }}
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut style={{ width: 15, height: 15 }} />
             Cerrar sesión
-          </Button>
+          </button>
         </form>
       </div>
     </aside>
