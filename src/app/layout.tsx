@@ -30,6 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${poppins.variable} ${jetbrainsMono.variable} h-full`}
       style={{
         fontFamily: "var(--font-poppins), system-ui, sans-serif",
