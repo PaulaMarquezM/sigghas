@@ -31,7 +31,7 @@ export async function GET(
   // 2. Obtener todas las sesiones asignadas para este horario
   const { data: sesiones, error: sesionesError } = await supabase
     .from("sesiones")
-    .select("*, materias(nombre, codigo), perfiles:docente_id(nombre), grupos(nombre), espacios(nombre)")
+    .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
     .eq("horario_id", horarioId);
 
   if (sesionesError || !sesiones) {

@@ -128,7 +128,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
                               {s.materias?.codigo} - {s.materias?.nombre}
                             </Text>
                             <Text style={styles.sessionDocente}>
-                              Doc: {s.perfiles?.nombre || "Docente"}
+                              Doc: {s.docentes?.perfiles?.nombre || "Docente"}
                             </Text>
                           </View>
                           <View style={styles.sessionFooter}>

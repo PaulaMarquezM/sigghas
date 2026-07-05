@@ -31,11 +31,11 @@ export async function getHorarioEditorData(horarioId: string) {
   // 2. Obtener sesiones actuales
   const { data: sesionesRaw, error: sesionesError } = await supabase
     .from("sesiones")
-    .select("*, materias(nombre, codigo), perfiles:docente_id(nombre), grupos(nombre), espacios(nombre)")
+    .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
     .eq("horario_id", horarioId);
 
   if (sesionesError) {
-    throw new Error("Error al obtener sesiones");
+    throw new Error(`Error al obtener sesiones: ${sesionesError.message}`);
   }
 
   // 3. Obtener todas las entidades para el validador

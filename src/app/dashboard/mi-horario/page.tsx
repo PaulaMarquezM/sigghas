@@ -49,7 +49,7 @@ export default async function MiHorarioPage() {
     // Buscar sesiones de este docente en el horario activo
     const { data: sesiones } = await supabase
       .from("sesiones")
-      .select("*, materias(nombre, codigo), perfiles:docente_id(nombre), grupos(nombre), espacios(nombre)")
+      .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
       .eq("horario_id", horario.id)
       .eq("docente_id", user.id);
 

@@ -176,8 +176,8 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
                       {sesionOcupante.materias?.nombre}
                     </div>
                     <div className="text-[10px] text-gray-500 flex items-center justify-between">
-                      <span className="truncate max-w-[110px]" title={sesionOcupante.perfiles?.nombre}>
-                        Doc: {sesionOcupante.perfiles?.nombre}
+                      <span className="truncate max-w-[110px]" title={sesionOcupante.docentes?.perfiles?.nombre}>
+                        Doc: {sesionOcupante.docentes?.perfiles?.nombre}
                       </span>
                       <span className="font-semibold bg-gray-200/60 text-gray-700 px-1 rounded">
                         {sesionOcupante.grupos?.nombre}

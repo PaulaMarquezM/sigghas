@@ -37,7 +37,7 @@ export default async function DisponibilidadAulasPage() {
       // 4. Obtener todas las sesiones de este horario para cruzar disponibilidad
       const { data } = await supabase
         .from("sesiones")
-        .select("*, materias(nombre), perfiles:docente_id(nombre), grupos(nombre)")
+        .select("*, materias(nombre), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre)")
         .eq("horario_id", horario.id);
       sesiones = data || [];
     }
