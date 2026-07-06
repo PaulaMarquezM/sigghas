@@ -1,6 +1,11 @@
 import type { ReglaFn } from "../types";
 
 export const rn09MismaSede: ReglaFn = (candidato, ctx, _asignadas) => {
+  if (!candidato.espacio_id) {
+    // Clase virtual: no ocupa espacio físico, la sede del grupo no aplica.
+    return { valida: true };
+  }
+
   const grupo = ctx.grupos.find((g) => g.id === candidato.grupo_id);
   if (!grupo) {
     return { valida: false, conflicto: { regla: "RN09", codigo: "GRUPO_NO_ENCONTRADO", tipo: "error", mensaje: "El grupo no existe." } };

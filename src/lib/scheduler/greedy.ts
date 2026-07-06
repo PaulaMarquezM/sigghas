@@ -104,7 +104,7 @@ export function generarSlots(
             hora_fin: bloque.hora_fin,
             docente_id: docente.id,
             espacio_id: null,
-            sede_id: "virtual",
+            sede_id: getSedeGrupo(pendiente.grupo_id, ctx),
             modalidad: "virtual",
           });
         }

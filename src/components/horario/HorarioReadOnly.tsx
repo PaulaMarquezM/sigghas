@@ -124,7 +124,7 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                                 {s.materias?.codigo} - {s.materias?.nombre}
                               </div>
                               <div className="mt-1 opacity-80 truncate">
-                                Docente: {s.perfiles?.nombre}
+                                Docente: {s.docentes?.perfiles?.nombre}
                               </div>
                             </div>
                             <div className="flex items-center justify-between border-t border-current/10 pt-1 text-[9px] mt-1">

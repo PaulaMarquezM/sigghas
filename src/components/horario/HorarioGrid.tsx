@@ -114,7 +114,7 @@ export function HorarioGrid({
                             sesionId={s.id}
                             materiaCodigo={s.materias?.codigo || "MAT"}
                             materiaNombre={s.materias?.nombre || "Materia"}
-                            docenteNombre={s.perfiles?.nombre || "Docente"}
+                            docenteNombre={s.docentes?.perfiles?.nombre || "Docente"}
                             aulaNombre={s.espacios?.nombre || null}
                             grupoNombre={s.grupos?.nombre || "Grupo"}
                             modalidad={s.modalidad}

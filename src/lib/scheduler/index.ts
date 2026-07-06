@@ -89,7 +89,19 @@ export async function generate(periodoId: string): Promise<ResultadoGeneracion> 
     horarioId = (horarioExistente as any).id;
     log.push(`Horario existente encontrado: ${horarioId}`);
 
-    await supabase.from("sesiones").delete().eq("horario_id", horarioId);
+    const { error: deleteError } = await supabase.from("sesiones").delete().eq("horario_id", horarioId);
+
+    if (deleteError) {
+      log.push(`Error eliminando sesiones anteriores: ${deleteError.message}`);
+      return {
+        exito: false,
+        horario_id: horarioId,
+        total_asignaciones: 0,
+        conflictos_no_resueltos: [],
+        log,
+      };
+    }
+
     log.push("Sesiones anteriores eliminadas para regeneración");
   } else {
     const { data: nuevoHorario } = await (supabase.from("horarios") as any)
