@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     .from("periodos")
     .select("*")
     .eq("activo", true)
-    .maybeSingle();
+    .maybeSingle() as any;
 
   if (!periodoActivo) {
     return new Response("No hay periodo activo", { status: 400 });
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     .from("horarios")
     .select("*")
     .eq("periodo_id", periodoActivo.id)
-    .maybeSingle();
+    .maybeSingle() as any;
 
   if (!horario) {
     return new Response("No hay horario para el periodo activo", { status: 404 });
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       sesiones,
       userNombre,
       userRolLabel,
-    })
+    }) as any
   );
 
   return new Response(stream as any, {

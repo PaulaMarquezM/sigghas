@@ -45,7 +45,7 @@ export async function GET(
       periodo,
       sesiones,
       grupoNombre: "Reporte Completo",
-    })
+    }) as any
   );
 
   return new Response(stream as any, {
