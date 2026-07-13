@@ -26,15 +26,19 @@ export async function GET(request: Request) {
     return new Response("No hay periodo activo", { status: 400 });
   }
 
-  // 2. Obtener el horario del periodo
-  const { data: horario } = await supabase
+  // 2. Obtener el horario publicado más reciente del periodo
+  const { data: horariosData } = await supabase
     .from("horarios")
     .select("*")
     .eq("periodo_id", periodoActivo.id)
-    .maybeSingle() as any;
+    .eq("estado", "publicado")
+    .order("generado_en", { ascending: false })
+    .limit(1) as any;
+
+  const horario = horariosData?.[0] ?? null;
 
   if (!horario) {
-    return new Response("No hay horario para el periodo activo", { status: 404 });
+    return new Response("No hay horario publicado para el periodo activo", { status: 404 });
   }
 
   let sesiones: any[] = [];

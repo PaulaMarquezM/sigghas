@@ -4,17 +4,30 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
+ * Obtiene el horario publicado más reciente de un periodo.
+ * Usa limit(1) en lugar de single()/maybeSingle() para soportar
+ * múltiples horarios por periodo sin lanzar error.
+ */
+async function getHorarioPublicado(supabase: any, periodoId: string) {
+  const { data } = await supabase
+    .from("horarios")
+    .select("id, estado")
+    .eq("periodo_id", periodoId)
+    .eq("estado", "publicado")
+    .order("generado_en", { ascending: false })
+    .limit(1);
+
+  return data?.[0] ?? null;
+}
+
+/**
  * Obtiene las sesiones de un horario según periodo y grupo
  */
 export async function getSesionesByPeriodoyGrupoAction(periodoId: string, grupoId: string) {
   const supabase = await createClient();
 
-  // 1. Buscar el horario del periodo
-  const { data: horario } = await supabase
-    .from("horarios")
-    .select("id, estado")
-    .eq("periodo_id", periodoId)
-    .single();
+  // 1. Buscar el horario publicado más reciente del periodo
+  const horario = await getHorarioPublicado(supabase, periodoId);
 
   if (!horario) {
     return { sesiones: [], horario: null };
@@ -39,12 +52,8 @@ export async function getSesionesByPeriodoyGrupoAction(periodoId: string, grupoI
 export async function getSesionesByPeriodoyDocenteAction(periodoId: string, docenteId: string) {
   const supabase = await createClient();
 
-  // 1. Buscar el horario del periodo
-  const { data: horario } = await supabase
-    .from("horarios")
-    .select("id, estado")
-    .eq("periodo_id", periodoId)
-    .single();
+  // 1. Buscar el horario publicado más reciente del periodo
+  const horario = await getHorarioPublicado(supabase, periodoId);
 
   if (!horario) {
     return { sesiones: [], horario: null };

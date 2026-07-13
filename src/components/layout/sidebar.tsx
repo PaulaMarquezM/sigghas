@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Calendar, Users, BookOpen, Building2,
-  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut
+  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RolUsuario } from "@/types/database";
@@ -20,6 +20,7 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Generar Horario",    href: "/dashboard/generar",        icon: Calendar },
     { label: "Editar Horario",     href: "/dashboard/editar",         icon: Calendar },
+    { label: "Consulta de Horarios", href: "/dashboard/horario",     icon: Eye },
     { label: "Docentes",           href: "/dashboard/docentes",       icon: UserCheck },
     { label: "Materias",           href: "/dashboard/materias",       icon: BookOpen },
     { label: "Grupos",             href: "/dashboard/grupos",         icon: Users },

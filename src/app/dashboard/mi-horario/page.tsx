@@ -29,17 +29,31 @@ export default async function MiHorarioPage() {
     );
   }
 
-  // 2. Obtener el horario del periodo activo
-  const { data: horario } = await supabase
+  // 2. Obtener el horario publicado más reciente del periodo activo
+  // Usamos limit(1) en lugar de maybeSingle() porque puede haber múltiples horarios por periodo
+  const { data: horariosPublicados } = await supabase
     .from("horarios")
     .select("*")
     .eq("periodo_id", periodoActivo.id)
-    .maybeSingle();
+    .eq("estado", "publicado")
+    .order("generado_en", { ascending: false })
+    .limit(1);
+
+  const horario = horariosPublicados?.[0] ?? null;
 
   if (!horario) {
+    // Verificar si existe algún horario (aunque no esté publicado)
+    const { data: cualquierHorario } = await supabase
+      .from("horarios")
+      .select("estado")
+      .eq("periodo_id", periodoActivo.id)
+      .limit(1);
+
     return (
       <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
-        No se ha generado ningún horario para el periodo académico activo ({periodoActivo.nombre}).
+        {cualquierHorario && cualquierHorario.length > 0
+          ? `El horario del periodo ${periodoActivo.nombre} aún no ha sido publicado.`
+          : `No se ha generado ningún horario para el periodo académico activo (${periodoActivo.nombre}).`}
       </div>
     );
   }

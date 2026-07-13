@@ -76,20 +76,27 @@ export async function generate(periodoId: string): Promise<ResultadoGeneracion> 
 
   log.push(`${docentes.length} docentes cargados`);
 
-  const { data: horarioExistente } = await supabase
+  // Buscar TODOS los horarios existentes del periodo (sin filtrar por estado)
+  // para eliminarlos y evitar acumulación de duplicados.
+  const { data: horariosExistentes } = await supabase
     .from("horarios")
-    .select("*")
+    .select("id, estado")
     .eq("periodo_id", periodoId)
-    .eq("estado", "borrador")
-    .maybeSingle();
+    .order("generado_en", { ascending: false });
 
   let horarioId: string;
 
-  if (horarioExistente) {
-    horarioId = (horarioExistente as any).id;
-    log.push(`Horario existente encontrado: ${horarioId}`);
+  if (horariosExistentes && horariosExistentes.length > 0) {
+    // Reutilizar el más reciente (el primero tras ordenar desc)
+    const principal = horariosExistentes[0] as any;
+    horarioId = principal.id;
+    log.push(`Horario existente encontrado (${principal.estado}): ${horarioId}`);
 
-    const { error: deleteError } = await supabase.from("sesiones").delete().eq("horario_id", horarioId);
+    // Eliminar sesiones del horario principal que se va a reutilizar
+    const { error: deleteError } = await supabase
+      .from("sesiones")
+      .delete()
+      .eq("horario_id", horarioId);
 
     if (deleteError) {
       log.push(`Error eliminando sesiones anteriores: ${deleteError.message}`);
@@ -101,8 +108,28 @@ export async function generate(periodoId: string): Promise<ResultadoGeneracion> 
         log,
       };
     }
-
     log.push("Sesiones anteriores eliminadas para regeneración");
+
+    // Eliminar los horarios duplicados (todos excepto el principal)
+    const duplicados = horariosExistentes.slice(1) as any[];
+    if (duplicados.length > 0) {
+      const idsDuplicados = duplicados.map((h: any) => h.id);
+      log.push(`Eliminando ${duplicados.length} horario(s) duplicado(s)...`);
+
+      // 1. Eliminar historial_cambios (FK a horarios)
+      await supabase.from("historial_cambios").delete().in("horario_id", idsDuplicados);
+      // 2. Eliminar sesiones
+      await supabase.from("sesiones").delete().in("horario_id", idsDuplicados);
+      // 3. Eliminar los horarios duplicados
+      await supabase.from("horarios").delete().in("id", idsDuplicados);
+      log.push("Duplicados eliminados correctamente");
+    }
+
+    // Resetear el estado del horario principal a borrador
+    await (supabase.from("horarios") as any)
+      .update({ estado: "borrador", generado_en: new Date().toISOString() })
+      .eq("id", horarioId);
+
   } else {
     const { data: nuevoHorario } = await (supabase.from("horarios") as any)
       .insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString() })
@@ -120,7 +147,7 @@ export async function generate(periodoId: string): Promise<ResultadoGeneracion> 
     }
 
     horarioId = (nuevoHorario as any).id;
-    log.push(`Horario creado: ${horarioId}`);
+    log.push(`Nuevo horario creado: ${horarioId}`);
   }
 
   initializeRules({ materias: materias as any });
