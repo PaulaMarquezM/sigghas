@@ -23,13 +23,13 @@ begin
 
   if _rol is null then
     _rol := 'estudiante'::public.rol_usuario;
-  end;
+  end if;
 
   -- 2. Extraer y validar el nombre de forma segura
   _nombre := new.raw_user_meta_data->>'nombre';
   if _nombre is null or trim(_nombre) = '' then
     _nombre := split_part(new.email, '@', 1);
-  end;
+  end if;
 
   -- 3. Insertar el perfil
   insert into public.perfiles (id, nombre, email, rol)

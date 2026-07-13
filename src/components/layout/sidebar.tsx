@@ -2,11 +2,54 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
+import {
+  LayoutDashboard, Calendar, Users, BookOpen, Building2,
+  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/nav";
 import type { RolUsuario } from "@/types/database";
-import { logout } from "@/app/login/actions";
+
+export interface NavItem {
+  label: string;
+  href:  string;
+  icon:  React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+}
+
+const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
+  coordinador: [
+    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
+    { label: "Generar Horario",    href: "/dashboard/generar",        icon: Calendar },
+    { label: "Editar Horario",     href: "/dashboard/editar",         icon: Calendar },
+    { label: "Docentes",           href: "/dashboard/docentes",       icon: UserCheck },
+    { label: "Materias",           href: "/dashboard/materias",       icon: BookOpen },
+    { label: "Grupos",             href: "/dashboard/grupos",         icon: Users },
+    { label: "Aulas y Labs",       href: "/dashboard/espacios",       icon: Building2 },
+    { label: "Disponibilidad",     href: "/dashboard/disponibilidad", icon: Clock },
+    { label: "Periodos",           href: "/dashboard/periodos",       icon: Settings },
+    { label: "Reportes PDF",       href: "/dashboard/reportes",       icon: FileText },
+  ],
+  docente: [
+    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
+    { label: "Mi Horario",         href: "/dashboard/mi-horario",     icon: Calendar },
+    { label: "Disponibilidad",     href: "/dashboard/disponibilidad", icon: Clock },
+    { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
+  ],
+  estudiante: [
+    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
+    { label: "Horario del Grupo",  href: "/dashboard/mi-horario",     icon: Calendar },
+    { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
+  ],
+  administrador: [
+    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
+    { label: "Usuarios",           href: "/dashboard/usuarios",       icon: Users },
+    { label: "Periodos",           href: "/dashboard/periodos",       icon: Settings },
+    { label: "Sedes",              href: "/dashboard/sedes",          icon: Building2 },
+  ],
+  apoyo: [
+    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
+    { label: "Disponibilidad Aulas", href: "/dashboard/espacios/disponibilidad", icon: DoorOpen },
+  ],
+};
 
 const LABEL_ROL: Record<RolUsuario, string> = {
   coordinador:   "Coordinador",
@@ -122,25 +165,29 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
 
       {/* Logout */}
       <div style={{ padding: "10px", borderTop: "1px solid color-mix(in oklab, #F5F1E8 10%, transparent)" }}>
-        <form action={logout}>
-          <button
-            type="submit"
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "8px 12px", borderRadius: 8, border: 0,
-              background: "transparent", cursor: "pointer",
-              fontSize: 13.5, fontWeight: 500,
-              color: "color-mix(in oklab, #F5F1E8 45%, transparent)",
-              fontFamily: "Poppins, sans-serif",
-              transition: "background .15s, color .15s",
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "color-mix(in oklab, #C8523B 25%, transparent)"; (e.currentTarget as HTMLButtonElement).style.color = "#F5F1E8"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "color-mix(in oklab, #F5F1E8 45%, transparent)"; }}
-          >
-            <LogOut style={{ width: 15, height: 15 }} />
-            Cerrar sesión
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={async () => {
+            const { createClient } = await import("@/lib/supabase/client");
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            window.location.href = "/login";
+          }}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", gap: 10,
+            padding: "8px 12px", borderRadius: 8, border: 0,
+            background: "transparent", cursor: "pointer",
+            fontSize: 13.5, fontWeight: 500,
+            color: "color-mix(in oklab, #F5F1E8 45%, transparent)",
+            fontFamily: "Poppins, sans-serif",
+            transition: "background .15s, color .15s",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "color-mix(in oklab, #C8523B 25%, transparent)"; (e.currentTarget as HTMLButtonElement).style.color = "#F5F1E8"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "color-mix(in oklab, #F5F1E8 45%, transparent)"; }}
+        >
+          <LogOut style={{ width: 15, height: 15 }} />
+          Cerrar sesión
+        </button>
       </div>
     </aside>
   );

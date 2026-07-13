@@ -16,9 +16,9 @@ function requireFields(fields: Record<string, string | null>) {
 
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY para crear usuarios docentes.");
+    throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY (o SERVICE_ROLE_KEY) en .env para crear usuarios docentes.");
   }
   return createAdminClient<Database>(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -49,7 +49,7 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
 
     const id = userData.user.id;
     const adminDb = asUntypedDb(admin);
-    const { error: profileError } = await adminDb.from("perfiles").insert({
+    const { error: profileError } = await adminDb.from("perfiles").upsert({
       id,
       nombre,
       email,

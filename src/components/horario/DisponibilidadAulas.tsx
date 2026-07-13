@@ -44,15 +44,20 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
     return () => clearInterval(interval);
   }, [router]);
 
-  // Default values: today's day (Mon-Sat: 1-6) and current hour block
-  const now = new Date();
-  const currentDay = Math.min(Math.max(now.getDay(), 1), 6); // 1 = Lun, ..., 6 = Sáb
-  const currentHour = `${String(now.getHours()).padStart(2, "0")}:00`;
+  const [selectedDia, setSelectedDia] = useState<number>(1); // Default determinista para SSR (Lunes)
+  const [selectedHora, setSelectedHora] = useState<string>("07:00"); // Default determinista
 
-  const [selectedDia, setSelectedDia] = useState<number>(currentDay);
-  const [selectedHora, setSelectedHora] = useState<string>(
-    HORAS.includes(currentHour) ? currentHour : "08:00"
-  );
+  useEffect(() => {
+    // Al cargar en el cliente, actualizamos con la hora real
+    const now = new Date();
+    const currentDay = Math.min(Math.max(now.getDay(), 1), 6);
+    const currentHour = `${String(now.getHours()).padStart(2, "0")}:00`;
+    
+    setSelectedDia(currentDay);
+    if (HORAS.includes(currentHour)) {
+      setSelectedHora(currentHour);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
