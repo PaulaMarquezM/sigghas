@@ -6,11 +6,19 @@ import { HorarioReadOnly } from "@/components/horario/HorarioReadOnly";
 import { getSesionesByPeriodoyGrupoAction, getSesionesByPeriodoyDocenteAction } from "./actions";
 import { Loader2, Edit, FileText } from "lucide-react";
 import Link from "next/link";
+import type { ComponentProps } from "react";
+import type { Database } from "@/types/database";
+
+type PeriodoFiltro = Pick<Database["public"]["Tables"]["periodos"]["Row"], "id" | "nombre" | "activo">;
+type GrupoFiltro = Pick<Database["public"]["Tables"]["grupos"]["Row"], "id" | "nombre" | "semestre">;
+type DocenteFiltro = { id: string; nombre: string };
+type SesionesConsulta = ComponentProps<typeof HorarioReadOnly>["sesiones"];
+type HorarioConsulta = { id: string; estado: string } | null;
 
 interface HorarioConsultasClientProps {
-  periodos: any[];
-  grupos: any[];
-  docentes?: any[];
+  periodos: PeriodoFiltro[];
+  grupos: GrupoFiltro[];
+  docentes?: DocenteFiltro[];
 }
 
 export default function HorarioConsultasClient({
@@ -21,34 +29,26 @@ export default function HorarioConsultasClient({
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<string>("");
   const [selectedGrupoId, setSelectedGrupoId] = useState<string>("");
   const [selectedDocenteId, setSelectedDocenteId] = useState<string>("");
-  const [sesiones, setSesiones] = useState<any[]>([]);
-  const [horario, setHorario] = useState<any>(null);
+  const [sesiones, setSesiones] = useState<SesionesConsulta>([]);
+  const [horario, setHorario] = useState<HorarioConsulta>(null);
   const [isPending, startTransition] = useTransition();
 
   // Load sessions when period, group or docente selection changes
   useEffect(() => {
-    if (!selectedPeriodoId) {
-      setSesiones([]);
-      setHorario(null);
-      return;
-    }
+    if (!selectedPeriodoId || (!selectedGrupoId && !selectedDocenteId)) return;
 
-    if (!selectedGrupoId && !selectedDocenteId) {
-      setSesiones([]);
-      setHorario(null);
-      return;
-    }
-
-    startTransition(async () => {
-      if (selectedGrupoId) {
-        const res = await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId);
-        setSesiones(res.sesiones);
-        setHorario(res.horario);
-      } else if (selectedDocenteId) {
-        const res = await getSesionesByPeriodoyDocenteAction(selectedPeriodoId, selectedDocenteId);
-        setSesiones(res.sesiones);
-        setHorario(res.horario);
-      }
+    startTransition(() => {
+      void (async () => {
+        if (selectedGrupoId) {
+          const res = await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId);
+          setSesiones(res.sesiones);
+          setHorario(res.horario);
+        } else if (selectedDocenteId) {
+          const res = await getSesionesByPeriodoyDocenteAction(selectedPeriodoId, selectedDocenteId);
+          setSesiones(res.sesiones);
+          setHorario(res.horario);
+        }
+      })();
     });
   }, [selectedPeriodoId, selectedGrupoId, selectedDocenteId]);
 

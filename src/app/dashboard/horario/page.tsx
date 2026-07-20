@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";

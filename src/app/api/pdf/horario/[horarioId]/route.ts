@@ -1,9 +1,14 @@
 import React from "react";
-import { renderToStream } from "@react-pdf/renderer";
+import { renderToStream, type DocumentProps } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { HorarioPDF } from "@/lib/pdf/HorarioPDF";
 import { notFound } from "next/navigation";
+import type { Database } from "@/types/database";
+
+type HorarioConPeriodo = Database["public"]["Tables"]["horarios"]["Row"] & {
+  periodos: Database["public"]["Tables"]["periodos"]["Row"];
+};
 
 export async function GET(
   request: Request,
@@ -26,7 +31,8 @@ export async function GET(
     return notFound();
   }
 
-  const periodo = (horario as any).periodos;
+  const horarioConPeriodo = horario as unknown as HorarioConPeriodo;
+  const periodo = horarioConPeriodo.periodos;
 
   // 2. Obtener todas las sesiones asignadas para este horario
   const { data: sesiones, error: sesionesError } = await supabase
@@ -39,16 +45,15 @@ export async function GET(
   }
 
   // 3. Generar PDF Stream
-  const stream = await renderToStream(
-    React.createElement(HorarioPDF, {
-      horario,
-      periodo,
-      sesiones,
-      grupoNombre: "Reporte Completo",
-    }) as any
-  );
+  const document = React.createElement(HorarioPDF, {
+    horario,
+    periodo,
+    sesiones,
+    grupoNombre: "Reporte Completo",
+  }) as unknown as React.ReactElement<DocumentProps>;
+  const stream = await renderToStream(document);
 
-  return new Response(stream as any, {
+  return new Response(stream as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="horario-${periodo.nombre}.pdf"`,

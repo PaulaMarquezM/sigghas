@@ -4,6 +4,7 @@ import { FormShell } from "@/components/entities/FormShell";
 import { updatePeriodo } from "@/app/dashboard/periodos/actions";
 import { createClient } from "@/lib/supabase/server";
 import { requireRol } from "@/lib/auth";
+import { asUntypedDb } from "@/lib/entities";
 import type { Database } from "@/types/database";
 
 type Periodo = Database["public"]["Tables"]["periodos"]["Row"];
@@ -12,7 +13,7 @@ export default async function EditarPeriodoPage({ params }: { params: Promise<{ 
   await requireRol("coordinador", "administrador");
   const { id } = await params;
   const supabase = await createClient();
-  const { data } = await (supabase as any).from("periodos").select("*").eq("id", id).single();
+  const { data } = await asUntypedDb(supabase).from("periodos").select("*").eq("id", id).single();
   if (!data) notFound();
   const periodo = data as Periodo;
   return (

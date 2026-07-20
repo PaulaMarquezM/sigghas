@@ -3,7 +3,7 @@ import { GrupoForm } from "@/components/entities/GrupoForm";
 import { FormShell } from "@/components/entities/FormShell";
 import { updateGrupo } from "@/app/dashboard/grupos/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getSedes } from "@/lib/entities";
+import { asUntypedDb, getSedes } from "@/lib/entities";
 import { requireRol } from "@/lib/auth";
 import type { Database } from "@/types/database";
 
@@ -14,7 +14,7 @@ export default async function EditarGrupoPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = await createClient();
   const [{ data }, sedes] = await Promise.all([
-    (supabase as any).from("grupos").select("*").eq("id", id).single(),
+    asUntypedDb(supabase).from("grupos").select("*").eq("id", id).single(),
     getSedes(),
   ]);
   if (!data) notFound();

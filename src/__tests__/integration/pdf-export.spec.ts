@@ -27,12 +27,19 @@ const { mockLimit, mockMaybeSingle, mockOrder, mockSingle, mockSelect } = vi.hoi
   const mockLimit = vi.fn();
   
   // A query object that supports the Supabase query chains used by both routes.
-  const mockQueryObj: any = {
-    single: mockSingle,
-    maybeSingle: mockMaybeSingle,
-    order: mockOrder,
-    limit: mockLimit,
+  type QueryMock = {
+    single: typeof mockSingle;
+    maybeSingle: typeof mockMaybeSingle;
+    order: typeof mockOrder;
+    limit: typeof mockLimit;
+    eq: ReturnType<typeof vi.fn>;
+    then: ReturnType<typeof vi.fn>;
   };
+  const mockQueryObj = {} as QueryMock;
+  mockQueryObj.single = mockSingle;
+  mockQueryObj.maybeSingle = mockMaybeSingle;
+  mockQueryObj.order = mockOrder;
+  mockQueryObj.limit = mockLimit;
   mockQueryObj.eq = vi.fn().mockReturnValue(mockQueryObj);
   mockOrder.mockReturnValue(mockQueryObj);
   mockLimit.mockReturnValue(mockQueryObj);

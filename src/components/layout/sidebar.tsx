@@ -6,7 +6,6 @@ import {
   LayoutDashboard, Calendar, Users, BookOpen, Building2,
   Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, SlidersHorizontal
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { RolUsuario } from "@/types/database";
 
 export interface NavItem {

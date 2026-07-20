@@ -15,7 +15,7 @@ import { rn13HorarioInstitucional } from "@/lib/scheduler/rules/rn13-horario-ins
 import { rn14BloquesTiempoOficina } from "@/lib/scheduler/rules/rn14-bloques-tiempo-oficina";
 import { rn15RestriccionAccesibilidad } from "@/lib/scheduler/rules/rn15-restriccion-accesibilidad";
 import { rn16SesionesVirtualesCompartidas } from "@/lib/scheduler/rules/rn16-sesiones-virtuales-compartidas";
-import type { ContextoProgramacion, Slot, Asignacion } from "@/lib/scheduler/types";
+import type { Asignacion, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
 
 // Base config
 const mockConfig = {
@@ -23,7 +23,7 @@ const mockConfig = {
   hora_inicio_jornada: "07:00",
   hora_fin_jornada: "19:00",
   duracion_bloque_minutos: 60,
-  dias_laborables: [1, 2, 3, 4, 5] as any[],
+  dias_laborables: [1, 2, 3, 4, 5] as DiaSemana[],
 };
 
 // Base context

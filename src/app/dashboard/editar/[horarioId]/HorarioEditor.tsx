@@ -1,24 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useMemo, useState, useTransition } from "react";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { HorarioGrid } from "@/components/horario/HorarioGrid";
 import { ConflictPanel } from "@/components/horario/ConflictPanel";
 import { toast } from "sonner";
-import { ArrowLeft, Check, FileText, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Check, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ContextoProgramacion, Asignacion, Conflicto } from "@/lib/scheduler/types";
+import type { Asignacion, Conflicto, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
 import { initializeRules, validateSlot } from "@/lib/scheduler/rules/index";
 import { guardarMovimientoAction, publicarHorarioAction } from "./actions";
 
+type HorarioEditorHorario = { id: string; estado: string };
+type HorarioEditorPeriodo = { nombre: string };
+type SesionVista = Asignacion & { id: string; espacios?: { nombre: string } | null };
+type EspacioDisponible = { id: string; nombre: string };
+
 interface HorarioEditorProps {
-  horario: any;
-  periodo: any;
+  horario: HorarioEditorHorario;
+  periodo: HorarioEditorPeriodo;
   initialAsignaciones: Asignacion[];
-  initialSesiones: any[];
+  initialSesiones: SesionVista[];
   contexto: ContextoProgramacion;
-  espaciosDisponibles: any[];
+  espaciosDisponibles: EspacioDisponible[];
 }
 
 // Helpers for time formatting
@@ -47,8 +52,7 @@ export default function HorarioEditor({
 }: HorarioEditorProps) {
   const router = useRouter();
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>(initialAsignaciones);
-  const [sesiones, setSesiones] = useState<any[]>(initialSesiones);
-  const [conflictos, setConflictos] = useState<Conflicto[]>([]);
+  const [sesiones, setSesiones] = useState<SesionVista[]>(initialSesiones);
   const [isPending, startTransition] = useTransition();
 
   // Sensors for dnd-kit
@@ -60,17 +64,16 @@ export default function HorarioEditor({
     })
   );
 
-  // Recalcular conflictos locales cada vez que cambien las asignaciones
-  useEffect(() => {
+  const conflictos = useMemo(() => {
     initializeRules({ materias: contexto.materias });
     const localConflictos: Conflicto[] = [];
 
     for (let i = 0; i < asignaciones.length; i++) {
       const a = asignaciones[i];
-      const candidato = {
+      const candidato: Slot = {
         materia_id: a.materia_id,
         grupo_id: a.grupo_id,
-        dia: a.dia_semana as any,
+        dia: a.dia_semana as DiaSemana,
         hora_inicio: a.hora_inicio,
         hora_fin: a.hora_fin,
         docente_id: a.docente_id,
@@ -89,7 +92,7 @@ export default function HorarioEditor({
         }
       }
     }
-    setConflictos(localConflictos);
+    return localConflictos;
   }, [asignaciones, contexto]);
 
   // Manejar el arrastre y soltado de bloques
@@ -121,10 +124,10 @@ export default function HorarioEditor({
 
     // Validar en tiempo real contra las 43 reglas
     initializeRules({ materias: contexto.materias });
-    const candidato = {
+    const candidato: Slot = {
       materia_id: sesionActual.materia_id,
       grupo_id: sesionActual.grupo_id,
-      dia: nuevoDia as any,
+      dia: nuevoDia as DiaSemana,
       hora_inicio: nuevaHoraInicio,
       hora_fin: nuevaHoraFin,
       docente_id: sesionActual.docente_id,
@@ -159,7 +162,7 @@ export default function HorarioEditor({
         if (s.id === sesionId) {
           return {
             ...s,
-            dia_semana: nuevoDia,
+            dia_semana: nuevoDia as DiaSemana,
             hora_inicio: nuevaHoraInicio,
             hora_fin: nuevaHoraFin,
           };
@@ -186,10 +189,10 @@ export default function HorarioEditor({
 
     // Validar cambio
     initializeRules({ materias: contexto.materias });
-    const candidato = {
+    const candidato: Slot = {
       materia_id: sesionActual.materia_id,
       grupo_id: sesionActual.grupo_id,
-      dia: sesionActual.dia_semana as any,
+      dia: sesionActual.dia_semana as DiaSemana,
       hora_inicio: sesionActual.hora_inicio,
       hora_fin: sesionActual.hora_fin,
       docente_id: sesionActual.docente_id,

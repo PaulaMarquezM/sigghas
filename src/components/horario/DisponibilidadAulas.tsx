@@ -1,12 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DoorOpen, ShieldCheck, ShieldAlert, Clock, Calendar } from "lucide-react";
 
+type EspacioDisponible = { id: string; nombre: string; tipo: string; capacidad: number; accesible: boolean };
+type SesionOcupante = {
+  espacio_id: string | null;
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fin: string;
+  materias?: { nombre?: string | null } | null;
+  docentes?: { perfiles?: { nombre?: string | null } | null } | null;
+  grupos?: { nombre?: string | null } | null;
+};
+
 interface DisponibilidadAulasProps {
-  espacios: any[];
-  sesiones: any[];
+  espacios: EspacioDisponible[];
+  sesiones: SesionOcupante[];
 }
 
 const DIAS = [
@@ -46,18 +57,6 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
 
   const [selectedDia, setSelectedDia] = useState<number>(1); // Default determinista para SSR (Lunes)
   const [selectedHora, setSelectedHora] = useState<string>("07:00"); // Default determinista
-
-  useEffect(() => {
-    // Al cargar en el cliente, actualizamos con la hora real
-    const now = new Date();
-    const currentDay = Math.min(Math.max(now.getDay(), 1), 6);
-    const currentHour = `${String(now.getHours()).padStart(2, "0")}:00`;
-    
-    setSelectedDia(currentDay);
-    if (HORAS.includes(currentHour)) {
-      setSelectedHora(currentHour);
-    }
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -177,11 +176,11 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
 
                 {estaOcupada ? (
                   <div className="text-xs space-y-1 pt-2">
-                    <div className="font-semibold text-gray-700 truncate" title={sesionOcupante.materias?.nombre}>
+                    <div className="font-semibold text-gray-700 truncate" title={sesionOcupante.materias?.nombre ?? undefined}>
                       {sesionOcupante.materias?.nombre}
                     </div>
                     <div className="text-[10px] text-gray-500 flex items-center justify-between">
-                      <span className="truncate max-w-[110px]" title={sesionOcupante.docentes?.perfiles?.nombre}>
+                      <span className="truncate max-w-[110px]" title={sesionOcupante.docentes?.perfiles?.nombre ?? undefined}>
                         Doc: {sesionOcupante.docentes?.perfiles?.nombre}
                       </span>
                       <span className="font-semibold bg-gray-200/60 text-gray-700 px-1 rounded">
