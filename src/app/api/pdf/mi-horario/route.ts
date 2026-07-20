@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { renderToStream } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { MiHorarioPDF } from "@/lib/pdf/MiHorarioPDF";
+import { getSesionesByPeriodoyGrupoAction } from "@/app/dashboard/horario/actions";
 import { notFound } from "next/navigation";
 
 export async function GET(request: Request) {
@@ -55,13 +57,7 @@ export async function GET(request: Request) {
 
     if (!grupo) return notFound();
 
-    const { data } = await supabase
-      .from("sesiones")
-      .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
-      .eq("horario_id", horario.id)
-      .eq("grupo_id", grupoId);
-
-    sesiones = data || [];
+    sesiones = (await getSesionesByPeriodoyGrupoAction(periodoActivo.id, grupoId)).sesiones;
     userNombre = `Grupo ${grupo.nombre}`;
     userRolLabel = "Estudiante";
   } else if (docenteId) {

@@ -1,6 +1,6 @@
 import type { ReglaFn } from "../types";
 
-export const rn05CapacidadAula: ReglaFn = (candidato, ctx, _asignadas) => {
+export const rn05CapacidadAula: ReglaFn = (candidato, ctx) => {
   if (!candidato.espacio_id) {
     return { valida: true };
   }

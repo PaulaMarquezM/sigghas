@@ -29,9 +29,10 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
   // Estado del modal de confirmación
   const [confirm, setConfirm] = useState<{
     visible: boolean;
+    id: string | null;
     estado: string | null;
     generado_en: string | null;
-  }>({ visible: false, estado: null, generado_en: null });
+  }>({ visible: false, id: null, estado: null, generado_en: null });
 
   // 1. Al hacer submit primero verificamos si ya hay horario
   async function handleSubmit(e: React.FormEvent) {
@@ -41,9 +42,9 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
     setVerificando(true);
     try {
       const info = await verificarHorarioExistente(periodoId);
-      if (info.existe && (info.estado === "publicado" || info.estado === "aprobado")) {
-        // Mostrar confirmación
-        setConfirm({ visible: true, estado: info.estado, generado_en: info.generado_en });
+      if (info.existe && info.estado === "borrador") {
+        // Solo un borrador se puede sustituir; uno publicado queda inmutable.
+        setConfirm({ visible: true, id: info.id, estado: info.estado, generado_en: info.generado_en });
       } else {
         // Si solo hay borrador o no hay nada, generar directamente
         await ejecutarGeneracion();
@@ -54,14 +55,14 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
   }
 
   // 2. Ejecución real de la generación
-  async function ejecutarGeneracion() {
-    setConfirm({ visible: false, estado: null, generado_en: null });
+  async function ejecutarGeneracion(reemplazarBorradorId?: string | null) {
+    setConfirm({ visible: false, id: null, estado: null, generado_en: null });
     setLoading(true);
     setResultado(null);
     setLogs([]);
 
     try {
-      const res = await generarHorario(periodoId);
+      const res = await generarHorario(periodoId, reemplazarBorradorId);
       setResultado(res);
       setLogs(res.log);
     } catch (err) {
@@ -109,13 +110,13 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
             </div>
 
             <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, marginBottom: 20 }}>
-              El horario actual fue generado el <strong>{fechaConfirm}</strong>.
-              Si continúas, <strong>se eliminará</strong> junto con todas sus sesiones y se generará uno nuevo desde cero.
+              El borrador actual fue generado el <strong>{fechaConfirm}</strong>.
+              Si continúas, será reemplazado solo después de completar con éxito un nuevo horario.
             </p>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button
-                onClick={() => setConfirm({ visible: false, estado: null, generado_en: null })}
+                onClick={() => setConfirm({ visible: false, id: null, estado: null, generado_en: null })}
                 style={{
                   padding: "8px 18px", borderRadius: 8, border: "1px solid #D1D5DB",
                   background: "#fff", fontSize: 13, fontWeight: 500, cursor: "pointer",
@@ -125,7 +126,7 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
                 Cancelar
               </button>
               <button
-                onClick={ejecutarGeneracion}
+                onClick={() => ejecutarGeneracion(confirm.id)}
                 style={{
                   padding: "8px 18px", borderRadius: 8, border: "none",
                   background: "#0E1116", color: "#F5F1E8",
@@ -201,7 +202,7 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
                     {resultado.exito ? "Horario generado exitosamente" : "Horario generado con conflictos"}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {resultado.total_asignaciones} asignaciones creadas
+                    {resultado.sesiones_generadas}/{resultado.sesiones_esperadas} sesiones por grupo generadas
                     {resultado.conflictos_no_resueltos.length > 0 &&
                       ` · ${resultado.conflictos_no_resueltos.length} conflicto(s) sin resolver`}
                   </p>

@@ -8,9 +8,10 @@ const DAYS = [
   { id: 3, label: "Mie" },
   { id: 4, label: "Jue" },
   { id: 5, label: "Vie" },
+  { id: 6, label: "Sáb" },
 ];
 
-const HOURS = Array.from({ length: 12 }, (_, index) => 7 + index);
+const HOURS = Array.from({ length: 18 }, (_, index) => 8 * 60 + index * 30);
 
 export function DisponibilidadGrid({
   docenteId,
@@ -24,20 +25,20 @@ export function DisponibilidadGrid({
   return (
     <form action={action} className="space-y-4">
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <div className="grid min-w-[720px]" style={{ gridTemplateColumns: "90px repeat(5, minmax(110px, 1fr))" }}>
+        <div className="grid min-w-[820px]" style={{ gridTemplateColumns: "90px repeat(6, minmax(110px, 1fr))" }}>
           <div className="border-b bg-gray-50 p-2 text-xs font-semibold text-gray-500">Hora</div>
           {DAYS.map((day) => (
             <div key={day.id} className="border-b border-l bg-gray-50 p-2 text-center text-xs font-semibold text-gray-700">
               {day.label}
             </div>
           ))}
-          {HOURS.map((hour) => (
-            <div key={hour} className="contents">
-              <div key={`h-${hour}`} className="border-b bg-gray-50 p-2 text-xs text-gray-500">
-                {String(hour).padStart(2, "0")}:00
+          {HOURS.map((minute) => (
+            <div key={minute} className="contents">
+              <div key={`h-${minute}`} className="border-b bg-gray-50 p-2 text-xs text-gray-500">
+                {String(Math.floor(minute / 60)).padStart(2, "0")}:{String(minute % 60).padStart(2, "0")}
               </div>
               {DAYS.map((day) => {
-                const value = `${day.id}-${String(hour).padStart(2, "0")}:00`;
+                const value = `${day.id}-${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
                 return (
                   <label key={value} className="flex min-h-10 items-center justify-center border-b border-l text-xs">
                     <input

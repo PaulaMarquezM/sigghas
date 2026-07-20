@@ -1,6 +1,6 @@
 import type { ReglaFn } from "../types";
 
-export const rn14BloquesTiempoOficina: ReglaFn = (candidato, ctx, _asignadas) => {
+export const rn14BloquesTiempoOficina: ReglaFn = (candidato, ctx) => {
   const docente = ctx.docentes.find((d) => d.id === candidato.docente_id);
   if (!docente) {
     return {

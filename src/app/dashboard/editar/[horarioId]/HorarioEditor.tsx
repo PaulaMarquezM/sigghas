@@ -143,8 +143,8 @@ export default function HorarioEditor({
     }
 
     // Guardar inmediatamente si pasa
-    const updates = {
-      dia_semana: nuevoDia,
+    const updates: Pick<Asignacion, "dia_semana" | "hora_inicio" | "hora_fin" | "espacio_id"> = {
+      dia_semana: nuevoDia as Asignacion["dia_semana"],
       hora_inicio: nuevaHoraInicio,
       hora_fin: nuevaHoraFin,
       espacio_id: sesionActual.espacio_id,

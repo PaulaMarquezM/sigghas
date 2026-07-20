@@ -20,6 +20,23 @@ async function getHorarioPublicado(supabase: any, periodoId: string) {
   return data?.[0] ?? null;
 }
 
+async function getSesionesGrupo(supabase: any, horarioId: string, grupoId: string) {
+  const [directas, compartidas] = await Promise.all([
+    supabase.from("sesiones")
+      .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
+      .eq("horario_id", horarioId).eq("grupo_id", grupoId),
+    supabase.from("sesiones_grupos_compartidos")
+      .select("sesiones!inner(*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), espacios(nombre))")
+      .eq("grupo_id", grupoId).eq("sesiones.horario_id", horarioId),
+  ]);
+  const adicionales = (compartidas.data ?? []).map((fila: any) => ({
+    ...fila.sesiones,
+    grupo_id: grupoId,
+    grupos: { nombre: "Grupo compartido" },
+  }));
+  return [...(directas.data ?? []), ...adicionales];
+}
+
 /**
  * Obtiene las sesiones de un horario según periodo y grupo
  */
@@ -34,14 +51,10 @@ export async function getSesionesByPeriodoyGrupoAction(periodoId: string, grupoI
   }
 
   // 2. Buscar las sesiones de ese grupo en ese horario
-  const { data: sesiones } = await supabase
-    .from("sesiones")
-    .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
-    .eq("horario_id", horario.id)
-    .eq("grupo_id", grupoId);
+  const sesiones = await getSesionesGrupo(supabase, horario.id, grupoId);
 
   return {
-    sesiones: sesiones || [],
+    sesiones,
     horario,
   };
 }

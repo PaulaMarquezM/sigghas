@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "./styles";
@@ -136,7 +137,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
                               {s.grupos?.nombre}
                             </Text>
                             <Text style={styles.sessionAula}>
-                              {s.modalidad === "virtual" ? "Virtual" : s.espacios?.nombre || "S/A"}
+                              {s.modalidad === "presencial" ? s.espacios?.nombre || "S/A" : s.modalidad === "hibrida" ? "Híbrida" : "Virtual"}
                             </Text>
                           </View>
                         </View>

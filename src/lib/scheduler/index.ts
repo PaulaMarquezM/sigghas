@@ -1,222 +1,103 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ResultadoGeneracion, ContextoProgramacion, DocenteConDisponibilidad } from "./types";
-import { CONFIG_DEFAULT } from "./types";
-import { initializeRules } from "./rules/index";
-import { resolverConBacktrack } from "./backtrack";
+import { randomUUID } from "crypto";
 import { createClient } from "@/lib/supabase/server";
+import { resolverConBacktrack } from "./backtrack";
+import { CONFIG_DEFAULT, type Conflicto, type ContextoProgramacion, type DocenteConDisponibilidad, type ResultadoGeneracion } from "./types";
 
-export async function generate(periodoId: string): Promise<ResultadoGeneracion> {
-  const log: string[] = [];
-  log.push(`Iniciando generación de horario para periodo: ${periodoId}`);
-  log.push(`${new Date().toISOString()}`);
+const fallo = (codigo: string, mensaje: string): Conflicto => ({ regla: "CONFIGURACION", codigo, tipo: "error", mensaje });
 
+/**
+ * Genera un borrador completo. No elimina ni modifica un horario existente
+ * hasta haber encontrado una solución válida para todas las sesiones.
+ */
+export async function generate(periodoId: string, reemplazarBorradorId?: string | null): Promise<ResultadoGeneracion> {
+  const log = [`Iniciando generación para el período ${periodoId}.`];
   const supabase = await createClient();
+  const { data: periodo, error: periodoError } = await supabase.from("periodos").select("*").eq("id", periodoId).single();
+  if (periodoError || !periodo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_NO_ENCONTRADO", "No se encontró el período académico.")], log };
+  if (!periodo.activo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_INACTIVO", "Solo se puede generar para el período académico activo.")], log };
 
-  const { data: periodo, error: periodoError } = await supabase
-    .from("periodos")
-    .select("*")
-    .eq("id", periodoId)
-    .single();
-
-  if (periodoError || !periodo) {
-    return {
-      exito: false,
-      horario_id: "",
-      total_asignaciones: 0,
-      conflictos_no_resueltos: [],
-      log: [...log, "Periodo no encontrado"],
-    };
-  }
-
-  const periodoData: { id: string; nombre: string; fecha_inicio: string; fecha_fin: string; activo: boolean } = periodo as any;
-  log.push(`Periodo: ${periodoData.nombre}`);
-
-  const [materiasRes, gruposRes, espaciosRes] = await Promise.all([
-    supabase.from("materias").select("*"),
+  const [materiasRes, gruposRes, espaciosRes, docentesRes, asignacionesRes, disponibilidadEspaciosRes] = await Promise.all([
+    supabase.from("materias").select("*").eq("activo", true),
     supabase.from("grupos").select("*").eq("activo", true),
-    supabase.from("espacios").select("*").eq("disponible", true),
+    supabase.from("espacios").select("*").eq("activo", true).eq("disponible", true),
+    supabase.from("docentes").select("*, disponibilidad_docente(*)"),
+    supabase.from("asignaciones_docente_periodo").select("periodo_id, materia_id, grupo_id, docente_id").eq("periodo_id", periodoId),
+    supabase.from("disponibilidad_espacio").select("espacio_id, dia_semana, hora_inicio, hora_fin, disponible"),
   ]);
-
-  if (!materiasRes.data || !gruposRes.data || !espaciosRes.data) {
-    return {
-      exito: false,
-      horario_id: "",
-      total_asignaciones: 0,
-      conflictos_no_resueltos: [],
-      log: [...log, "Error cargando entidades base"],
-    };
+  if (materiasRes.error || gruposRes.error || espaciosRes.error || docentesRes.error || asignacionesRes.error || disponibilidadEspaciosRes.error) {
+    return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_CARGANDO_DATOS", "No se pudieron cargar todos los datos de configuración del horario.")], log: [...log, "Error cargando datos: revisa que la migración 009 esté aplicada."] };
   }
-
-  const materias = materiasRes.data as any[];
-  const grupos = gruposRes.data as any[];
-  const espacios = espaciosRes.data as any[];
-
-  log.push(`${materias.length} materias cargadas`);
-  log.push(`${grupos.length} grupos activos cargados`);
-  log.push(`${espacios.length} espacios disponibles cargados`);
-
-  const { data: docentesRaw } = await supabase
-    .from("docentes")
-    .select("*, disponibilidad_docente(*)");
-
-  const docentes: DocenteConDisponibilidad[] = ((docentesRaw ?? []) as any[]).map((d) => ({
-    id: d.id,
-    tipo_contrato: d.tipo_contrato ?? "por_horas",
-    hora_entrada: d.hora_entrada ?? null,
-    hora_salida: d.hora_salida ?? null,
-    max_horas_semana: d.max_horas_semana ?? 20,
-    sede_principal_id: d.sede_principal_id ?? null,
-    disponibilidad: (d.disponibilidad_docente ?? []).map((dd: any) => ({
-      dia_semana: dd.dia_semana,
-      hora_inicio: dd.hora_inicio,
-      hora_fin: dd.hora_fin,
-      es_tiempo_oficina: dd.es_tiempo_oficina ?? false,
+  const materias = materiasRes.data ?? [];
+  const grupos = gruposRes.data ?? [];
+  const espacios = espaciosRes.data ?? [];
+  const docentes: DocenteConDisponibilidad[] = ((docentesRes.data ?? []) as any[]).map((docente) => ({
+    id: docente.id,
+    tipo_contrato: docente.tipo_contrato,
+    hora_entrada: docente.hora_entrada,
+    hora_salida: docente.hora_salida,
+    max_horas_semana: docente.max_horas_semana,
+    sede_principal_id: docente.sede_principal_id,
+    disponibilidad: (docente.disponibilidad_docente ?? []).map((bloque: any) => ({
+      dia_semana: bloque.dia_semana,
+      hora_inicio: bloque.hora_inicio.slice(0, 5),
+      hora_fin: bloque.hora_fin.slice(0, 5),
+      es_tiempo_oficina: bloque.es_tiempo_oficina,
     })),
   }));
+  log.push(`${materias.length} materias activas, ${grupos.length} grupos activos y ${espacios.length} espacios habilitados.`);
 
-  log.push(`${docentes.length} docentes cargados`);
-
-  // Buscar TODOS los horarios existentes del periodo (sin filtrar por estado)
-  // para eliminarlos y evitar acumulación de duplicados.
-  const { data: horariosExistentes } = await supabase
-    .from("horarios")
-    .select("id, estado")
-    .eq("periodo_id", periodoId)
-    .order("generado_en", { ascending: false });
-
-  let horarioId: string;
-
-  if (horariosExistentes && horariosExistentes.length > 0) {
-    // Reutilizar el más reciente (el primero tras ordenar desc)
-    const principal = horariosExistentes[0] as any;
-    horarioId = principal.id;
-    log.push(`Horario existente encontrado (${principal.estado}): ${horarioId}`);
-
-    // Eliminar sesiones del horario principal que se va a reutilizar
-    const { error: deleteError } = await supabase
-      .from("sesiones")
-      .delete()
-      .eq("horario_id", horarioId);
-
-    if (deleteError) {
-      log.push(`Error eliminando sesiones anteriores: ${deleteError.message}`);
-      return {
-        exito: false,
-        horario_id: horarioId,
-        total_asignaciones: 0,
-        conflictos_no_resueltos: [],
-        log,
-      };
+  const conflictosConfiguracion: Conflicto[] = [];
+  for (const materia of materias) {
+    const horas = Number(materia.horas_semana);
+    if (!(horas > 0 && horas <= 6 && Number.isInteger(horas * 2) && Number(materia.horas_teoria) + Number(materia.horas_practica) === horas)) {
+      conflictosConfiguracion.push({ ...fallo("HORAS_MATERIA_INVALIDAS", `La materia ${materia.codigo} debe sumar de 0,5 a 6 horas semanales.`), materia_id: materia.id });
     }
-    log.push("Sesiones anteriores eliminadas para regeneración");
-
-    // Eliminar los horarios duplicados (todos excepto el principal)
-    const duplicados = horariosExistentes.slice(1) as any[];
-    if (duplicados.length > 0) {
-      const idsDuplicados = duplicados.map((h: any) => h.id);
-      log.push(`Eliminando ${duplicados.length} horario(s) duplicado(s)...`);
-
-      // 1. Eliminar historial_cambios (FK a horarios)
-      await supabase.from("historial_cambios").delete().in("horario_id", idsDuplicados);
-      // 2. Eliminar sesiones
-      await supabase.from("sesiones").delete().in("horario_id", idsDuplicados);
-      // 3. Eliminar los horarios duplicados
-      await supabase.from("horarios").delete().in("id", idsDuplicados);
-      log.push("Duplicados eliminados correctamente");
+    if (materia.modalidad !== "presencial" && materia.requiere_laboratorio) {
+      conflictosConfiguracion.push({ ...fallo("MODALIDAD_LABORATORIO_CONTRADICTORIA", `La materia ${materia.codigo} es ${materia.modalidad} y no puede requerir laboratorio.`), materia_id: materia.id });
     }
-
-    // Resetear el estado del horario principal a borrador
-    await (supabase.from("horarios") as any)
-      .update({ estado: "borrador", generado_en: new Date().toISOString() })
-      .eq("id", horarioId);
-
-  } else {
-    const { data: nuevoHorario } = await (supabase.from("horarios") as any)
-      .insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString() })
-      .select()
-      .single();
-
-    if (!nuevoHorario) {
-      return {
-        exito: false,
-        horario_id: "",
-        total_asignaciones: 0,
-        conflictos_no_resueltos: [],
-        log: [...log, "Error creando horario"],
-      };
-    }
-
-    horarioId = (nuevoHorario as any).id;
-    log.push(`Nuevo horario creado: ${horarioId}`);
   }
+  if (conflictosConfiguracion.length) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: conflictosConfiguracion, log };
 
-  initializeRules({ materias: materias as any });
+  const docentesAsignados = new Set((asignacionesRes.data ?? []).map((asignacion) => `${asignacion.materia_id}:${asignacion.grupo_id}`));
+  const faltantesDocente = materias.flatMap((materia) => grupos
+    .filter((grupo) => grupo.semestre === materia.semestre)
+    .filter((grupo) => !docentesAsignados.has(`${materia.id}:${grupo.id}`))
+    .map((grupo) => ({ regla: "CONFIGURACION", codigo: "DOCENTE_SIN_ASIGNAR", tipo: "error" as const, mensaje: `La materia ${materia.codigo} no tiene docente asignado para el grupo ${grupo.nombre} en este período.`, materia_id: materia.id, grupo_id: grupo.id })));
+  if (faltantesDocente.length) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: faltantesDocente, log: [...log, `Faltan ${faltantesDocente.length} asignaciones docente–materia–grupo.`] };
 
   const ctx: ContextoProgramacion = {
-    periodo: periodoData as any,
-    materias: materias as any,
-    grupos: grupos as any,
+    periodo,
+    materias,
+    grupos,
     docentes,
-    espacios: espacios as any,
-    horario_id: horarioId,
+    espacios,
+    asignaciones_docente: asignacionesRes.data ?? [],
+    disponibilidad_espacio: (disponibilidadEspaciosRes.data ?? []).map((bloque) => ({ ...bloque, dia_semana: bloque.dia_semana as 1 | 2 | 3 | 4 | 5 | 6, hora_inicio: bloque.hora_inicio.slice(0, 5), hora_fin: bloque.hora_fin.slice(0, 5) })),
+    horario_id: "",
     config: CONFIG_DEFAULT,
   };
-
-  const { asignaciones, conflictos } = resolverConBacktrack(
-    ctx,
-    log,
-    CONFIG_DEFAULT.max_intentos_backtrack
-  );
-
-  log.push(`\nResumen:`);
-  log.push(`   Asignaciones creadas: ${asignaciones.length}`);
-  log.push(`   Conflictos: ${conflictos.length}`);
-
-  if (asignaciones.length > 0) {
-    const sesionesParaDB = asignaciones.map((a) => ({
-      horario_id: a.horario_id,
-      materia_id: a.materia_id,
-      docente_id: a.docente_id,
-      grupo_id: a.grupo_id,
-      espacio_id: a.espacio_id,
-      modalidad: a.modalidad,
-      dia_semana: a.dia_semana,
-      hora_inicio: a.hora_inicio,
-      hora_fin: a.hora_fin,
-      sede_id: a.sede_id,
-    }));
-
-    const { error } = await (supabase.from("sesiones") as any).insert(sesionesParaDB);
-
-    if (error) {
-      log.push(`Error guardando sesiones: ${error.message}`);
-      return {
-        exito: false,
-        horario_id: horarioId,
-        total_asignaciones: 0,
-        conflictos_no_resueltos: conflictos,
-        log,
-      };
-    }
-
-    log.push(`${sesionesParaDB.length} sesiones guardadas en Supabase`);
-
-    if (conflictos.length === 0) {
-      await (supabase.from("horarios") as any)
-        .update({ estado: "borrador", generado_en: new Date().toISOString() })
-        .eq("id", horarioId);
-    }
+  const resultado = resolverConBacktrack(ctx, log);
+  const esperadas = materias.reduce((total, materia) => total + grupos.filter((grupo) => grupo.semestre === materia.semestre).length * (Number(materia.horas_semana) <= 3.5 ? 1 : 2), 0);
+  if (!resultado.exito || resultado.asignaciones.length !== esperadas) {
+    return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: esperadas, sesiones_generadas: 0, conflictos_no_resueltos: resultado.conflictos, log: [...log, "No se guardó ningún cambio: el horario no está completo."] };
   }
 
-  const exito = conflictos.length === 0;
-
-  log.push(`\n${exito ? "Horario generado exitosamente" : "Horario generado con conflictos"}`);
-
-  return {
-    exito,
-    horario_id: horarioId,
-    total_asignaciones: asignaciones.length,
-    conflictos_no_resueltos: conflictos,
-    log,
-  };
+  const compartidas = new Map<string, typeof resultado.asignaciones>();
+  for (const asignacion of resultado.asignaciones) {
+    const clave = asignacion.modalidad === "presencial" ? randomUUID() : `${asignacion.materia_id}:${asignacion.docente_id}:${asignacion.dia_semana}:${asignacion.hora_inicio}:${asignacion.hora_fin}:${asignacion.modalidad}`;
+    compartidas.set(clave, [...(compartidas.get(clave) ?? []), asignacion]);
+  }
+  const sesiones = [...compartidas.values()].map((iguales) => {
+    const principal = iguales[0];
+    return { id: randomUUID(), ...principal, grupos_compartidos: iguales.slice(1).map((asignacion) => asignacion.grupo_id) };
+  });
+  const { data: horarioId, error: guardadoError } = await (supabase as any).rpc("guardar_horario_generado", {
+    p_periodo_id: periodoId,
+    p_sesiones: sesiones,
+    p_reemplazar_borrador_id: reemplazarBorradorId ?? null,
+  });
+  if (guardadoError || !horarioId) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: esperadas, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_GUARDANDO", guardadoError?.message ?? "No se pudo guardar el borrador generado.")], log };
+  log.push(`Horario completo guardado como borrador (${sesiones.length} sesiones físicas/lógicas; ${esperadas} visibles por grupo).`);
+  return { exito: true, horario_id: horarioId, total_asignaciones: sesiones.length, sesiones_esperadas: esperadas, sesiones_generadas: esperadas, conflictos_no_resueltos: [], log };
 }

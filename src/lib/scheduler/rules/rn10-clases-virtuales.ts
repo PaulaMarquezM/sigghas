@@ -1,6 +1,6 @@
 import type { ReglaFn } from "../types";
 
-export const rn10ClasesVirtuales: ReglaFn = (candidato, ctx, _asignadas) => {
+export const rn10ClasesVirtuales: ReglaFn = (candidato, ctx) => {
   const materia = ctx.materias.find((m) => m.id === candidato.materia_id);
 
   if (!candidato.espacio_id) {
