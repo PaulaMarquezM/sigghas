@@ -3,7 +3,7 @@ import { DocenteForm } from "@/components/entities/DocenteForm";
 import { FormShell } from "@/components/entities/FormShell";
 import { updateDocente } from "@/app/dashboard/docentes/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getSedes } from "@/lib/entities";
+import { asUntypedDb, getSedes } from "@/lib/entities";
 import { requireRol } from "@/lib/auth";
 import type { Database } from "@/types/database";
 
@@ -20,7 +20,7 @@ export default async function EditarDocentePage({
   const { id } = await params;
   const supabase = await createClient();
   const sedes = await getSedes();
-  const { data } = await (supabase as any)
+  const { data } = await asUntypedDb(supabase)
     .from("docentes")
     .select("*, perfiles(nombre,email,activo)")
     .eq("id", id)

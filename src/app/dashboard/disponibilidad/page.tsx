@@ -1,4 +1,5 @@
 import React from "react";
+import type { ComponentProps } from "react";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { DisponibilidadAulas } from "@/components/horario/DisponibilidadAulas";
@@ -23,7 +24,7 @@ export default async function DisponibilidadAulasPage() {
     .eq("activo", true)
     .maybeSingle();
 
-  let sesiones: any[] = [];
+  let sesiones: ComponentProps<typeof DisponibilidadAulas>["sesiones"] = [];
 
   if (periodoActivo) {
     // 3. Obtener el horario del periodo activo
@@ -39,7 +40,7 @@ export default async function DisponibilidadAulasPage() {
         .from("sesiones")
         .select("*, materias(nombre), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre)")
         .eq("horario_id", horario.id);
-      sesiones = data || [];
+      sesiones = (data ?? []) as unknown as ComponentProps<typeof DisponibilidadAulas>["sesiones"];
     }
   }
 

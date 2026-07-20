@@ -15,6 +15,7 @@ import { rn13HorarioInstitucional } from "./rn13-horario-institucional";
 import { rn14BloquesTiempoOficina } from "./rn14-bloques-tiempo-oficina";
 import { rn15RestriccionAccesibilidad } from "./rn15-restriccion-accesibilidad";
 import { rn16SesionesVirtualesCompartidas } from "./rn16-sesiones-virtuales-compartidas";
+import { validarCandidato } from "../greedy";
 
 export const REGLAS: ReglaFn[] = [
   rn01HorasMaxDocente,
@@ -46,6 +47,11 @@ export function validateSlot(
   ctx: ContextoProgramacion,
   asignadas: Asignacion[]
 ): ReglaResultado {
+  // El planificador moderno centraliza las reglas cruzadas (duraciones,
+  // descansos y carga diaria) aquí; las reglas individuales se conservan
+  // para validación unitaria y compatibilidad del editor.
+  return validarCandidato(candidato, ctx, asignadas);
+  /*
   for (const regla of REGLAS) {
     const resultado = regla(candidato, ctx, asignadas);
     if (!resultado.valida) {
@@ -53,4 +59,5 @@ export function validateSlot(
     }
   }
   return { valida: true };
+  */
 }

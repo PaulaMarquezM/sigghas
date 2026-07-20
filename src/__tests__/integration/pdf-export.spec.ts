@@ -20,15 +20,29 @@ vi.mock("@/lib/auth", () => ({
   }),
 }));
 
-const { mockSingle, mockSelect } = vi.hoisted(() => {
+const { mockLimit, mockMaybeSingle, mockOrder, mockSingle, mockSelect } = vi.hoisted(() => {
   const mockSingle = vi.fn();
+  const mockMaybeSingle = vi.fn();
+  const mockOrder = vi.fn();
+  const mockLimit = vi.fn();
   
-  // A query object that supports chained .eq().eq() and then() when awaited
-  const mockQueryObj: any = {
-    single: mockSingle,
-    maybeSingle: mockSingle,
+  // A query object that supports the Supabase query chains used by both routes.
+  type QueryMock = {
+    single: typeof mockSingle;
+    maybeSingle: typeof mockMaybeSingle;
+    order: typeof mockOrder;
+    limit: typeof mockLimit;
+    eq: ReturnType<typeof vi.fn>;
+    then: ReturnType<typeof vi.fn>;
   };
+  const mockQueryObj = {} as QueryMock;
+  mockQueryObj.single = mockSingle;
+  mockQueryObj.maybeSingle = mockMaybeSingle;
+  mockQueryObj.order = mockOrder;
+  mockQueryObj.limit = mockLimit;
   mockQueryObj.eq = vi.fn().mockReturnValue(mockQueryObj);
+  mockOrder.mockReturnValue(mockQueryObj);
+  mockLimit.mockReturnValue(mockQueryObj);
   mockQueryObj.then = vi.fn().mockImplementation((resolve) => resolve({
     data: [
       { id: "s-1", dia_semana: 1, hora_inicio: "07:00", hora_fin: "09:00", materias: { nombre: "Programacion", codigo: "SW" } }
@@ -37,7 +51,7 @@ const { mockSingle, mockSelect } = vi.hoisted(() => {
   }));
   
   const mockSelect = vi.fn().mockReturnValue(mockQueryObj);
-  return { mockSingle, mockSelect };
+  return { mockLimit, mockMaybeSingle, mockOrder, mockSingle, mockSelect };
 });
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -74,20 +88,22 @@ describe("PDF Export Route Handlers Tests", () => {
   });
 
   it("should generate teacher schedule PDF successfully", async () => {
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: { id: "p-1", nombre: "2026-I", activo: true },
       error: null,
     }); // For periodos active select
 
-    mockSingle.mockResolvedValueOnce({
-      data: { id: "h-1", estado: "publicado" },
+    mockLimit.mockResolvedValueOnce({
+      data: [{ id: "h-1", estado: "publicado" }],
       error: null,
-    }); // For horarios select
+    }); // For latest published horario select
 
     const response = await getMiHorarioPDF(new Request("http://localhost/api/pdf/mi-horario"));
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
     expect(response.headers.get("Content-Disposition")).toContain("mi-horario.pdf");
+    expect(mockOrder).toHaveBeenCalledWith("generado_en", { ascending: false });
+    expect(mockLimit).toHaveBeenCalledWith(1);
   });
 });

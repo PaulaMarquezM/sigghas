@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import { asUntypedDb } from "@/lib/entities";
 
 type Disponibilidad = Database["public"]["Tables"]["disponibilidad_docente"]["Row"];
 type DocenteHeader = { id: string; perfiles: { nombre: string; email: string } | null };
@@ -16,9 +17,10 @@ export default async function DisponibilidadDocentePage({
   await requireRol("coordinador", "administrador", "docente");
   const { id } = await params;
   const supabase = await createClient();
+  const db = asUntypedDb(supabase);
   const [{ data: docente }, { data: disponibilidad }] = await Promise.all([
-    (supabase as any).from("docentes").select("id, perfiles(nombre,email)").eq("id", id).single(),
-    (supabase as any).from("disponibilidad_docente").select("*").eq("docente_id", id),
+    db.from("docentes").select("id, perfiles(nombre,email)").eq("id", id).single(),
+    db.from("disponibilidad_docente").select("*").eq("docente_id", id),
   ]);
 
   if (!docente) notFound();
@@ -26,7 +28,7 @@ export default async function DisponibilidadDocentePage({
   const selected = new Set(
     ((disponibilidad ?? []) as Disponibilidad[]).map((row) => `${row.dia_semana}-${row.hora_inicio.slice(0, 5)}`)
   );
-  const perfil = (docente as DocenteHeader).perfiles;
+  const perfil = (docente as unknown as DocenteHeader).perfiles;
 
   return (
     <div className="max-w-5xl space-y-4">

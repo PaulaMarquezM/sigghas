@@ -1,11 +1,16 @@
 "use client";
 
 import React from "react";
+import type { Database } from "@/types/database";
+
+type PeriodoFiltro = Pick<Database["public"]["Tables"]["periodos"]["Row"], "id" | "nombre" | "activo">;
+type GrupoFiltro = Pick<Database["public"]["Tables"]["grupos"]["Row"], "id" | "nombre" | "semestre">;
+type DocenteFiltro = { id: string; nombre: string };
 
 interface HorarioFiltersProps {
-  periodos: any[];
-  grupos: any[];
-  docentes?: any[];
+  periodos: PeriodoFiltro[];
+  grupos: GrupoFiltro[];
+  docentes?: DocenteFiltro[];
   selectedPeriodoId: string;
   selectedGrupoId: string;
   selectedDocenteId?: string;

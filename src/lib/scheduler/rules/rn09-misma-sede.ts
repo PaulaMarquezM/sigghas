@@ -1,6 +1,6 @@
 import type { ReglaFn } from "../types";
 
-export const rn09MismaSede: ReglaFn = (candidato, ctx, _asignadas) => {
+export const rn09MismaSede: ReglaFn = (candidato, ctx) => {
   if (!candidato.espacio_id) {
     // Clase virtual: no ocupa espacio físico, la sede del grupo no aplica.
     return { valida: true };

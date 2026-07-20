@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -14,22 +15,10 @@ const DIAS = [
   { id: 3, label: "Miércoles" },
   { id: 4, label: "Jueves" },
   { id: 5, label: "Viernes" },
+  { id: 6, label: "Sábado" },
 ];
 
-const HORAS = [
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
+const HORAS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
 
 function parseTime(t: string): number {
   const [h, m] = t.split(":").map(Number);
@@ -50,6 +39,8 @@ const colorClasses: Record<string, string> = {
 };
 
 export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyProps) {
+  const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
   const materiaColorMap: Record<string, string> = {};
   let colorIdx = 0;
 
@@ -72,9 +63,9 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
       <div className="overflow-x-auto">
         <div className="min-w-[800px]">
           {/* Header de Días */}
-          <div className="grid grid-cols-[80px_repeat(6,_1fr)] border-b border-[#D8D1BD] pb-3 text-center">
+          <div className="grid border-b border-[#D8D1BD] pb-3 text-center" style={gridStyle}>
             <div className="font-semibold text-gray-400 text-xs flex items-center justify-center">Hora</div>
-            {DIAS.map((d) => (
+            {dias.map((d) => (
               <div key={d.id} className="font-semibold text-[#1F242D] text-sm py-1.5 border-l border-[#E5DFCC]/40">
                 {d.label}
               </div>
@@ -86,7 +77,8 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
             {HORAS.map((hora) => (
               <div
                 key={hora}
-                className="grid grid-cols-[80px_repeat(6,_1fr)] min-h-[85px] border-b border-[#E5DFCC]/60 last:border-b-0"
+                className="grid min-h-[43px] border-b border-[#E5DFCC]/60 last:border-b-0"
+                style={gridStyle}
               >
                 {/* Hora label */}
                 <div className="flex items-start justify-center pt-2.5 text-[#4A515E] font-mono text-xs font-medium">
@@ -94,7 +86,7 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                 </div>
 
                 {/* Celdas */}
-                {DIAS.map((dia) => {
+                {dias.map((dia) => {
                   const sesionesEnCelda = sesiones.filter((s) => {
                     const sInicio = s.hora_inicio.slice(0, 5);
                     return s.dia_semana === dia.id && sInicio === hora;
@@ -114,8 +106,8 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                           <div
                             key={s.id}
                             style={{
-                              height: `${duracion * 85 - 8}px`,
-                              minHeight: "77px",
+                              height: `${duracion * 86 - 4}px`,
+                              minHeight: "39px",
                             }}
                             className={`absolute left-1 right-1 top-1 rounded-lg border p-2 text-[10px] leading-tight flex flex-col justify-between shadow-sm ${styleClass}`}
                           >
@@ -130,7 +122,7 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                             <div className="flex items-center justify-between border-t border-current/10 pt-1 text-[9px] mt-1">
                               <span className="font-semibold">{s.grupos?.nombre}</span>
                               <span className="bg-current/10 px-1 py-0.5 rounded text-[8px]">
-                                {s.modalidad === "virtual" ? "Virtual" : s.espacios?.nombre || "S/A"}
+                                {s.modalidad === "presencial" ? s.espacios?.nombre || "S/A" : s.modalidad === "hibrida" ? "Híbrida" : "Virtual"}
                               </span>
                             </div>
                           </div>

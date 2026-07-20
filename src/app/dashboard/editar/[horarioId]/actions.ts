@@ -2,7 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth";
+import { getSession, requireRol } from "@/lib/auth";
 import type { ContextoProgramacion, Asignacion, Conflicto, DocenteConDisponibilidad } from "@/lib/scheduler/types";
 import { CONFIG_DEFAULT } from "@/lib/scheduler/types";
 import { initializeRules, validateSlot } from "@/lib/scheduler/rules/index";
@@ -109,6 +109,7 @@ export async function validarMovimientoAction(
   sesionId: string,
   updates: { dia_semana: number; hora_inicio: string; hora_fin: string; espacio_id: string | null }
 ): Promise<{ valida: boolean; conflicto?: Conflicto }> {
+  await requireRol("coordinador");
   // Inicializar reglas
   initializeRules({ materias: contexto.materias });
 
@@ -151,6 +152,7 @@ export async function obtenerTodosConflictosAction(
   contexto: ContextoProgramacion,
   asignaciones: Asignacion[]
 ): Promise<Conflicto[]> {
+  await requireRol("coordinador");
   initializeRules({ materias: contexto.materias });
   const conflictos: Conflicto[] = [];
 
@@ -191,8 +193,11 @@ export async function guardarMovimientoAction(
   updates: { dia_semana: number; hora_inicio: string; hora_fin: string; espacio_id: string | null },
   horarioId: string
 ) {
-  const { user } = await getSession();
+  const { id: usuarioId } = await requireRol("coordinador");
   const supabase = await createClient();
+
+  const { data: horario } = await supabase.from("horarios").select("estado").eq("id", horarioId).single();
+  if (!horario || horario.estado === "publicado") return { exito: false, error: "Un horario publicado es inmutable." };
 
   // Obtener estado anterior para el historial
   const { data: anterior } = await supabase
@@ -221,7 +226,7 @@ export async function guardarMovimientoAction(
     await supabase.from("historial_cambios").insert({
       sesion_id: sesionId,
       horario_id: horarioId,
-      usuario_id: user.id,
+      usuario_id: usuarioId,
       accion: "edicion",
       detalle: {
         antes: {
@@ -243,7 +248,7 @@ export async function guardarMovimientoAction(
  * Cambia el estado del horario a publicado
  */
 export async function publicarHorarioAction(horarioId: string) {
-  await getSession();
+  await requireRol("coordinador");
   const supabase = await createClient();
 
   const { error } = await supabase

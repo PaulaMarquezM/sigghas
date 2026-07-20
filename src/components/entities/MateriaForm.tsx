@@ -54,10 +54,10 @@ export function MateriaForm({
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Horas teoría" htmlFor="horas_teoria">
-          <Input id="horas_teoria" name="horas_teoria" type="number" min={0} max={12} defaultValue={value?.horas_teoria ?? value?.horas_semana ?? 2} required />
+          <Input id="horas_teoria" name="horas_teoria" type="number" min={0} max={6} step="0.5" defaultValue={value?.horas_teoria ?? value?.horas_semana ?? 2} required />
         </Field>
         <Field label="Horas práctica" htmlFor="horas_practica">
-          <Input id="horas_practica" name="horas_practica" type="number" min={0} max={12} defaultValue={value?.horas_practica ?? 0} required />
+          <Input id="horas_practica" name="horas_practica" type="number" min={0} max={6} step="0.5" defaultValue={value?.horas_practica ?? 0} required />
         </Field>
       </div>
       <div className="flex flex-wrap gap-4">

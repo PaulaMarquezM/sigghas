@@ -7,7 +7,7 @@ export function setMateriasRequiereLab(materias: { id: string; requiere_laborato
   materias.forEach((m) => REQUIERE_LAB.set(m.id, m.requiere_laboratorio));
 }
 
-export const rn06TipoEspacio: ReglaFn = (candidato, ctx, _asignadas) => {
+export const rn06TipoEspacio: ReglaFn = (candidato, ctx) => {
   if (!candidato.espacio_id) {
     return { valida: true };
   }

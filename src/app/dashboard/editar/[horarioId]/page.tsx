@@ -8,8 +8,7 @@ interface EditarHorarioPageProps {
 }
 
 export default async function EditarHorarioPage({ params }: EditarHorarioPageProps) {
-  // Solo los coordinadores y administradores pueden editar manual
-  await requireRol("coordinador", "administrador");
+  await requireRol("coordinador");
 
   const { horarioId } = await params;
   const data = await getHorarioEditorData(horarioId);

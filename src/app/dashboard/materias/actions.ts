@@ -14,17 +14,25 @@ function payload(formData: FormData) {
   const nivel = formNumber(formData, "nivel", 1);
   const horas_teoria = formNumber(formData, "horas_teoria", 0);
   const horas_practica = formNumber(formData, "horas_practica", 0);
-  if (horas_teoria + horas_practica <= 0) throw new Error("La materia debe tener al menos una hora de teoría o práctica.");
+  const horas_semana = horas_teoria + horas_practica;
+  if (horas_semana <= 0 || horas_semana > 6 || !Number.isInteger(horas_semana * 2)) {
+    throw new Error("Las horas semanales deben ser positivas, de máximo 6 y en incrementos de 30 minutos.");
+  }
+  const modalidad = formString(formData, "modalidad") as ModalidadClase;
+  const requiere_laboratorio = formBoolean(formData, "requiere_laboratorio");
+  if (modalidad !== "presencial" && requiere_laboratorio) {
+    throw new Error("Una materia virtual o híbrida no puede requerir laboratorio.");
+  }
   return {
     codigo,
     nombre,
     semestre: nivel,
     nivel,
-    horas_semana: horas_teoria + horas_practica,
+    horas_semana,
     horas_teoria,
     horas_practica,
-    modalidad: formString(formData, "modalidad") as ModalidadClase,
-    requiere_laboratorio: formBoolean(formData, "requiere_laboratorio"),
+    modalidad,
+    requiere_laboratorio,
     activo: formBoolean(formData, "activo"),
   };
 }

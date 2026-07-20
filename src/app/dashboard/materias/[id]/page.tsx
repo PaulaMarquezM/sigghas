@@ -4,6 +4,7 @@ import { FormShell } from "@/components/entities/FormShell";
 import { updateMateria } from "@/app/dashboard/materias/actions";
 import { createClient } from "@/lib/supabase/server";
 import { requireRol } from "@/lib/auth";
+import { asUntypedDb } from "@/lib/entities";
 import type { Database } from "@/types/database";
 
 type Materia = Database["public"]["Tables"]["materias"]["Row"];
@@ -12,7 +13,7 @@ export default async function EditarMateriaPage({ params }: { params: Promise<{ 
   await requireRol("coordinador", "administrador");
   const { id } = await params;
   const supabase = await createClient();
-  const { data } = await (supabase as any).from("materias").select("*").eq("id", id).single();
+  const { data } = await asUntypedDb(supabase).from("materias").select("*").eq("id", id).single();
   if (!data) notFound();
   const materia = data as Materia;
   return (

@@ -10,14 +10,16 @@ vi.mock("next/cache", () => ({
 // Mock auth helpers
 vi.mock("@/lib/auth", () => ({
   getSession: vi.fn().mockResolvedValue({ user: { id: "user-uuid" } }),
+  requireRol: vi.fn().mockResolvedValue({ id: "user-uuid", rol: "coordinador" }),
 }));
 
-const { mockSingle, mockUpdate, mockInsert, mockSelect } = vi.hoisted(() => {
+const { mockSingle, mockHorarioSingle, mockUpdate, mockInsert, mockSelect } = vi.hoisted(() => {
   const mockSingle = vi.fn();
+  const mockHorarioSingle = vi.fn().mockResolvedValue({ data: { estado: "borrador" }, error: null });
   const mockUpdate = vi.fn().mockImplementation(() => ({ eq: vi.fn().mockResolvedValue({ error: null }) }));
   const mockInsert = vi.fn().mockResolvedValue({ error: null });
   const mockSelect = vi.fn().mockImplementation(() => ({ eq: vi.fn().mockImplementation(() => ({ single: mockSingle })) }));
-  return { mockSingle, mockUpdate, mockInsert, mockSelect };
+  return { mockSingle, mockHorarioSingle, mockUpdate, mockInsert, mockSelect };
 });
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -33,6 +35,9 @@ vi.mock("@/lib/supabase/server", () => ({
         return {
           insert: mockInsert,
         };
+      }
+      if (table === "horarios") {
+        return { select: vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single: mockHorarioSingle }) }) };
       }
       return {};
     }),
@@ -116,7 +121,7 @@ describe("Schedule Manual Editing Integration Tests", () => {
     });
 
     expect(result.valida).toBe(false);
-    expect(result.conflicto?.regla).toBe("RN02");
+    expect(result.conflicto?.codigo).toBe("DOCENTE_NO_DISPONIBLE");
   });
 
   it("should save a valid movement and record history log", async () => {

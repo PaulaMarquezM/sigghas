@@ -112,7 +112,7 @@ export async function toggleDocente(id: string, activo: boolean) {
 }
 
 export async function saveDisponibilidad(docenteId: string, formData: FormData) {
-  await requireRol("coordinador", "administrador", "docente");
+  await requireRol("coordinador");
   const supabase = await createClient();
   const bloques = formData.getAll("bloques").filter((value): value is string => typeof value === "string");
 
@@ -126,12 +126,14 @@ export async function saveDisponibilidad(docenteId: string, formData: FormData) 
   if (bloques.length > 0) {
     const rows = bloques.map((bloque) => {
       const [dia, hora] = bloque.split("-");
-      const hour = Number(hora.slice(0, 2));
+      const inicio = hora.slice(0, 5);
+      const [hour, minute] = inicio.split(":").map(Number);
+      const finMinutos = hour * 60 + minute + 30;
       return {
         docente_id: docenteId,
         dia_semana: Number(dia),
-        hora_inicio: `${String(hour).padStart(2, "0")}:00`,
-        hora_fin: `${String(hour + 1).padStart(2, "0")}:00`,
+        hora_inicio: inicio,
+        hora_fin: `${String(Math.floor(finMinutos / 60)).padStart(2, "0")}:${String(finMinutos % 60).padStart(2, "0")}`,
         es_tiempo_oficina: false,
       };
     });

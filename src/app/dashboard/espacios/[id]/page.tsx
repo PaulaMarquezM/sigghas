@@ -3,7 +3,7 @@ import { EspacioForm } from "@/components/entities/EspacioForm";
 import { FormShell } from "@/components/entities/FormShell";
 import { updateEspacio } from "@/app/dashboard/espacios/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getSedes } from "@/lib/entities";
+import { asUntypedDb, getSedes } from "@/lib/entities";
 import { requireRol } from "@/lib/auth";
 import type { Database } from "@/types/database";
 
@@ -14,7 +14,7 @@ export default async function EditarEspacioPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createClient();
   const [{ data }, sedes] = await Promise.all([
-    (supabase as any).from("espacios").select("*").eq("id", id).single(),
+    asUntypedDb(supabase).from("espacios").select("*").eq("id", id).single(),
     getSedes(),
   ]);
   if (!data) notFound();

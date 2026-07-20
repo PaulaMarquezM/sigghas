@@ -34,7 +34,7 @@ describe("Authentication Integration Tests", () => {
 
     try {
       await getSession();
-    } catch (e) {
+    } catch {
       // Catch Next.js redirect if thrown
     }
 
@@ -76,7 +76,7 @@ describe("Authentication Integration Tests", () => {
 
     try {
       await requireRol("coordinador");
-    } catch (e) {
+    } catch {
       // Catch redirect
     }
 

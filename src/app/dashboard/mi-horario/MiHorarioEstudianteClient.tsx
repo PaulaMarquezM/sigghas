@@ -4,10 +4,17 @@ import React, { useState, useEffect, useTransition } from "react";
 import { HorarioReadOnly } from "@/components/horario/HorarioReadOnly";
 import { getSesionesByPeriodoyGrupoAction } from "../horario/actions";
 import { Loader2, FileText, Users } from "lucide-react";
+import type { ComponentProps } from "react";
+import type { Database } from "@/types/database";
+
+type GrupoEstudiante = Pick<Database["public"]["Tables"]["grupos"]["Row"], "id" | "nombre" | "semestre">;
+type PeriodoActivo = Pick<Database["public"]["Tables"]["periodos"]["Row"], "id" | "nombre">;
+type SesionesEstudiante = ComponentProps<typeof HorarioReadOnly>["sesiones"];
+type HorarioEstudiante = { id: string; estado: string } | null;
 
 interface MiHorarioEstudianteClientProps {
-  grupos: any[];
-  periodoActivo: any;
+  grupos: GrupoEstudiante[];
+  periodoActivo: PeriodoActivo;
 }
 
 export default function MiHorarioEstudianteClient({
@@ -15,21 +22,19 @@ export default function MiHorarioEstudianteClient({
   periodoActivo,
 }: MiHorarioEstudianteClientProps) {
   const [selectedGrupoId, setSelectedGrupoId] = useState<string>("");
-  const [sesiones, setSesiones] = useState<any[]>([]);
-  const [horario, setHorario] = useState<any>(null);
+  const [sesiones, setSesiones] = useState<SesionesEstudiante>([]);
+  const [horario, setHorario] = useState<HorarioEstudiante>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!selectedGrupoId) {
-      setSesiones([]);
-      setHorario(null);
-      return;
-    }
+    if (!selectedGrupoId) return;
 
-    startTransition(async () => {
-      const res = await getSesionesByPeriodoyGrupoAction(periodoActivo.id, selectedGrupoId);
-      setSesiones(res.sesiones);
-      setHorario(res.horario);
+    startTransition(() => {
+      void (async () => {
+        const res = await getSesionesByPeriodoyGrupoAction(periodoActivo.id, selectedGrupoId);
+        setSesiones(res.sesiones);
+        setHorario(res.horario);
+      })();
     });
   }, [selectedGrupoId, periodoActivo]);
 

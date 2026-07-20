@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -17,22 +18,10 @@ const DIAS = [
   { id: 3, label: "Miércoles" },
   { id: 4, label: "Jueves" },
   { id: 5, label: "Viernes" },
+  { id: 6, label: "Sábado" },
 ];
 
-const HORAS = [
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
+const HORAS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
 
 // Helper to convert time "HH:MM" to minutes
 function parseTime(t: string): number {
@@ -47,14 +36,15 @@ function horasEntre(inicio: string, fin: string): number {
 
 // Colors for styling sessions dynamically based on materia or grupo
 const COLORS = ["blue", "amber", "ink", "rose", "green"];
-const materiaColorMap: Record<string, string> = {};
-
 export function HorarioGrid({
   sesiones,
   editable = false,
   onEspacioChange,
   espaciosDisponibles = [],
 }: HorarioGridProps) {
+  const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
+  const materiaColorMap: Record<string, string> = {};
   // Assign color to each unique materia
   let colorIdx = 0;
   sesiones.forEach((s) => {
@@ -68,9 +58,9 @@ export function HorarioGrid({
     <div className="sc-card w-full overflow-x-auto border-[#D8D1BD] bg-white rounded-xl shadow-lg p-6">
       <div className="min-w-[800px]">
         {/* Header de días */}
-        <div className="grid grid-cols-[80px_repeat(6,_1fr)] border-b border-[#D8D1BD] pb-3 text-center">
+        <div className="grid border-b border-[#D8D1BD] pb-3 text-center" style={gridStyle}>
           <div className="font-semibold text-gray-500 text-xs flex align-center justify-center pt-2">Hora</div>
-          {DIAS.map((dia) => (
+          {dias.map((dia) => (
             <div key={dia.id} className="font-semibold text-[#1F242D] text-sm py-1.5 border-l border-[#E5DFCC]/40">
               {dia.label}
             </div>
@@ -80,14 +70,14 @@ export function HorarioGrid({
         {/* Grilla principal */}
         <div className="relative">
           {HORAS.map((hora) => (
-            <div key={hora} className="grid grid-cols-[80px_repeat(6,_1fr)] min-h-[90px] border-b border-[#E5DFCC]/60 last:border-b-0">
+            <div key={hora} className="grid min-h-[45px] border-b border-[#E5DFCC]/60 last:border-b-0" style={gridStyle}>
               {/* Hora row label */}
               <div className="flex items-start justify-center pt-2 text-[#4A515E] font-mono text-xs font-medium pr-3">
                 {hora}
               </div>
 
               {/* Celdas por día */}
-              {DIAS.map((dia) => {
+              {dias.map((dia) => {
                 // Find sessions starting at this hour and day
                 const sesionesEnCelda = sesiones.filter((s) => {
                   const sInicio = s.hora_inicio.slice(0, 5);
@@ -105,8 +95,8 @@ export function HorarioGrid({
                           key={s.id}
                           className="relative w-full group"
                           style={{
-                            height: `${duracion * 90 - 8}px`,
-                            minHeight: "82px",
+                            height: `${duracion * 90 - 4}px`,
+                            minHeight: "41px",
                             zIndex: 10,
                           }}
                         >

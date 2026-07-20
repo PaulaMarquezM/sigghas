@@ -11,6 +11,7 @@ export interface Database {
         Row: { id: string; nombre: string; es_central: boolean; creado_en: string };
         Insert: Omit<Database["public"]["Tables"]["sedes"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["sedes"]["Insert"]>;
+        Relationships: [];
       };
       perfiles: {
         Row: {
@@ -19,6 +20,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["perfiles"]["Row"], "creado_en" | "actualizado_en">;
         Update: Partial<Database["public"]["Tables"]["perfiles"]["Insert"]>;
+        Relationships: [];
       };
       docentes: {
         Row: {
@@ -27,6 +29,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["docentes"]["Row"], never>;
         Update: Partial<Database["public"]["Tables"]["docentes"]["Insert"]>;
+        Relationships: [];
       };
       disponibilidad_docente: {
         Row: {
@@ -35,6 +38,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["disponibilidad_docente"]["Row"], "id">;
         Update: Partial<Database["public"]["Tables"]["disponibilidad_docente"]["Insert"]>;
+        Relationships: [];
       };
       materias: {
         Row: {
@@ -45,6 +49,19 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["materias"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["materias"]["Insert"]>;
+        Relationships: [];
+      };
+      asignaciones_docente_periodo: {
+        Row: { periodo_id: string; materia_id: string; grupo_id: string; docente_id: string; creado_en: string };
+        Insert: Omit<Database["public"]["Tables"]["asignaciones_docente_periodo"]["Row"], "creado_en">;
+        Update: Partial<Database["public"]["Tables"]["asignaciones_docente_periodo"]["Insert"]>;
+        Relationships: [];
+      };
+      disponibilidad_espacio: {
+        Row: { id: string; espacio_id: string; dia_semana: number; hora_inicio: string; hora_fin: string; disponible: boolean };
+        Insert: Omit<Database["public"]["Tables"]["disponibilidad_espacio"]["Row"], "id">;
+        Update: Partial<Database["public"]["Tables"]["disponibilidad_espacio"]["Insert"]>;
+        Relationships: [];
       };
       grupos: {
         Row: {
@@ -53,6 +70,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["grupos"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["grupos"]["Insert"]>;
+        Relationships: [];
       };
       espacios: {
         Row: {
@@ -62,6 +80,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["espacios"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["espacios"]["Insert"]>;
+        Relationships: [];
       };
       periodos: {
         Row: {
@@ -70,6 +89,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["periodos"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["periodos"]["Insert"]>;
+        Relationships: [];
       };
       horarios: {
         Row: {
@@ -79,6 +99,7 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["horarios"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["horarios"]["Insert"]>;
+        Relationships: [];
       };
       sesiones: {
         Row: {
@@ -89,11 +110,13 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["sesiones"]["Row"], "id" | "creado_en">;
         Update: Partial<Database["public"]["Tables"]["sesiones"]["Insert"]>;
+        Relationships: [];
       };
       sesiones_grupos_compartidos: {
         Row: { sesion_id: string; grupo_id: string };
         Insert: Database["public"]["Tables"]["sesiones_grupos_compartidos"]["Row"];
         Update: Partial<Database["public"]["Tables"]["sesiones_grupos_compartidos"]["Row"]>;
+        Relationships: [];
       };
       historial_cambios: {
         Row: {
@@ -102,10 +125,13 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["historial_cambios"]["Row"], "id" | "creado_en">;
         Update: never;
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
     Functions: {
       auth_rol: { Args: Record<never, never>; Returns: RolUsuario };
+      guardar_horario_generado: { Args: { p_periodo_id: string; p_sesiones: Record<string, unknown>[]; p_reemplazar_borrador_id?: string | null }; Returns: string };
     };
     Enums: {
       rol_usuario: RolUsuario;
@@ -114,5 +140,6 @@ export interface Database {
       tipo_espacio: TipoEspacio;
       estado_horario: EstadoHorario;
     };
+    CompositeTypes: Record<string, never>;
   };
 }
