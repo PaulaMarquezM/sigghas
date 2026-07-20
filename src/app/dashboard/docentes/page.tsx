@@ -5,7 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
 import { requireRol } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { contains, firstParam, getSedes } from "@/lib/entities";
 import { toggleDocente } from "@/app/dashboard/docentes/actions";
 import type { Database } from "@/types/database";
@@ -26,7 +26,7 @@ export default async function DocentesPage({
   const sede = firstParam(params.sede);
   const contrato = firstParam(params.contrato);
   const estado = firstParam(params.estado);
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const sedes = await getSedes();
 
   const { data, error } = await supabase
