@@ -2,7 +2,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getSession, requireRol } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContextoProgramacion, Asignacion, Conflicto, DocenteConDisponibilidad } from "@/lib/scheduler/types";
 import { CONFIG_DEFAULT } from "@/lib/scheduler/types";
 import { initializeRules, validateSlot } from "@/lib/scheduler/rules/index";
@@ -12,8 +13,8 @@ import { revalidatePath } from "next/cache";
  * Obtiene el contexto completo de programación y sesiones para un horario dado
  */
 export async function getHorarioEditorData(horarioId: string) {
-  await getSession();
-  const supabase = await createClient();
+  await requireRol("coordinador");
+  const supabase = createAdminClient();
 
   // 1. Obtener horario y periodo
   const { data: horario, error: horarioError } = await supabase

@@ -319,7 +319,7 @@ export default function HorarioEditor({
       </div>
 
       {/* Grid del editor con DndContext */}
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext id={`horario-editor-${horario.id}`} sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
           <div className="space-y-4">
             <HorarioGrid
