@@ -3,6 +3,7 @@ import { DisponibilidadGrid } from "@/components/entities/DisponibilidadGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { expandirBloquesDisponibilidad } from "@/lib/disponibilidad";
 import type { Database } from "@/types/database";
 import { asUntypedDb } from "@/lib/entities";
 
@@ -25,8 +26,10 @@ export default async function DisponibilidadDocentePage({
 
   if (!docente) notFound();
 
-  const selected = new Set(
-    ((disponibilidad ?? []) as Disponibilidad[]).map((row) => `${row.dia_semana}-${row.hora_inicio.slice(0, 5)}`)
+  const selected = expandirBloquesDisponibilidad(
+    ((disponibilidad ?? []) as Disponibilidad[])
+      .filter((row) => !row.es_tiempo_oficina)
+      .map((row) => ({ dia_semana: row.dia_semana, hora_inicio: row.hora_inicio, hora_fin: row.hora_fin }))
   );
   const perfil = (docente as unknown as DocenteHeader).perfiles;
 
@@ -34,7 +37,7 @@ export default async function DisponibilidadDocentePage({
     <div className="max-w-5xl space-y-4">
       <div>
         <h1 className="text-xl font-bold text-gray-900">Disponibilidad docente</h1>
-        <p className="text-sm text-gray-500">{perfil?.nombre} · Bloques de una hora, lunes a viernes de 07:00 a 19:00.</p>
+        <p className="text-sm text-gray-500">{perfil?.nombre} · Bloques de 30 minutos, lunes a sábado de 08:00 a 17:00.</p>
       </div>
       <Card className="shadow-sm">
         <CardHeader><CardTitle className="text-base">Bloques disponibles</CardTitle></CardHeader>

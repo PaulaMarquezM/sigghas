@@ -48,3 +48,20 @@ export function consolidarBloquesDisponibilidad(valores: readonly string[]): Blo
 
   return bloques;
 }
+
+/** Convierte las franjas guardadas en las celdas de 30 minutos de la grilla. */
+export function expandirBloquesDisponibilidad(bloques: readonly BloqueDisponibilidad[]): Set<string> {
+  const seleccionados = new Set<string>();
+
+  for (const bloque of bloques) {
+    const inicio = minutosDesdeHora(bloque.hora_inicio);
+    const fin = minutosDesdeHora(bloque.hora_fin);
+    if (!Number.isInteger(bloque.dia_semana) || bloque.dia_semana < 1 || bloque.dia_semana > 6 || !Number.isInteger(inicio) || !Number.isInteger(fin) || inicio < 0 || fin > 24 * 60 || inicio >= fin) continue;
+
+    for (let minuto = inicio; minuto < fin; minuto += DURACION_BLOQUE_MINUTOS) {
+      seleccionados.add(`${bloque.dia_semana}-${horaDesdeMinutos(minuto)}`);
+    }
+  }
+
+  return seleccionados;
+}
