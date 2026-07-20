@@ -42,7 +42,7 @@ export default async function DisponibilidadDocentePage({
       <Card className="shadow-sm">
         <CardHeader><CardTitle className="text-base">Bloques disponibles</CardTitle></CardHeader>
         <CardContent>
-          <DisponibilidadGrid docenteId={id} selected={selected} />
+          <DisponibilidadGrid docenteId={id} selected={[...selected]} />
         </CardContent>
       </Card>
     </div>

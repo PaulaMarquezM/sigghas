@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { saveDisponibilidad } from "@/app/dashboard/docentes/actions";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
@@ -13,19 +16,64 @@ const DAYS = [
 
 const HOURS = Array.from({ length: 18 }, (_, index) => 8 * 60 + index * 30);
 
+type Arrastre = { marcar: boolean; visitados: Set<string> };
+
 export function DisponibilidadGrid({
   docenteId,
   selected,
 }: {
   docenteId: string;
-  selected: Set<string>;
+  selected: string[];
 }) {
   const action = saveDisponibilidad.bind(null, docenteId);
+  const [seleccionados, setSeleccionados] = useState(() => new Set(selected));
+  const arrastre = useRef<Arrastre | null>(null);
+
+  useEffect(() => {
+    const terminarArrastre = () => { arrastre.current = null; };
+    window.addEventListener("pointerup", terminarArrastre);
+    window.addEventListener("pointercancel", terminarArrastre);
+    return () => {
+      window.removeEventListener("pointerup", terminarArrastre);
+      window.removeEventListener("pointercancel", terminarArrastre);
+    };
+  }, []);
+
+  const actualizarSeleccion = (value: string, marcar: boolean) => {
+    setSeleccionados((actuales) => {
+      if (actuales.has(value) === marcar) return actuales;
+      const siguiente = new Set(actuales);
+      if (marcar) siguiente.add(value);
+      else siguiente.delete(value);
+      return siguiente;
+    });
+  };
+
+  const iniciarArrastre = (value: string) => {
+    const marcar = !seleccionados.has(value);
+    arrastre.current = { marcar, visitados: new Set([value]) };
+    actualizarSeleccion(value, marcar);
+  };
+
+  const continuarArrastre = (value?: string) => {
+    const actual = arrastre.current;
+    if (!actual || !value || actual.visitados.has(value)) return;
+    actual.visitados.add(value);
+    actualizarSeleccion(value, actual.marcar);
+  };
 
   return (
     <form action={action} className="space-y-4">
+      {[...seleccionados].map((value) => <input key={value} name="bloques" type="hidden" value={value} />)}
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <div className="grid min-w-[820px]" style={{ gridTemplateColumns: "90px repeat(6, minmax(110px, 1fr))" }}>
+        <div
+          className="grid min-w-[820px] select-none"
+          style={{ gridTemplateColumns: "90px repeat(6, minmax(110px, 1fr))" }}
+          onPointerMove={(event) => {
+            const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-bloque]");
+            continuarArrastre(cell?.dataset.bloque);
+          }}
+        >
           <div className="border-b bg-gray-50 p-2 text-xs font-semibold text-gray-500">Hora</div>
           {DAYS.map((day) => (
             <div key={day.id} className="border-b border-l bg-gray-50 p-2 text-center text-xs font-semibold text-gray-700">
@@ -39,25 +87,31 @@ export function DisponibilidadGrid({
               </div>
               {DAYS.map((day) => {
                 const value = `${day.id}-${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
+                const marcado = seleccionados.has(value);
                 return (
-                  <label key={value} className="flex min-h-10 items-center justify-center border-b border-l text-xs">
-                    <input
-                      type="checkbox"
-                      name="bloques"
-                      value={value}
-                      defaultChecked={selected.has(value)}
-                      className="peer sr-only"
-                    />
-                    <span className="w-full rounded px-2 py-2 text-center text-gray-500 peer-checked:bg-emerald-100 peer-checked:text-emerald-700">
-                      Disponible
-                    </span>
-                  </label>
+                  <button
+                    key={value}
+                    aria-pressed={marcado}
+                    className={`flex min-h-10 touch-none items-center justify-center border-b border-l px-2 py-2 text-xs transition-colors ${marcado ? "bg-emerald-100 text-emerald-700" : "text-gray-500 hover:bg-gray-50"}`}
+                    data-bloque={value}
+                    onClick={(event) => {
+                      if (event.detail === 0) actualizarSeleccion(value, !marcado);
+                    }}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      iniciarArrastre(value);
+                    }}
+                    type="button"
+                  >
+                    Disponible
+                  </button>
                 );
               })}
             </div>
           ))}
         </div>
       </div>
+      <p className="text-xs text-gray-500">Haz clic o arrastra sobre varias celdas para marcar una franja. Arrastra desde una celda marcada para desmarcarla.</p>
       <Button type="submit">
         <Save className="size-4" />
         Guardar disponibilidad
