@@ -60,8 +60,8 @@ export async function getHorarioEditorData(horarioId: string) {
     sede_principal_id: d.sede_principal_id ?? null,
     disponibilidad: (d.disponibilidad_docente ?? []).map((dd: any) => ({
       dia_semana: dd.dia_semana,
-      hora_inicio: dd.hora_inicio,
-      hora_fin: dd.hora_fin,
+      hora_inicio: dd.hora_inicio.slice(0, 5),
+      hora_fin: dd.hora_fin.slice(0, 5),
       es_tiempo_oficina: dd.es_tiempo_oficina ?? false,
     })),
   }));
