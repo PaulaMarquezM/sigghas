@@ -15,6 +15,7 @@ import { rn13HorarioInstitucional } from "@/lib/scheduler/rules/rn13-horario-ins
 import { rn14BloquesTiempoOficina } from "@/lib/scheduler/rules/rn14-bloques-tiempo-oficina";
 import { rn15RestriccionAccesibilidad } from "@/lib/scheduler/rules/rn15-restriccion-accesibilidad";
 import { rn16SesionesVirtualesCompartidas } from "@/lib/scheduler/rules/rn16-sesiones-virtuales-compartidas";
+import { generarSlots, validarCandidato } from "@/lib/scheduler/greedy";
 import type { Asignacion, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
 
 // Base config
@@ -268,6 +269,35 @@ describe("Scheduler Rules Unit Tests (RN01 - RN16)", () => {
     if (!res.valida) {
       expect(res.conflicto.codigo).toBe("MATERIA_VIRTUAL_NO_PRESENCIAL");
     }
+  });
+
+  it("programa una sesión híbrida sin reservar un espacio físico", () => {
+    const materiaHibrida = {
+      ...baseCtx.materias[0],
+      id: "m-hibrida",
+      codigo: "SW-HIB",
+      nombre: "Materia híbrida",
+      modalidad: "hibrida" as const,
+    };
+    const ctx: ContextoProgramacion = {
+      ...baseCtx,
+      materias: [...baseCtx.materias, materiaHibrida],
+    };
+
+    const [slot] = generarSlots({
+      materia_id: materiaHibrida.id,
+      grupo_id: "g-1",
+      docente_id: "d-1",
+      duracion_horas: 2,
+      indice_sesion: 0,
+      total_sesiones: 1,
+    }, ctx);
+
+    expect(slot).toMatchObject({
+      modalidad: "hibrida",
+      espacio_id: null,
+    });
+    expect(validarCandidato(slot, ctx, []).valida).toBe(true);
   });
 
   it("RN11 - Docente en dos sedes el mismo día", () => {

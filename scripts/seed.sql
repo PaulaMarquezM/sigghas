@@ -31,9 +31,18 @@ begin
   ) then
     alter table sesiones drop constraint chk_espacio_modalidad;
   end if;
+
+  -- Normaliza los datos creados con la regla antigua, que reservaba aulas
+  -- para sesiones híbridas. No elimina sesiones ni su historial.
+  update sesiones
+  set espacio_id = null
+  where modalidad in ('virtual', 'hibrida')
+    and espacio_id is not null;
+
   alter table sesiones
     add constraint chk_espacio_modalidad check (
-      (modalidad = 'virtual') or (modalidad in ('presencial', 'hibrida') and espacio_id is not null)
+      (modalidad = 'presencial' and espacio_id is not null)
+      or (modalidad in ('virtual', 'hibrida') and espacio_id is null)
     );
 end $$;
 
