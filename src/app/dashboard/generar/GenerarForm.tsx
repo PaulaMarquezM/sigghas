@@ -222,13 +222,15 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
               )}
 
               <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.push(`/dashboard/editar/${resultado.horario_id}`)}
-                >
-                  Editar Horario
-                </Button>
+                {resultado.exito && resultado.horario_id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push(`/dashboard/editar/${resultado.horario_id}`)}
+                  >
+                    Editar Horario
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="ghost"

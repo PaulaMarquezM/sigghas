@@ -152,7 +152,6 @@ VALUES (
 |---|---|
 | `coordinador` | Total: generar, editar y aprobar horarios |
 | `docente` | Ver y descargar su propio horario |
-| `estudiante` | Ver y descargar el horario de su grupo |
 | `administrador` | Gestión de usuarios y configuración técnica |
 | `apoyo` | Consultar disponibilidad de aulas en tiempo real |
 

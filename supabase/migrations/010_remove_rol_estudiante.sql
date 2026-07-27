@@ -1,5 +1,5 @@
 -- ============================================================
--- SIGGHAS — Eliminar el rol 'estudiante' del sistema
+-- SIGGHAS — Eliminar el rol 'estudiante' del sistema (migración 010)
 -- ============================================================
 -- El sistema pasa a manejar únicamente los roles docente y
 -- coordinador (más administrador/apoyo internos). Postgres no
