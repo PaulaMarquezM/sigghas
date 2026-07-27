@@ -249,16 +249,34 @@ export async function guardarMovimientoAction(
  * Cambia el estado del horario a publicado
  */
 export async function publicarHorarioAction(horarioId: string) {
-  await requireRol("coordinador");
+  const { id: usuarioId } = await requireRol("coordinador");
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const publicadoEn = new Date().toISOString();
+  const { data: horario, error } = await supabase
     .from("horarios")
-    .update({ estado: "publicado" })
-    .eq("id", horarioId);
+    .update({ estado: "publicado", aprobado_en: publicadoEn, aprobado_por: usuarioId })
+    .eq("id", horarioId)
+    .eq("estado", "borrador")
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     return { exito: false, error: error.message };
+  }
+  if (!horario) {
+    return { exito: false, error: "El horario no existe, ya fue publicado o no está en borrador." };
+  }
+
+  const { error: historialError } = await supabase.from("historial_cambios").insert({
+    sesion_id: null,
+    horario_id: horarioId,
+    usuario_id: usuarioId,
+    accion: "publicacion",
+    detalle: { estado_anterior: "borrador", estado_nuevo: "publicado", publicado_en: publicadoEn },
+  });
+  if (historialError) {
+    return { exito: false, error: `El horario fue publicado, pero no se pudo registrar la auditoría: ${historialError.message}` };
   }
 
   revalidatePath(`/dashboard/editar/${horarioId}`);

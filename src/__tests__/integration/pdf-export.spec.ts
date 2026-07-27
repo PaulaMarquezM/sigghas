@@ -14,6 +14,11 @@ vi.mock("@react-pdf/renderer", () => ({
 
 // Mock auth helpers
 vi.mock("@/lib/auth", () => ({
+  requireRol: vi.fn().mockResolvedValue({
+    id: "coordinador-uuid",
+    nombre: "Coordinación Académica",
+    rol: "coordinador",
+  }),
   getSession: vi.fn().mockResolvedValue({
     user: { id: "user-uuid" },
     perfil: { id: "user-uuid", nombre: "Juan Docente", rol: "docente" },

@@ -32,7 +32,6 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
   docente: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Mi Horario",         href: "/dashboard/mi-horario",     icon: Calendar },
-    { label: "Disponibilidad",     href: "/dashboard/disponibilidad", icon: Clock },
     { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
   ],
   estudiante: [

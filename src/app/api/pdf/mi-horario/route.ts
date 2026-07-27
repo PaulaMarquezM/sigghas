@@ -49,6 +49,9 @@ export async function GET(request: Request) {
 
   if (grupoId) {
     // Caso Estudiante: Consultando un grupo específico
+    if (perfil.rol !== "estudiante" && perfil.rol !== "coordinador" && perfil.rol !== "administrador") {
+      return new Response("No autorizado", { status: 403 });
+    }
     const { data: grupo } = await supabase
       .from("grupos")
       .select("nombre")
