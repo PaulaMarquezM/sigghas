@@ -34,11 +34,6 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
     { label: "Mi Horario",         href: "/dashboard/mi-horario",     icon: Calendar },
     { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
   ],
-  estudiante: [
-    { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
-    { label: "Horario del Grupo",  href: "/dashboard/mi-horario",     icon: Calendar },
-    { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
-  ],
   administrador: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Usuarios",           href: "/dashboard/usuarios",       icon: Users },
@@ -54,7 +49,6 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
 const LABEL_ROL: Record<RolUsuario, string> = {
   coordinador:   "Coordinador",
   docente:       "Docente",
-  estudiante:    "Estudiante",
   administrador: "Administrador",
   apoyo:         "Personal Apoyo",
 };

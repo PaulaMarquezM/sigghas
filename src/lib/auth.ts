@@ -48,7 +48,6 @@ export async function requireRol(...roles: RolUsuario[]): Promise<Perfil> {
 export const LABEL_ROL: Record<RolUsuario, string> = {
   coordinador:   "Coordinador Académico",
   docente:       "Docente",
-  estudiante:    "Estudiante",
   administrador: "Administrador",
   apoyo:         "Personal de Apoyo",
 };

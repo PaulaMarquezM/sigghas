@@ -106,8 +106,6 @@ declare
   v_docente_tc      uuid;
   v_docente_h1      uuid;
   v_docente_h2      uuid;
-  v_estudiante1     uuid;
-  v_estudiante2     uuid;
   v_horario_borrador uuid;
   v_horario_aprobado uuid;
   v_horario_publicado uuid;
@@ -133,11 +131,9 @@ begin
   v_docente_tc     := pg_temp.seed_user('docente.tc@sigghas.test', 'Docente Tiempo Completo', 'docente', v_password);
   v_docente_h1     := pg_temp.seed_user('docente.horas1@sigghas.test', 'Docente Por Horas Uno', 'docente', v_password);
   v_docente_h2     := pg_temp.seed_user('docente.horas2@sigghas.test', 'Docente Por Horas Dos', 'docente', v_password);
-  v_estudiante1    := pg_temp.seed_user('estudiante1@sigghas.test', 'Estudiante Uno', 'estudiante', v_password);
-  v_estudiante2    := pg_temp.seed_user('estudiante2@sigghas.test', 'Estudiante Dos', 'estudiante', v_password);
 
-  update perfiles set sede_id = v_sede_portoviejo where id in (v_coordinador_id, v_admin_id, v_apoyo_id, v_docente_tc, v_docente_h1, v_estudiante1);
-  update perfiles set sede_id = v_sede_manta      where id in (v_docente_h2, v_estudiante2);
+  update perfiles set sede_id = v_sede_portoviejo where id in (v_coordinador_id, v_admin_id, v_apoyo_id, v_docente_tc, v_docente_h1);
+  update perfiles set sede_id = v_sede_manta      where id in (v_docente_h2);
 
   insert into docentes (id, tipo_contrato, hora_entrada, hora_salida, max_horas_semana, sede_principal_id)
   values

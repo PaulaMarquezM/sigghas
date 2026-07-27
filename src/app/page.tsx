@@ -300,7 +300,7 @@ export default function LandingPage() {
               <span className="ftag">[ 07 ]</span>
               <div className="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></div>
               <h3>Consulta por rol</h3>
-              <p>Cada usuario ve solo lo suyo. Coordinador ve todo. Docente ve su horario. Estudiante el de su paralelo. Apoyo ve qué aulas están libres.</p>
+              <p>Cada usuario ve solo lo suyo. Coordinador ve todo. Docente ve su horario. Apoyo ve qué aulas están libres.</p>
             </article>
 
             {/* Feature 6 */}
@@ -351,8 +351,8 @@ export default function LandingPage() {
           <div className="sec-head">
             <div><span className="sec-num">[ 02 / Roles ]</span></div>
             <div>
-              <h2 style={{ fontSize: 40, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0 }}>Cinco tipos de usuario,<br />una sola fuente de verdad.</h2>
-              <p className="s-body" style={{ marginTop: 16 }}>Cada rol accede únicamente a la información y acciones que le corresponden. Un coordinador puede todo. Un estudiante solo lee su paralelo.</p>
+              <h2 style={{ fontSize: 40, fontWeight: 600, letterSpacing: "-0.025em", lineHeight: 1.1, margin: 0 }}>Cuatro tipos de usuario,<br />una sola fuente de verdad.</h2>
+              <p className="s-body" style={{ marginTop: 16 }}>Cada rol accede únicamente a la información y acciones que le corresponden. Un coordinador puede todo. Un docente solo lee su horario.</p>
             </div>
           </div>
           <div className="roles-grid">
@@ -365,9 +365,8 @@ export default function LandingPage() {
             </article>
             {[
               { num: "02", name: "Docente", desc: "Consulta su propio horario, ve sus aulas asignadas y descarga el PDF oficial.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>, access: "Solo lectura" },
-              { num: "03", name: "Estudiante", desc: "Ve el horario de su grupo / paralelo y lo descarga en PDF cuando lo necesite.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>, access: "Solo lectura" },
-              { num: "04", name: "Administrador", desc: "Gestiona usuarios, roles y configuración técnica del sistema.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.4 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.4 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 008 19.4a1.7 1.7 0 00-1.8.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.4-1.8 1.7 1.7 0 00-1.5-1H2a2 2 0 110-4h.1A1.7 1.7 0 003.6 8a1.7 1.7 0 00-.4-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.4H8a1.7 1.7 0 001-1.5V2a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.4l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.4 1.8V8c.3.6.9 1 1.5 1H22a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>, access: "Técnico" },
-              { num: "05", name: "Personal de Apoyo", desc: "Consulta en tiempo real qué aulas están ocupadas o disponibles, por sede y horario.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, access: "Solo lectura" },
+              { num: "03", name: "Administrador", desc: "Gestiona usuarios, roles y configuración técnica del sistema.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.4 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.4 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.7 1.7 0 008 19.4a1.7 1.7 0 00-1.8.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.4-1.8 1.7 1.7 0 00-1.5-1H2a2 2 0 110-4h.1A1.7 1.7 0 003.6 8a1.7 1.7 0 00-.4-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.4H8a1.7 1.7 0 001-1.5V2a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.4l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.4 1.8V8c.3.6.9 1 1.5 1H22a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>, access: "Técnico" },
+              { num: "04", name: "Personal de Apoyo", desc: "Consulta en tiempo real qué aulas están ocupadas o disponibles, por sede y horario.", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, access: "Solo lectura" },
             ].map(({ num, name, desc, icon, access }) => (
               <article key={num} className="role-card">
                 <div className="role-mark">{icon}</div>

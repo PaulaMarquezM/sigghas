@@ -48,10 +48,7 @@ export async function GET(request: Request) {
   let userRolLabel = "Docente";
 
   if (grupoId) {
-    // Caso Estudiante: Consultando un grupo específico
-    if (perfil.rol !== "estudiante" && perfil.rol !== "coordinador" && perfil.rol !== "administrador") {
-      return new Response("No autorizado", { status: 403 });
-    }
+    // Consulta por grupo específico (usada por el coordinador desde la consulta de horarios)
     const { data: grupo } = await supabase
       .from("grupos")
       .select("nombre")
@@ -62,7 +59,7 @@ export async function GET(request: Request) {
 
     sesiones = (await getSesionesByPeriodoyGrupoAction(periodoActivo.id, grupoId)).sesiones;
     userNombre = `Grupo ${grupo.nombre}`;
-    userRolLabel = "Estudiante";
+    userRolLabel = "Grupo";
   } else if (docenteId) {
     // Caso Coordinador/Admin: Consultando un docente específico
     if (perfil.rol !== "coordinador" && perfil.rol !== "administrador" && user.id !== docenteId) {

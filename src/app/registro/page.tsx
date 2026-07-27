@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register } from "./actions";
 
-type Role = "coordinador" | "docente" | "estudiante";
+type Role = "coordinador" | "docente";
 
 const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
   {
@@ -26,19 +26,10 @@ const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
       </svg>
     ),
   },
-  {
-    id: "estudiante",
-    label: "Estudiante",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>
-      </svg>
-    ),
-  },
 ];
 
 function RegisterFormContent() {
-  const [role, setRole] = useState<Role>("estudiante");
+  const [role, setRole] = useState<Role>("docente");
   const [showPw, setShowPw] = useState(false);
   const searchParams = useSearchParams();
   const errorMsg = searchParams.get("error");

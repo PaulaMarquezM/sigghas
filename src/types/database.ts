@@ -1,4 +1,4 @@
-export type RolUsuario = "coordinador" | "docente" | "estudiante" | "administrador" | "apoyo";
+export type RolUsuario = "coordinador" | "docente" | "administrador" | "apoyo";
 export type TipoContrato = "tiempo_completo" | "por_horas" | "titular" | "contratado" | "honorarios";
 export type ModalidadClase = "presencial" | "hibrida" | "virtual";
 export type TipoEspacio = "aula" | "laboratorio" | "sala_reuniones" | "auditorio";

@@ -1,8 +1,6 @@
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
+import { SBadge, RowLink, RowButton, RowActions } from "@/components/entities/ui";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { contains, firstParam } from "@/lib/entities";
@@ -38,17 +36,17 @@ export default async function MateriasPage({
     { key: "nivel", header: "Nivel", cell: (row) => row.nivel },
     { key: "horas", header: "Horas", cell: (row) => `${row.horas_teoria}T / ${row.horas_practica}P` },
     { key: "modalidad", header: "Modalidad", cell: (row) => row.modalidad },
-    { key: "estado", header: "Estado", cell: (row) => <Badge variant={row.activo ? "secondary" : "outline"}>{row.activo ? "Activa" : "Inactiva"}</Badge> },
+    { key: "estado", header: "Estado", cell: (row) => <SBadge activo={row.activo} labelOn="Activa" labelOff="Inactiva" /> },
     {
       key: "actions",
       header: "",
       cell: (row) => (
-        <div className="flex justify-end gap-2">
-          <Link href={`/dashboard/materias/${row.id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>Editar</Link>
+        <RowActions>
+          <RowLink href={`/dashboard/materias/${row.id}`}>Editar</RowLink>
           <form action={toggleMateria.bind(null, row.id, !row.activo)}>
-            <button className={buttonVariants({ size: "sm", variant: "ghost" })} type="submit">{row.activo ? "Desactivar" : "Reactivar"}</button>
+            <RowButton type="submit">{row.activo ? "Desactivar" : "Reactivar"}</RowButton>
           </form>
-        </div>
+        </RowActions>
       ),
     },
   ];

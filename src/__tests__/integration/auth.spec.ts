@@ -24,12 +24,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-describe("Pruebas de integración de autenticación", () => {
+describe("Authentication Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("redirige a /login si el usuario no está autenticado", async () => {
+  it("should redirect to /login if user is not authenticated", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: new Error("No session") });
 
     try {
@@ -41,7 +41,7 @@ describe("Pruebas de integración de autenticación", () => {
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
-  it("devuelve el usuario y el perfil cuando la autenticación es exitosa", async () => {
+  it("should return user and profile when authenticated successfully", async () => {
     const mockUser = { id: "user-uuid", email: "test@puce.edu.ec" };
     const mockProfile = { id: "user-uuid", nombre: "Juan Pérez", rol: "coordinador" };
 
@@ -54,7 +54,7 @@ describe("Pruebas de integración de autenticación", () => {
     expect(session.perfil).toEqual(mockProfile);
   });
 
-  it("permite pasar requireRol si el rol del usuario coincide", async () => {
+  it("should permit requireRol to pass if user role matches", async () => {
     const mockUser = { id: "user-uuid", email: "coord@puce.edu.ec" };
     const mockProfile = { id: "user-uuid", nombre: "Juan Pérez", rol: "coordinador" };
 
@@ -67,9 +67,9 @@ describe("Pruebas de integración de autenticación", () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("redirige a /dashboard si el rol no coincide con requireRol", async () => {
-    const mockUser = { id: "user-uuid", email: "student@puce.edu.ec" };
-    const mockProfile = { id: "user-uuid", nombre: "Maria Estudiante", rol: "estudiante" };
+  it("should redirect to /dashboard if requireRol role does not match", async () => {
+    const mockUser = { id: "user-uuid", email: "docente@puce.edu.ec" };
+    const mockProfile = { id: "user-uuid", nombre: "Maria Docente", rol: "docente" };
 
     mockGetUser.mockResolvedValue({ data: { user: mockUser }, error: null });
     mockSingle.mockResolvedValue({ data: mockProfile, error: null });

@@ -1,8 +1,6 @@
-import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
+import { SBadge, RowLink, RowButton, RowActions } from "@/components/entities/ui";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { contains, firstParam, getSedes } from "@/lib/entities";
@@ -38,17 +36,17 @@ export default async function EspaciosPage({
     { key: "tipo", header: "Tipo", cell: (row) => row.tipo.replace("_", " ") },
     { key: "capacidad", header: "Capacidad", cell: (row) => row.capacidad },
     { key: "sede", header: "Sede", cell: (row) => row.sedes?.nombre ?? "Sin sede" },
-    { key: "estado", header: "Estado", cell: (row) => <Badge variant={row.activo ? "secondary" : "outline"}>{row.activo ? "Activo" : "Inactivo"}</Badge> },
+    { key: "estado", header: "Estado", cell: (row) => <SBadge activo={row.activo} /> },
     {
       key: "actions",
       header: "",
       cell: (row) => (
-        <div className="flex justify-end gap-2">
-          <Link href={`/dashboard/espacios/${row.id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>Editar</Link>
+        <RowActions>
+          <RowLink href={`/dashboard/espacios/${row.id}`}>Editar</RowLink>
           <form action={toggleEspacio.bind(null, row.id, !row.activo)}>
-            <Button size="sm" variant="ghost" type="submit">{row.activo ? "Desactivar" : "Reactivar"}</Button>
+            <RowButton type="submit">{row.activo ? "Desactivar" : "Reactivar"}</RowButton>
           </form>
-        </div>
+        </RowActions>
       ),
     },
   ];

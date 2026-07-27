@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 
 export function FormShell({
@@ -13,38 +11,76 @@ export function FormShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="max-w-3xl space-y-4">
-      <Link href={backHref} className={buttonVariants({ variant: "ghost" })}>
-        <ArrowLeft className="size-4" />
+    <div style={{ maxWidth: 680 }}>
+      <Link href={backHref} style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        fontSize: 13, color: "#4A515E", textDecoration: "none",
+        fontFamily: "Poppins, sans-serif", marginBottom: 24,
+      }}>
+        <ArrowLeft style={{ width: 14, height: 14 }} />
         Volver
       </Link>
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>{children}</CardContent>
-      </Card>
+
+      <div style={{
+        border: "1px solid #D8D1BD", borderRadius: 12,
+        background: "#EFEAD9", overflow: "hidden",
+      }}>
+        <div style={{
+          padding: "18px 24px", borderBottom: "1px solid #D8D1BD",
+        }}>
+          <span style={{
+            fontFamily: "JetBrains Mono, monospace", fontSize: 10.5,
+            textTransform: "uppercase", letterSpacing: "0.12em", color: "#4A515E",
+          }}>
+            {title}
+          </span>
+        </div>
+        <div style={{ padding: 24, background: "#F5F1E8" }}>
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
 
 export function FormActions({ cancelHref }: { cancelHref: string }) {
   return (
-    <div className="flex items-center justify-end gap-2 pt-4">
-      <Link href={cancelHref} className={buttonVariants({ variant: "outline" })}>Cancelar</Link>
-      <Button type="submit">
-        <Save className="size-4" />
+    <div style={{
+      display: "flex", justifyContent: "flex-end", gap: 10,
+      paddingTop: 24, marginTop: 8, borderTop: "1px solid #D8D1BD",
+    }}>
+      <Link href={cancelHref} style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "10px 18px", borderRadius: 8,
+        border: "1px solid #D8D1BD", background: "#F5F1E8",
+        fontSize: 13.5, fontWeight: 500, color: "#0E1116",
+        textDecoration: "none", fontFamily: "Poppins, sans-serif",
+      }}>
+        Cancelar
+      </Link>
+      <button type="submit" style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "10px 18px", borderRadius: 8,
+        background: "#0E1116", color: "#F5F1E8",
+        fontSize: 13.5, fontWeight: 500, border: 0,
+        cursor: "pointer", fontFamily: "Poppins, sans-serif",
+      }}>
+        <Save style={{ width: 14, height: 14 }} />
         Guardar
-      </Button>
+      </button>
     </div>
   );
 }
 
 export function FormMessage({ message }: { message?: string }) {
   if (!message) return null;
-
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <div style={{
+      padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+      background: "color-mix(in oklab, #C8523B 12%, transparent)",
+      border: "1px solid color-mix(in oklab, #C8523B 30%, transparent)",
+      fontSize: 13.5, color: "#C8523B", fontWeight: 500,
+    }}>
       {message}
     </div>
   );
@@ -60,7 +96,10 @@ export function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="space-y-1.5 text-sm font-medium text-gray-700" htmlFor={htmlFor}>
+    <label style={{
+      display: "flex", flexDirection: "column", gap: 6,
+      fontSize: 12.5, fontWeight: 500, color: "#1F242D",
+    }} htmlFor={htmlFor}>
       <span>{label}</span>
       {children}
     </label>
@@ -86,7 +125,12 @@ export function NativeSelect({
       name={name}
       defaultValue={defaultValue ?? ""}
       required={required}
-      className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      style={{
+        height: 38, width: "100%", padding: "0 12px",
+        border: "1px solid #D8D1BD", borderRadius: 8,
+        background: "white", fontSize: 13.5, color: "#0E1116",
+        fontFamily: "Poppins, sans-serif", outline: "none",
+      }}
     >
       {children}
     </select>

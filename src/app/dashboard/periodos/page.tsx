@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
+import { SBadge, RowLink, RowButton, RowActions } from "@/components/entities/ui";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { contains, firstParam } from "@/lib/entities";
@@ -22,17 +20,17 @@ export default async function PeriodosPage({ searchParams }: { searchParams: Pro
     { key: "nombre", header: "Periodo", cell: (row) => <span className="font-medium">{row.nombre}</span> },
     { key: "inicio", header: "Inicio", cell: (row) => row.fecha_inicio },
     { key: "fin", header: "Fin", cell: (row) => row.fecha_fin },
-    { key: "estado", header: "Estado", cell: (row) => <Badge variant={row.activo ? "secondary" : "outline"}>{row.activo ? "Activo" : "Cerrado"}</Badge> },
+    { key: "estado", header: "Estado", cell: (row) => <SBadge activo={row.activo} labelOff="Cerrado" /> },
     {
       key: "actions",
       header: "",
       cell: (row) => (
-        <div className="flex justify-end gap-2">
-          <Link href={`/dashboard/periodos/${row.id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>Editar</Link>
+        <RowActions>
+          <RowLink href={`/dashboard/periodos/${row.id}`}>Editar</RowLink>
           <form action={togglePeriodo.bind(null, row.id, !row.activo)}>
-            <Button size="sm" variant="ghost" type="submit">{row.activo ? "Cerrar" : "Activar"}</Button>
+            <RowButton type="submit">{row.activo ? "Cerrar" : "Activar"}</RowButton>
           </form>
-        </div>
+        </RowActions>
       ),
     },
   ];

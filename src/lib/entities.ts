@@ -22,7 +22,7 @@ type DbResult = {
 type DbQuery = PromiseLike<DbResult> & {
   select(columns?: string): DbQuery;
   insert(values: unknown): DbQuery;
-  upsert(values: unknown): DbQuery;
+  upsert(values: unknown, options?: { onConflict?: string; ignoreDuplicates?: boolean }): DbQuery;
   update(values: unknown): DbQuery;
   delete(): DbQuery;
   eq(column: string, value: unknown): DbQuery;

@@ -5,7 +5,6 @@ import { QuickCard } from "./quick-card";
 const LABEL_ROL: Record<string, string> = {
   coordinador:   "Coordinador Académico",
   docente:       "Docente",
-  estudiante:    "Estudiante",
   administrador: "Administrador",
   apoyo:         "Personal de Apoyo",
 };
@@ -111,7 +110,7 @@ export default async function DashboardPage() {
             </>
           )}
 
-          {(perfil.rol === "docente" || perfil.rol === "estudiante") && (
+          {perfil.rol === "docente" && (
             <>
               <QuickCard icon="Calendar" title="Ver mi Horario" desc="Consulta tu horario académico del periodo actual." href="/dashboard/mi-horario" />
               <QuickCard icon="BookOpen" title="Exportar PDF" desc="Descarga tu horario en PDF (los estudiantes eligen su grupo primero)." href="/dashboard/reportes" />

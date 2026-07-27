@@ -1,9 +1,9 @@
 import React from "react";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { HorarioReadOnly } from "@/components/horario/HorarioReadOnly";
 import { FileText } from "lucide-react";
-import MiHorarioEstudianteClient from "./MiHorarioEstudianteClient";
 
 export default async function MiHorarioPage() {
   const { user, perfil } = await getSession();
@@ -109,28 +109,15 @@ export default async function MiHorarioPage() {
     );
   }
 
-  // Estudiantes: deben elegir su grupo o ver el horario del periodo
-  const { data: grupos } = await supabase
-    .from("grupos")
-    .select("*")
-    .eq("activo", true)
-    .order("nombre");
-
+  // Otros roles no tienen un horario personal; el coordinador consulta
+  // los horarios desde /dashboard/horario.
   return (
-    <div className="space-y-6">
-      <div className="border-b border-[#D8D1BD] pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0E1116]">
-          Horario de Clases
-        </h1>
-        <p className="text-xs text-gray-500 mt-1">
-          Periodo Académico Activo: <span className="font-semibold text-gray-800">{periodoActivo.nombre}</span>
-        </p>
-      </div>
-
-      <MiHorarioEstudianteClient
-        grupos={grupos || []}
-        periodoActivo={periodoActivo}
-      />
+    <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
+      Esta vista es solo para docentes. Como coordinador, usa{" "}
+      <Link href="/dashboard/horario" className="text-[#1D3FD9] font-medium">
+        Consulta de Horarios
+      </Link>{" "}
+      para ver los horarios por grupo o docente.
     </div>
   );
 }

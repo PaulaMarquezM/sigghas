@@ -3,7 +3,7 @@
 //
 // Usa la Service Role Key (bypasa RLS) para poblar:
 // sedes (ya existen por migración), periodos, materias, grupos,
-// espacios, usuarios de cada rol (coordinador/docente/estudiante/
+// espacios, usuarios de cada rol (coordinador/docente/
 // administrador/apoyo), disponibilidad_docente, horarios, sesiones,
 // sesiones_grupos_compartidos e historial_cambios.
 
@@ -82,14 +82,6 @@ async function main() {
     docenteIds.push(id);
   }
 
-  const estudiantesInfo = [
-    { email: "estudiante1@sigghas.test", nombre: "Estudiante Uno", sede: sedePortoviejo },
-    { email: "estudiante2@sigghas.test", nombre: "Estudiante Dos", sede: sedeManta },
-  ];
-  for (const e of estudiantesInfo) {
-    const id = await upsertUser({ email: e.email, nombre: e.nombre, rol: "estudiante" });
-    await supabase.from("perfiles").update({ sede_id: e.sede }).eq("id", id);
-  }
   await supabase.from("perfiles").update({ sede_id: sedePortoviejo }).eq("id", coordinadorId);
   await supabase.from("perfiles").update({ sede_id: sedePortoviejo }).eq("id", adminId);
   await supabase.from("perfiles").update({ sede_id: sedePortoviejo }).eq("id", apoyoId);

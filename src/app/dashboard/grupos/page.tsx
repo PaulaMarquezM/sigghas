@@ -1,8 +1,6 @@
-import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
+import { SBadge, RowLink, RowButton, RowActions } from "@/components/entities/ui";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { contains, firstParam, getSedes } from "@/lib/entities";
@@ -38,17 +36,17 @@ export default async function GruposPage({
     { key: "semestre", header: "Semestre", cell: (row) => row.semestre },
     { key: "estudiantes", header: "Estudiantes", cell: (row) => row.cantidad_estudiantes },
     { key: "sede", header: "Sede", cell: (row) => row.sedes?.nombre ?? "Sin sede" },
-    { key: "estado", header: "Estado", cell: (row) => <Badge variant={row.activo ? "secondary" : "outline"}>{row.activo ? "Activo" : "Archivado"}</Badge> },
+    { key: "estado", header: "Estado", cell: (row) => <SBadge activo={row.activo} labelOff="Archivado" /> },
     {
       key: "actions",
       header: "",
       cell: (row) => (
-        <div className="flex justify-end gap-2">
-          <Link href={`/dashboard/grupos/${row.id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>Editar</Link>
+        <RowActions>
+          <RowLink href={`/dashboard/grupos/${row.id}`}>Editar</RowLink>
           <form action={toggleGrupo.bind(null, row.id, !row.activo)}>
-            <Button size="sm" variant="ghost" type="submit">{row.activo ? "Archivar" : "Reactivar"}</Button>
+            <RowButton type="submit">{row.activo ? "Archivar" : "Reactivar"}</RowButton>
           </form>
-        </div>
+        </RowActions>
       ),
     },
   ];

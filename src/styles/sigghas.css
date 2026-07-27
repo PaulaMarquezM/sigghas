@@ -508,19 +508,6 @@
   transition: all .15s; cursor: pointer; font-family: 'Poppins', sans-serif;
 }
 .role-pick-btn.active { border-color: #0E1116; background: #0E1116; color: #F5F1E8; }
-.s-divider {
-  display: flex; align-items: center; gap: 12px;
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8A8F99;
-  text-transform: uppercase; letter-spacing: 0.1em;
-}
-.s-divider::before, .s-divider::after { content: ''; flex: 1; height: 1px; background: #D8D1BD; }
-.s-alt-login {
-  background: white; border: 1px solid #C7BFA6; border-radius: 9px; height: 48px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  font-size: 14px; font-weight: 500; color: #0E1116; transition: background .15s;
-  cursor: pointer; font-family: 'Poppins', sans-serif; width: 100%;
-}
-.s-alt-login:hover { background: #EFEAD9; }
 
 /* ---------- Stats mini boxes ---------- */
 .stat-box {

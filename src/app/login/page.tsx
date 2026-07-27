@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { login } from "./actions";
 
-type Role = "coordinador" | "docente" | "estudiante";
+type Role = "coordinador" | "docente";
 
 const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
   {
@@ -23,15 +23,6 @@ const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-      </svg>
-    ),
-  },
-  {
-    id: "estudiante",
-    label: "Estudiante",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>
       </svg>
     ),
   },
@@ -246,15 +237,6 @@ function LoginPageContent() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
-          </button>
-
-          <div className="s-divider">o continuar con</div>
-
-          <button type="button" className="s-alt-login">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            SSO institucional PUCE
           </button>
 
           <p className="s-small" style={{ textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
