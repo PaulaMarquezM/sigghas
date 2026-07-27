@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { GenerarForm } from "./GenerarForm";
 
 export default async function GenerarPage() {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
 
   const { data: periodos } = await supabase

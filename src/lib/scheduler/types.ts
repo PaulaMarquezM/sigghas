@@ -37,9 +37,6 @@ export interface Conflicto {
 }
 
 export type ReglaResultado = { valida: true } | { valida: false; conflicto: Conflicto };
-export interface ReglaFn {
-  (candidato: Slot, context: ContextoProgramacion, asignadas: Asignacion[]): ReglaResultado;
-}
 
 export interface DocenteConDisponibilidad {
   id: string;

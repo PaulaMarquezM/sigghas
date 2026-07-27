@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cypress E2E tests have their own runtime globals/tsconfig.
+    "cypress/**",
+    "cypress.config.ts",
+    // Reporte HTML generado por vitest --coverage.
+    "coverage/**",
   ]),
 ]);
 

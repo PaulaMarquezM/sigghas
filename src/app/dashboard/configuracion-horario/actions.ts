@@ -6,7 +6,7 @@ import { asUntypedDb, formBoolean, formString } from "@/lib/entities";
 import { createClient } from "@/lib/supabase/server";
 
 export async function guardarAsignacionDocente(formData: FormData) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const periodo_id = formString(formData, "periodo_id");
   const materia_id = formString(formData, "materia_id");
   const grupo_id = formString(formData, "grupo_id");
@@ -20,7 +20,7 @@ export async function guardarAsignacionDocente(formData: FormData) {
 }
 
 export async function eliminarAsignacionDocente(periodoId: string, materiaId: string, grupoId: string) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
   const { error } = await asUntypedDb(supabase).from("asignaciones_docente_periodo")
     .delete().eq("periodo_id", periodoId).eq("materia_id", materiaId).eq("grupo_id", grupoId);
@@ -29,7 +29,7 @@ export async function eliminarAsignacionDocente(periodoId: string, materiaId: st
 }
 
 export async function guardarDisponibilidadEspacio(formData: FormData) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const espacio_id = formString(formData, "espacio_id");
   const dia_semana = Number(formString(formData, "dia_semana"));
   const hora_inicio = formString(formData, "hora_inicio");
@@ -44,7 +44,7 @@ export async function guardarDisponibilidadEspacio(formData: FormData) {
 }
 
 export async function eliminarDisponibilidadEspacio(id: string) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
   const { error } = await asUntypedDb(supabase).from("disponibilidad_espacio").delete().eq("id", id);
   if (error) throw new Error(error.message);

@@ -24,12 +24,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-describe("Authentication Integration Tests", () => {
+describe("Pruebas de integración de autenticación", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should redirect to /login if user is not authenticated", async () => {
+  it("redirige a /login si el usuario no está autenticado", async () => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: new Error("No session") });
 
     try {
@@ -41,7 +41,7 @@ describe("Authentication Integration Tests", () => {
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
-  it("should return user and profile when authenticated successfully", async () => {
+  it("devuelve el usuario y el perfil cuando la autenticación es exitosa", async () => {
     const mockUser = { id: "user-uuid", email: "test@puce.edu.ec" };
     const mockProfile = { id: "user-uuid", nombre: "Juan Pérez", rol: "coordinador" };
 
@@ -54,7 +54,7 @@ describe("Authentication Integration Tests", () => {
     expect(session.perfil).toEqual(mockProfile);
   });
 
-  it("should permit requireRol to pass if user role matches", async () => {
+  it("permite pasar requireRol si el rol del usuario coincide", async () => {
     const mockUser = { id: "user-uuid", email: "coord@puce.edu.ec" };
     const mockProfile = { id: "user-uuid", nombre: "Juan Pérez", rol: "coordinador" };
 
@@ -67,7 +67,7 @@ describe("Authentication Integration Tests", () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("should redirect to /dashboard if requireRol role does not match", async () => {
+  it("redirige a /dashboard si el rol no coincide con requireRol", async () => {
     const mockUser = { id: "user-uuid", email: "student@puce.edu.ec" };
     const mockProfile = { id: "user-uuid", nombre: "Maria Estudiante", rol: "estudiante" };
 
