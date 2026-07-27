@@ -9,7 +9,7 @@ import { ArrowLeft, Check, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Asignacion, Conflicto, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
-import { initializeRules, validateSlot } from "@/lib/scheduler/rules/index";
+import { validarCandidato } from "@/lib/scheduler/greedy";
 import { guardarMovimientoAction, publicarHorarioAction } from "./actions";
 
 type HorarioEditorHorario = { id: string; estado: string };
@@ -65,7 +65,6 @@ export default function HorarioEditor({
   );
 
   const conflictos = useMemo(() => {
-    initializeRules({ materias: contexto.materias });
     const localConflictos: Conflicto[] = [];
 
     for (let i = 0; i < asignaciones.length; i++) {
@@ -82,7 +81,7 @@ export default function HorarioEditor({
         modalidad: a.modalidad,
       };
       const otras = asignaciones.filter((_, idx) => idx !== i);
-      const res = validateSlot(candidato, contexto, otras);
+      const res = validarCandidato(candidato, contexto, otras);
       if (!res.valida && res.conflicto) {
         const yaExiste = localConflictos.some(
           (c) => c.regla === res.conflicto.regla && c.mensaje === res.conflicto.mensaje
@@ -123,7 +122,6 @@ export default function HorarioEditor({
     const nuevaHoraFin = formatTime(minutosInicio + duracionMinutos);
 
     // Validar en tiempo real contra las 43 reglas
-    initializeRules({ materias: contexto.materias });
     const candidato: Slot = {
       materia_id: sesionActual.materia_id,
       grupo_id: sesionActual.grupo_id,
@@ -137,7 +135,7 @@ export default function HorarioEditor({
     };
     const otrasAsignaciones = asignaciones.filter((a) => a.id !== sesionId);
 
-    const validacion = validateSlot(candidato, contexto, otrasAsignaciones);
+    const validacion = validarCandidato(candidato, contexto, otrasAsignaciones);
 
     if (!validacion.valida && validacion.conflicto) {
       // Mostrar qué regla se viola y revertir
@@ -188,7 +186,6 @@ export default function HorarioEditor({
     if (!sesionActual) return;
 
     // Validar cambio
-    initializeRules({ materias: contexto.materias });
     const candidato: Slot = {
       materia_id: sesionActual.materia_id,
       grupo_id: sesionActual.grupo_id,
@@ -202,7 +199,7 @@ export default function HorarioEditor({
     };
     const otrasAsignaciones = asignaciones.filter((a) => a.id !== sesionId);
 
-    const validacion = validateSlot(candidato, contexto, otrasAsignaciones);
+    const validacion = validarCandidato(candidato, contexto, otrasAsignaciones);
 
     if (!validacion.valida && validacion.conflicto) {
       toast.error(`Conflicto de Regla (${validacion.conflicto.regla}): ${validacion.conflicto.mensaje}`);

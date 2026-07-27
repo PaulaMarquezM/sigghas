@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { ResultadoGeneracion } from "@/lib/scheduler/types";
 
 export async function generarHorario(periodoId: string, reemplazarBorradorId?: string | null): Promise<ResultadoGeneracion> {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   return generate(periodoId, reemplazarBorradorId);
 }
 
@@ -20,7 +20,7 @@ export async function verificarHorarioExistente(periodoId: string): Promise<{
   estado: string | null;
   generado_en: string | null;
 }> {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
 
   const { data } = await supabase

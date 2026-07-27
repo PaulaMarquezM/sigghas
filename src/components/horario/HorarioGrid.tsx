@@ -117,6 +117,7 @@ export function HorarioGrid({
                             <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-sm rounded p-1 z-20 flex gap-1 items-center">
                               <span className="text-[8px] text-white font-medium uppercase truncate flex-shrink-0">Aula:</span>
                               <select
+                                data-cy={`select-espacio-${s.id}`}
                                 value={s.espacio_id || ""}
                                 onChange={(e) =>
                                   onEspacioChange(s.id, e.target.value === "" ? null : e.target.value)

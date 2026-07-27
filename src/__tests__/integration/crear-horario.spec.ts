@@ -94,12 +94,12 @@ const mockAsignaciones: Asignacion[] = [
   }
 ];
 
-describe("Schedule Manual Editing Integration Tests", () => {
+describe("Pruebas de integración de edición manual de horarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should validate a valid movement successfully", async () => {
+  it("valida correctamente un movimiento válido", async () => {
     // Move "sesion-1" to Monday 09:00-11:00 (which is within teacher availability and classroom is free)
     const result = await validarMovimientoAction(mockContexto, mockAsignaciones, "sesion-1", {
       dia_semana: 1,
@@ -111,7 +111,7 @@ describe("Schedule Manual Editing Integration Tests", () => {
     expect(result.valida).toBe(true);
   });
 
-  it("should catch a conflict when moving to a slot outside teacher availability", async () => {
+  it("detecta un conflicto al mover a una franja fuera de la disponibilidad del docente", async () => {
     // Move to Monday 14:00 (outside teacher's 07:00-12:00 availability)
     const result = await validarMovimientoAction(mockContexto, mockAsignaciones, "sesion-1", {
       dia_semana: 1,
@@ -124,7 +124,7 @@ describe("Schedule Manual Editing Integration Tests", () => {
     expect(result.conflicto?.codigo).toBe("DOCENTE_NO_DISPONIBLE");
   });
 
-  it("should save a valid movement and record history log", async () => {
+  it("guarda un movimiento válido y registra el historial", async () => {
     mockSingle.mockResolvedValue({
       data: {
         id: "sesion-1",

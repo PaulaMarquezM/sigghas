@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from "crypto";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { requireRol } from "@/lib/auth";
+import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolverConBacktrack } from "./backtrack";
 import { CONFIG_DEFAULT, type Conflicto, type ContextoProgramacion, type DocenteConDisponibilidad, type ResultadoGeneracion } from "./types";
@@ -14,9 +13,8 @@ const fallo = (codigo: string, mensaje: string): Conflicto => ({ regla: "CONFIGU
  */
 export async function generate(periodoId: string, reemplazarBorradorId?: string | null): Promise<ResultadoGeneracion> {
   const log = [`Iniciando generación para el período ${periodoId}.`];
-  await requireRol("coordinador");
   const sessionSupabase = await createClient();
-  const supabase = createAdminClient();
+  const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
   const { data: periodo, error: periodoError } = await supabase.from("periodos").select("*").eq("id", periodoId).single();
   if (periodoError || !periodo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_NO_ENCONTRADO", "No se encontró el período académico.")], log };
   if (!periodo.activo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_INACTIVO", "Solo se puede generar para el período académico activo.")], log };

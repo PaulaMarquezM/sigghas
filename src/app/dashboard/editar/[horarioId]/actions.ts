@@ -3,18 +3,17 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireRol } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import type { ContextoProgramacion, Asignacion, Conflicto, DocenteConDisponibilidad } from "@/lib/scheduler/types";
 import { CONFIG_DEFAULT } from "@/lib/scheduler/types";
-import { initializeRules, validateSlot } from "@/lib/scheduler/rules/index";
+import { validarCandidato } from "@/lib/scheduler/greedy";
 import { revalidatePath } from "next/cache";
 
 /**
  * Obtiene el contexto completo de programación y sesiones para un horario dado
  */
 export async function getHorarioEditorData(horarioId: string) {
-  await requireRol("coordinador");
-  const supabase = createAdminClient();
+  const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
 
   // 1. Obtener horario y periodo
   const { data: horario, error: horarioError } = await supabase
@@ -110,9 +109,8 @@ export async function validarMovimientoAction(
   sesionId: string,
   updates: { dia_semana: number; hora_inicio: string; hora_fin: string; espacio_id: string | null }
 ): Promise<{ valida: boolean; conflicto?: Conflicto }> {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   // Inicializar reglas
-  initializeRules({ materias: contexto.materias });
 
   // Buscar asignación actual
   const asignacionIndex = asignaciones.findIndex((a) => a.id === sesionId);
@@ -138,7 +136,7 @@ export async function validarMovimientoAction(
   // Filtrar la asignación actual de la lista de asignadas para evitar auto-conflicto
   const otrasAsignaciones = asignaciones.filter((a) => a.id !== sesionId);
 
-  const res = validateSlot(candidato, contexto, otrasAsignaciones);
+  const res = validarCandidato(candidato, contexto, otrasAsignaciones);
   if (res.valida) {
     return { valida: true };
   } else {
@@ -153,8 +151,7 @@ export async function obtenerTodosConflictosAction(
   contexto: ContextoProgramacion,
   asignaciones: Asignacion[]
 ): Promise<Conflicto[]> {
-  await requireRol("coordinador");
-  initializeRules({ materias: contexto.materias });
+  await requireRol("coordinador", "administrador");
   const conflictos: Conflicto[] = [];
 
   for (let i = 0; i < asignaciones.length; i++) {
@@ -171,7 +168,7 @@ export async function obtenerTodosConflictosAction(
       modalidad: a.modalidad,
     };
     const otras = asignaciones.filter((_, idx) => idx !== i);
-    const res = validateSlot(candidato, contexto, otras);
+    const res = validarCandidato(candidato, contexto, otras);
     if (!res.valida && res.conflicto) {
       // Evitar duplicados idénticos en el panel de conflictos
       const yaExiste = conflictos.some(
@@ -194,7 +191,7 @@ export async function guardarMovimientoAction(
   updates: { dia_semana: number; hora_inicio: string; hora_fin: string; espacio_id: string | null },
   horarioId: string
 ) {
-  const { id: usuarioId } = await requireRol("coordinador");
+  const { id: usuarioId } = await requireRol("coordinador", "administrador");
   const supabase = await createClient();
 
   const { data: horario } = await supabase.from("horarios").select("estado").eq("id", horarioId).single();
@@ -249,7 +246,7 @@ export async function guardarMovimientoAction(
  * Cambia el estado del horario a publicado
  */
 export async function publicarHorarioAction(horarioId: string) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
 
   const { error } = await supabase

@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireRol } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { consolidarBloquesDisponibilidad } from "@/lib/disponibilidad";
 import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, type ActionResult } from "@/lib/entities";
 import type { TipoContrato } from "@/types/database";
@@ -15,7 +14,7 @@ function requireFields(fields: Record<string, string | null>) {
 }
 
 export async function createDocente(_state: ActionResult, formData: FormData): Promise<ActionResult> {
-  await requireRol("coordinador", "administrador");
+  const { admin } = await requireRolAndAdminClient("coordinador", "administrador");
 
   try {
     const nombre = formString(formData, "nombre");
@@ -26,7 +25,6 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
 
     requireFields({ Nombre: nombre, Email: email, Sede: sede_principal_id });
 
-    const admin = createAdminClient();
     const tempPassword = crypto.randomUUID();
     const { data: userData, error: userError } = await admin.auth.admin.createUser({
       email,
@@ -66,14 +64,14 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
 }
 
 export async function updateDocente(id: string, _state: ActionResult, formData: FormData): Promise<ActionResult> {
-  await requireRol("coordinador", "administrador");
+  const { admin } = await requireRolAndAdminClient("coordinador", "administrador");
   try {
     const tipo_contrato = formString(formData, "tipo_contrato") as TipoContrato;
     const sede_principal_id = formNullableString(formData, "sede_principal_id");
     const max_horas_semana = formNumber(formData, "max_horas_semana", 20);
     const activo = formBoolean(formData, "activo");
 
-    const db = asUntypedDb(createAdminClient());
+    const db = asUntypedDb(admin);
     const { error } = await db
       .from("docentes")
       .update({ tipo_contrato, sede_principal_id, max_horas_semana })
@@ -92,15 +90,14 @@ export async function updateDocente(id: string, _state: ActionResult, formData: 
 }
 
 export async function toggleDocente(id: string, activo: boolean) {
-  await requireRol("coordinador", "administrador");
-  const { error } = await asUntypedDb(createAdminClient()).from("perfiles").update({ activo }).eq("id", id);
+  const { admin } = await requireRolAndAdminClient("coordinador", "administrador");
+  const { error } = await asUntypedDb(admin).from("perfiles").update({ activo }).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/docentes");
 }
 
 export async function saveDisponibilidad(docenteId: string, formData: FormData) {
-  await requireRol("coordinador");
-  const supabase = createAdminClient();
+  const { admin: supabase } = await requireRolAndAdminClient("coordinador");
   const bloques = formData.getAll("bloques").filter((value): value is string => typeof value === "string");
 
   const { error: deleteError } = await supabase

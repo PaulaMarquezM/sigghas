@@ -67,12 +67,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-describe("PDF Export Route Handlers Tests", () => {
+describe("Pruebas de las rutas de exportación a PDF", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should generate full schedule PDF successfully", async () => {
+  it("genera exitosamente el PDF del horario completo", async () => {
     mockSingle.mockResolvedValueOnce({
       data: { id: "h-1", estado: "publicado", periodos: { nombre: "2026-I" } },
       error: null,
@@ -87,7 +87,7 @@ describe("PDF Export Route Handlers Tests", () => {
     expect(response.headers.get("Content-Disposition")).toContain("horario-2026-I.pdf");
   });
 
-  it("should generate teacher schedule PDF successfully", async () => {
+  it("genera exitosamente el PDF del horario del docente", async () => {
     mockMaybeSingle.mockResolvedValueOnce({
       data: { id: "p-1", nombre: "2026-I", activo: true },
       error: null,

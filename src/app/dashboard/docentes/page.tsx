@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
-import { requireRol } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { contains, firstParam, getSedes } from "@/lib/entities";
 import { toggleDocente } from "@/app/dashboard/docentes/actions";
 import type { Database } from "@/types/database";
@@ -20,13 +19,12 @@ export default async function DocentesPage({
 }: {
   searchParams: Promise<{ q?: string; sede?: string; contrato?: string; estado?: string }>;
 }) {
-  await requireRol("coordinador", "administrador");
+  const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
   const params = await searchParams;
   const q = firstParam(params.q);
   const sede = firstParam(params.sede);
   const contrato = firstParam(params.contrato);
   const estado = firstParam(params.estado);
-  const supabase = createAdminClient();
   const sedes = await getSedes();
 
   const { data, error } = await supabase

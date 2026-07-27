@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+
+jobs:
+  lint-and-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: lint-and-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Levantar la app en segundo plano
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 && exit 0
+            sleep 2
+          done
+          echo "La app no respondió a tiempo" && exit 1
+      - name: Correr Cypress (4 casos obligatorios)
+        run: npm run test:e2e:cypress
+      - name: Subir evidencia (videos, capturas y reporte)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-evidencia
+          path: |
+            cypress/videos
+            cypress/screenshots
+            mochawesome-report
+          retention-days: 30
