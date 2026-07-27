@@ -5,8 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { DisponibilidadAulas } from "@/components/horario/DisponibilidadAulas";
 
 export default async function DisponibilidadAulasPage() {
-  // Permitido para coordinador, administrador y apoyo
-  await requireRol("coordinador", "administrador", "apoyo", "docente");
+  // Según CU07, este mapa está destinado a coordinación y personal de apoyo.
+  await requireRol("coordinador", "administrador", "apoyo");
 
   const supabase = await createClient();
 

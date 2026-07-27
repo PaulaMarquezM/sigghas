@@ -2,6 +2,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth";
 
 /**
  * Obtiene el horario publicado más reciente de un periodo.
@@ -41,6 +42,7 @@ async function getSesionesGrupo(supabase: any, horarioId: string, grupoId: strin
  * Obtiene las sesiones de un horario según periodo y grupo
  */
 export async function getSesionesByPeriodoyGrupoAction(periodoId: string, grupoId: string) {
+  await getSession();
   const supabase = await createClient();
 
   // 1. Buscar el horario publicado más reciente del periodo
@@ -63,6 +65,13 @@ export async function getSesionesByPeriodoyGrupoAction(periodoId: string, grupoI
  * Obtiene las sesiones de un horario según periodo y docente
  */
 export async function getSesionesByPeriodoyDocenteAction(periodoId: string, docenteId: string) {
+  const { user, perfil } = await getSession();
+  if (perfil?.rol === "docente" && user.id !== docenteId) {
+    throw new Error("No autorizado para consultar el horario de otro docente.");
+  }
+  if (!perfil || !["coordinador", "administrador", "docente"].includes(perfil.rol)) {
+    throw new Error("No autorizado para consultar horarios docentes.");
+  }
   const supabase = await createClient();
 
   // 1. Buscar el horario publicado más reciente del periodo

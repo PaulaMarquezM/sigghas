@@ -1,9 +1,9 @@
-import { getSession } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { GenerarForm } from "./GenerarForm";
 
 export default async function GenerarPage() {
-  await getSession();
+  await requireRol("coordinador", "administrador");
   const supabase = await createClient();
 
   const { data: periodos } = await supabase

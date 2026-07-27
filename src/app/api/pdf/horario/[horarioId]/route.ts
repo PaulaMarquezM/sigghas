@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStream, type DocumentProps } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth";
+import { requireRol } from "@/lib/auth";
 import { HorarioPDF } from "@/lib/pdf/HorarioPDF";
 import { notFound } from "next/navigation";
 import type { Database } from "@/types/database";
@@ -14,8 +14,8 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ horarioId: string }> }
 ) {
-  // Verificar autenticación
-  await getSession();
+  // El reporte completo pertenece al módulo de consulta de coordinación.
+  await requireRol("coordinador", "administrador");
   const { horarioId } = await params;
 
   const supabase = await createClient();
