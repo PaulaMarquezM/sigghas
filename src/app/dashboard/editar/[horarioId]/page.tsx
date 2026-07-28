@@ -8,7 +8,7 @@ interface EditarHorarioPageProps {
 }
 
 export default async function EditarHorarioPage({ params }: EditarHorarioPageProps) {
-  await requireRol("coordinador");
+  await requireRol("coordinador", "administrador");
 
   const { horarioId } = await params;
   const data = await getHorarioEditorData(horarioId);
@@ -22,6 +22,7 @@ export default async function EditarHorarioPage({ params }: EditarHorarioPagePro
         initialSesiones={data.sesiones}
         contexto={data.contexto}
         espaciosDisponibles={data.espaciosDisponibles}
+        opcionesManuales={data.opcionesManuales}
       />
     </div>
   );

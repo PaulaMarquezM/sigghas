@@ -33,8 +33,8 @@ export function MateriaForm({
     <form action={formAction} className="grid gap-4">
       <FormMessage message={state.message} />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Código" htmlFor="codigo">
-          <Input id="codigo" name="codigo" defaultValue={value?.codigo} required minLength={2} />
+        <Field label="Código" htmlFor="codigo" required={false} hint="Si lo dejas vacío, SIGGHAS asignará uno automáticamente.">
+          <Input id="codigo" name="codigo" defaultValue={value?.codigo} minLength={2} placeholder="Ej. ISW-501" />
         </Field>
         <Field label="Nombre" htmlFor="nombre">
           <Input id="nombre" name="nombre" defaultValue={value?.nombre} required minLength={3} />

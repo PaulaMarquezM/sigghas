@@ -28,8 +28,8 @@ export default async function DashboardPage() {
   const stats = [
     { label: "Docentes",  value: totalDocentes ?? 0,  icon: "👤" },
     { label: "Materias",  value: totalMaterias ?? 0,  icon: "📖" },
-    { label: "Grupos",    value: totalGrupos ?? 0,    icon: "👥" },
-    { label: "Espacios",  value: totalEspacios ?? 0,  icon: "🏛️" },
+    { label: "Cursos",    value: totalGrupos ?? 0,    icon: "👥" },
+    { label: "Aulas",     value: totalEspacios ?? 0,  icon: "🏛️" },
   ];
 
   const nombre = perfil.nombre.split(" ")[0] ?? "";
@@ -105,8 +105,8 @@ export default async function DashboardPage() {
             <>
               <QuickCard icon="Calendar" title="Generar Horario" desc="Genera automáticamente el horario del periodo actual con validación de restricciones." href="/dashboard/generar" />
               <QuickCard icon="Clock" title="Disponibilidad Docente" desc="Registra y gestiona los bloques horarios disponibles de cada docente." href="/dashboard/docentes" />
-              <QuickCard icon="Building2" title="Gestionar Espacios" desc="Administra aulas y laboratorios disponibles en Manta y Portoviejo." href="/dashboard/espacios" />
-              <QuickCard icon="Users" title="Gestionar Grupos" desc="Registra y administra los grupos académicos de la carrera." href="/dashboard/grupos" />
+              <QuickCard icon="Building2" title="Gestionar Aulas" desc="Administra aulas y laboratorios disponibles en Manta y Portoviejo." href="/dashboard/espacios" />
+              <QuickCard icon="Users" title="Gestionar Cursos" desc="Registra y administra los cursos académicos de la carrera." href="/dashboard/grupos" />
             </>
           )}
 
@@ -125,4 +125,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

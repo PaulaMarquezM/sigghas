@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { generarHorario, verificarHorarioExistente } from "./actions";
+import { crearHorarioManual, generarHorario, verificarHorarioExistente } from "./actions";
 import type { ResultadoGeneracion } from "@/lib/scheduler/types";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle, AlertTriangle, AlertCircle } from "lucide-react";
@@ -72,6 +72,15 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
     }
   }
 
+  async function iniciarManual() {
+    if (!periodoId) return;
+    setLoading(true);
+    const resultado = await crearHorarioManual(periodoId);
+    setLoading(false);
+    if (resultado.exito && resultado.horario_id) router.push(`/dashboard/editar/${resultado.horario_id}`);
+    else setLogs([resultado.error ?? "No se pudo iniciar el horario manual."]);
+  }
+
   const fechaConfirm = confirm.generado_en
     ? new Date(confirm.generado_en).toLocaleString("es-EC", {
         day: "2-digit", month: "short", year: "numeric",
@@ -80,7 +89,10 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
     : "";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <div className="grid gap-3 md:grid-cols-3">
+        {["1. Prepara materias, cursos y docentes", "2. Elige generación automática o manual", "3. Revisa, ajusta y publica"].map((paso) => <div key={paso} className="rounded-xl border border-[#D8D1BD] bg-[#EFEAD9] p-4 text-sm font-medium text-[#1F242D]">{paso}</div>)}
+      </div>
       {/* Modal de confirmación */}
       {confirm.visible && (
         <div style={{
@@ -141,16 +153,16 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-end gap-4">
+        <div className="flex flex-col items-stretch gap-4 rounded-xl border border-[#D8D1BD] bg-white p-5 md:flex-row md:items-end">
           <div className="flex-1">
-            <label htmlFor="periodo" className="block text-sm font-medium text-gray-700 mb-1">
-              Periodo Académico
+            <label htmlFor="periodo" className="block text-base font-medium text-gray-800 mb-1.5">
+              Período académico <span className="text-[#C8523B]">*</span>
             </label>
             <select
               id="periodo"
               value={periodoId}
               onChange={(e) => setPeriodoId(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white text-base focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20"
               disabled={loading || verificando}
             >
               <option value="">Seleccionar periodo...</option>
@@ -162,10 +174,10 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
             </select>
           </div>
 
-          <Button
+          <div className="flex flex-col gap-2 sm:flex-row"><Button
             type="submit"
             disabled={loading || verificando || !periodoId}
-            className="h-10 px-6"
+            className="h-11 bg-[#1D3FD9] px-6 text-white hover:bg-[#1733B5]"
           >
             {loading || verificando ? (
               <>
@@ -173,13 +185,13 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
                 {verificando ? "Verificando..." : "Generando..."}
               </>
             ) : (
-              "Generar Horario"
+              "Generar automáticamente"
             )}
-          </Button>
+          </Button><Button type="button" variant="outline" disabled={loading || !periodoId} onClick={iniciarManual} className="h-11 border-[#0E1116] px-6">Crear manualmente</Button></div>
         </div>
 
         {logs.length > 0 && (
-          <div className="bg-gray-950 text-gray-100 rounded-lg p-4 font-mono text-xs leading-relaxed max-h-80 overflow-y-auto">
+          <div className="bg-[#FFF1ED] text-[#7F2E20] border border-[#E7A796] rounded-lg p-4 text-sm leading-relaxed max-h-80 overflow-y-auto">
             {logs.map((line, i) => (
               <div key={i} className="whitespace-pre-wrap">
                 {line}
@@ -210,12 +222,12 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
               </div>
 
               {resultado.conflictos_no_resueltos.length > 0 && (
-                <div className="border border-red-200 bg-red-50 rounded-lg p-3 space-y-2">
-                  <p className="text-sm font-medium text-red-800">Conflictos detectados:</p>
+                <div className="border border-red-200 bg-red-50 rounded-lg p-4 space-y-3">
+                  <p className="text-base font-semibold text-red-900">Corrige estos datos antes de volver a intentar:</p>
                   {resultado.conflictos_no_resueltos.map((c, i) => (
-                    <div key={i} className="text-xs text-red-700 flex items-start gap-2">
+                    <div key={i} className="text-sm leading-relaxed text-red-800 flex items-start gap-2">
                       <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                      <span>[{c.codigo}] {c.mensaje}</span>
+                      <span>{c.mensaje}</span>
                     </div>
                   ))}
                 </div>

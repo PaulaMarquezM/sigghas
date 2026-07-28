@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useTransition } from "react";
+import React, { useEffect, useMemo, useState, useTransition } from "react";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { HorarioGrid } from "@/components/horario/HorarioGrid";
 import { ConflictPanel } from "@/components/horario/ConflictPanel";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import type { Asignacion, Conflicto, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
 import { validarCandidato } from "@/lib/scheduler/greedy";
 import { guardarMovimientoAction, publicarHorarioAction } from "./actions";
+import { NuevaSesionDialog, type OpcionesManuales } from "./NuevaSesionDialog";
 
 type HorarioEditorHorario = { id: string; estado: string };
 type HorarioEditorPeriodo = { nombre: string };
@@ -24,6 +25,7 @@ interface HorarioEditorProps {
   initialSesiones: SesionVista[];
   contexto: ContextoProgramacion;
   espaciosDisponibles: EspacioDisponible[];
+  opcionesManuales: OpcionesManuales;
 }
 
 // Helpers for time formatting
@@ -49,11 +51,17 @@ export default function HorarioEditor({
   initialSesiones,
   contexto,
   espaciosDisponibles,
+  opcionesManuales,
 }: HorarioEditorProps) {
   const router = useRouter();
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>(initialAsignaciones);
   const [sesiones, setSesiones] = useState<SesionVista[]>(initialSesiones);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setAsignaciones(initialAsignaciones);
+    setSesiones(initialSesiones);
+  }, [initialAsignaciones, initialSesiones]);
 
   // Sensors for dnd-kit
   const sensors = useSensors(
@@ -285,7 +293,8 @@ export default function HorarioEditor({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <NuevaSesionDialog horarioId={horario.id} opciones={opcionesManuales} />
           {/* Botón Descargar PDF */}
           <a
             href={`/api/pdf/horario/${horario.id}`}
@@ -321,7 +330,7 @@ export default function HorarioEditor({
           <div className="space-y-4">
             <HorarioGrid
               sesiones={sesiones}
-              editable={horario.estado !== "publicado"}
+              editable
               onEspacioChange={handleEspacioChange}
               espaciosDisponibles={espaciosDisponibles}
             />

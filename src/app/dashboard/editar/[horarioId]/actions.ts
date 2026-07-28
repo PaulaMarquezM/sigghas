@@ -97,7 +97,72 @@ export async function getHorarioEditorData(horarioId: string) {
     contexto: ctx,
     asignaciones,
     espaciosDisponibles: espacios,
+    opcionesManuales: {
+      materias: materias.map((materia: any) => ({ id: materia.id, nombre: materia.nombre, semestre: materia.semestre, modalidad: materia.modalidad })),
+      cursos: grupos.map((grupo: any) => ({ id: grupo.id, nombre: grupo.nombre, semestre: grupo.semestre, sede_id: grupo.sede_id })),
+      docentes: ((docentesRaw.data ?? []) as any[]).map((docente) => ({ id: docente.id, nombre: docente.perfiles?.nombre ?? "Docente sin nombre" })),
+      aulas: espacios.map((espacio: any) => ({ id: espacio.id, nombre: espacio.nombre, sede_id: espacio.sede_id })),
+    },
   };
+}
+
+export type NuevaSesionInput = {
+  materia_id: string;
+  grupo_id: string;
+  docente_id: string;
+  espacio_id: string | null;
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fin: string;
+};
+
+export async function crearSesionManualAction(horarioId: string, input: NuevaSesionInput) {
+  const { perfil, admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
+  const usuarioId = perfil.id;
+  if (!input.materia_id || !input.grupo_id || !input.docente_id || !input.hora_inicio || !input.hora_fin) {
+    return { exito: false, error: "Completa materia, curso, docente, día y horas." };
+  }
+  if (input.hora_inicio >= input.hora_fin) return { exito: false, error: "La hora de fin debe ser posterior a la hora de inicio." };
+
+  const data = await getHorarioEditorData(horarioId);
+  const materia = data.contexto.materias.find((item) => item.id === input.materia_id);
+  const curso = data.contexto.grupos.find((item) => item.id === input.grupo_id);
+  const aula = data.contexto.espacios.find((item) => item.id === input.espacio_id);
+  if (!materia || !curso) return { exito: false, error: "La materia o el curso seleccionado ya no está disponible." };
+  const modalidad = materia.modalidad;
+  const espacioId = modalidad === "presencial" ? input.espacio_id : null;
+  if (modalidad === "presencial" && !espacioId) return { exito: false, error: "Selecciona un aula para la clase presencial." };
+
+  const candidato = {
+    materia_id: input.materia_id,
+    grupo_id: input.grupo_id,
+    docente_id: input.docente_id,
+    espacio_id: espacioId,
+    modalidad,
+    dia: input.dia_semana as any,
+    hora_inicio: input.hora_inicio,
+    hora_fin: input.hora_fin,
+    sede_id: aula?.sede_id ?? curso.sede_id,
+  };
+  const validacion = validarCandidato(candidato, data.contexto, data.asignaciones);
+  if (!validacion.valida) return { exito: false, error: validacion.conflicto.mensaje };
+
+  const { data: sesion, error } = await supabase.from("sesiones").insert({
+    horario_id: horarioId,
+    materia_id: input.materia_id,
+    grupo_id: input.grupo_id,
+    docente_id: input.docente_id,
+    espacio_id: espacioId,
+    modalidad,
+    dia_semana: input.dia_semana,
+    hora_inicio: input.hora_inicio,
+    hora_fin: input.hora_fin,
+    sede_id: candidato.sede_id,
+  }).select("id").single();
+  if (error || !sesion) return { exito: false, error: error?.message ?? "No se pudo crear la clase." };
+  await supabase.from("historial_cambios").insert({ sesion_id: sesion.id, horario_id: horarioId, usuario_id: usuarioId, accion: "creacion", detalle: input });
+  revalidatePath(`/dashboard/editar/${horarioId}`);
+  return { exito: true };
 }
 
 /**
@@ -195,7 +260,7 @@ export async function guardarMovimientoAction(
   const supabase = await createClient();
 
   const { data: horario } = await supabase.from("horarios").select("estado").eq("id", horarioId).single();
-  if (!horario || horario.estado === "publicado") return { exito: false, error: "Un horario publicado es inmutable." };
+  if (!horario) return { exito: false, error: "No se encontró el horario que intentas editar." };
 
   // Obtener estado anterior para el historial
   const { data: anterior } = await supabase

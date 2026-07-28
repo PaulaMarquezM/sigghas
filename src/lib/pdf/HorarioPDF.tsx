@@ -68,7 +68,7 @@ export function HorarioPDF({ horario, periodo, sesiones, grupoNombre = "General"
             <Text style={styles.metaValue}>{periodo.nombre}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Grupo/Filtro</Text>
+            <Text style={styles.metaLabel}>Curso/Filtro</Text>
             <Text style={styles.metaValue}>{grupoNombre}</Text>
           </View>
           <View style={styles.metaItem}>
@@ -127,7 +127,7 @@ export function HorarioPDF({ horario, periodo, sesiones, grupoNombre = "General"
                         <View key={s.id} style={[styles.sessionBlock, customBlockStyle]}>
                           <View>
                             <Text style={[styles.sessionMateria, { color: textColors[colorIdx] }]}>
-                              {s.materias?.codigo} - {s.materias?.nombre}
+                              {s.materias?.nombre}
                             </Text>
                             <Text style={styles.sessionDocente}>
                               Doc: {s.docentes?.perfiles?.nombre || "Docente"}

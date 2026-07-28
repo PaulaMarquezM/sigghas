@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
+import { AlertCircle, ArrowLeft, Save } from "lucide-react";
 
 export function FormShell({
   title,
@@ -75,13 +75,14 @@ export function FormActions({ cancelHref }: { cancelHref: string }) {
 export function FormMessage({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <div style={{
-      padding: "10px 14px", borderRadius: 8, marginBottom: 16,
-      background: "color-mix(in oklab, #C8523B 12%, transparent)",
-      border: "1px solid color-mix(in oklab, #C8523B 30%, transparent)",
-      fontSize: 13.5, color: "#C8523B", fontWeight: 500,
+    <div role="alert" style={{
+      display: "flex", gap: 12, alignItems: "flex-start",
+      padding: "14px 16px", borderRadius: 10, marginBottom: 18,
+      background: "#FFF1ED", border: "1px solid #E7A796",
+      fontSize: 14, color: "#7F2E20", lineHeight: 1.5,
     }}>
-      {message}
+      <AlertCircle style={{ width: 20, height: 20, flexShrink: 0, marginTop: 1 }} />
+      <div><strong style={{ display: "block", marginBottom: 2 }}>No pudimos guardar</strong>{message}</div>
     </div>
   );
 }
@@ -89,10 +90,14 @@ export function FormMessage({ message }: { message?: string }) {
 export function Field({
   label,
   htmlFor,
+  required = true,
+  hint,
   children,
 }: {
   label: string;
   htmlFor: string;
+  required?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -100,8 +105,12 @@ export function Field({
       display: "flex", flexDirection: "column", gap: 6,
       fontSize: 12.5, fontWeight: 500, color: "#1F242D",
     }} htmlFor={htmlFor}>
-      <span>{label}</span>
+      <span style={{ display: "flex", alignItems: "baseline", gap: 5, fontSize: 14 }}>
+        {label}
+        {required ? <span style={{ color: "#C8523B" }} aria-label="obligatorio">*</span> : <span style={{ color: "#727984", fontSize: 12, fontWeight: 400 }}>(opcional)</span>}
+      </span>
       {children}
+      {hint && <span style={{ color: "#727984", fontSize: 12, fontWeight: 400, lineHeight: 1.4 }}>{hint}</span>}
     </label>
   );
 }

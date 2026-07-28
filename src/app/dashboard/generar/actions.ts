@@ -10,6 +10,17 @@ export async function generarHorario(periodoId: string, reemplazarBorradorId?: s
   return generate(periodoId, reemplazarBorradorId);
 }
 
+export async function crearHorarioManual(periodoId: string) {
+  await requireRol("coordinador", "administrador");
+  if (!periodoId) return { exito: false, error: "Selecciona un período académico." };
+  const supabase = await createClient();
+  const { data: borradores } = await supabase.from("horarios").select("id").eq("periodo_id", periodoId).eq("estado", "borrador").order("generado_en", { ascending: false }).limit(1);
+  if (borradores?.[0]) return { exito: true, horario_id: borradores[0].id };
+  const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString() }).select("id").single();
+  if (error || !data) return { exito: false, error: error?.message ?? "No se pudo crear el horario manual." };
+  return { exito: true, horario_id: data.id };
+}
+
 /**
  * Verifica si ya existe un horario publicado para el periodo indicado.
  * Devuelve el estado y fecha del más reciente.

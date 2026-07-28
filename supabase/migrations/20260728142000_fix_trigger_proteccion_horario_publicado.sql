@@ -1,4 +1,4 @@
--- SIGGHAS — Evita acceder a columnas que no existen en triggers compartidos.
+-- SIGGHAS — Evita acceder a columnas que no existen en triggers compartidos (reaplicable).
 --
 -- La función se invoca desde tres tablas. OLD adopta el tipo de la tabla que
 -- disparó el trigger, por lo que OLD.estado solo es válido para horarios.

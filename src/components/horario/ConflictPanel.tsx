@@ -16,13 +16,10 @@ export function ConflictPanel({ conflictos }: ConflictPanelProps) {
     <div className="border border-[#D8D1BD] bg-[#F9F7F2] rounded-xl p-5 shadow-sm h-full flex flex-col">
       <div className="border-b border-[#D8D1BD] pb-4 mb-4">
         <h3 className="text-base font-semibold text-[#0E1116] flex items-center gap-2">
-          <span>Panel de Validación</span>
-          <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-mono font-normal">
-            RN01-RN43
-          </span>
+          <span>Qué debes corregir</span>
         </h3>
-        <p className="text-xs text-gray-500 mt-1">
-          Validación automática en tiempo real de reglas de negocio institucionales.
+        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+          Te mostramos en lenguaje sencillo qué impide guardar o publicar el horario.
         </p>
       </div>
 
@@ -46,14 +43,13 @@ export function ConflictPanel({ conflictos }: ConflictPanelProps) {
                 {errores.map((c, idx) => (
                   <div
                     key={`err-${idx}`}
-                    className="flex gap-2.5 p-3 rounded-lg border border-red-200 bg-red-50/40 text-red-950 text-xs shadow-sm hover:bg-red-50/60 transition-colors"
+                    className="flex gap-3 p-3.5 rounded-lg border border-red-200 bg-red-50 text-red-950 text-sm leading-relaxed shadow-sm"
                   >
                     <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-mono font-bold text-red-800 bg-red-100 px-1 py-0.5 rounded mr-1">
-                        {c.regla}
-                      </span>
-                      {c.mensaje}
+                      <strong className="block text-red-900">No se puede continuar</strong>
+                      <span>{c.mensaje}</span>
+                      <span className="mt-1 block font-mono text-[10px] text-red-600">Referencia: {c.codigo}</span>
                     </div>
                   </div>
                 ))}
@@ -69,14 +65,13 @@ export function ConflictPanel({ conflictos }: ConflictPanelProps) {
                 {advertencias.map((c, idx) => (
                   <div
                     key={`warn-${idx}`}
-                    className="flex gap-2.5 p-3 rounded-lg border border-amber-200 bg-amber-50/40 text-amber-950 text-xs shadow-sm hover:bg-amber-50/60 transition-colors"
+                    className="flex gap-3 p-3.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-950 text-sm leading-relaxed shadow-sm"
                   >
                     <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-mono font-bold text-amber-800 bg-amber-100 px-1 py-0.5 rounded mr-1">
-                        {c.regla}
-                      </span>
-                      {c.mensaje}
+                      <strong className="block text-amber-900">Recomendación</strong>
+                      <span>{c.mensaje}</span>
+                      <span className="mt-1 block font-mono text-[10px] text-amber-700">Referencia: {c.codigo}</span>
                     </div>
                   </div>
                 ))}

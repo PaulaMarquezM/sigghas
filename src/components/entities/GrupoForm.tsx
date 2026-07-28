@@ -59,7 +59,7 @@ export function GrupoForm({
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="activo" defaultChecked={value?.activo ?? true} className="size-4" />
-          Grupo activo
+          Curso activo
         </label>
       </div>
       <FormActions cancelHref={cancelHref} />

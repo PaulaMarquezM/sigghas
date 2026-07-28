@@ -8,7 +8,7 @@ export default async function NuevoGrupoPage() {
   await requireRol("coordinador", "administrador");
   const sedes = await getSedes();
   return (
-    <FormShell title="Nuevo grupo" backHref="/dashboard/grupos">
+    <FormShell title="Nuevo curso" backHref="/dashboard/grupos">
       <GrupoForm action={createGrupo} sedes={sedes} />
     </FormShell>
   );

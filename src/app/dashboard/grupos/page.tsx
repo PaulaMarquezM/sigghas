@@ -32,7 +32,7 @@ export default async function GruposPage({
   ));
 
   const columns: TableColumn<Grupo>[] = [
-    { key: "nombre", header: "Grupo", cell: (row) => <span className="font-medium">{row.nombre}</span> },
+    { key: "nombre", header: "Curso", cell: (row) => <span className="font-medium">{row.nombre}</span> },
     { key: "semestre", header: "Semestre", cell: (row) => row.semestre },
     { key: "estudiantes", header: "Estudiantes", cell: (row) => row.cantidad_estudiantes },
     { key: "sede", header: "Sede", cell: (row) => row.sedes?.nombre ?? "Sin sede" },
@@ -53,8 +53,8 @@ export default async function GruposPage({
 
   return (
     <DataTable
-      title="Grupos"
-      description="Gestiona grupos académicos por semestre, sede y cantidad de estudiantes."
+      title="Cursos"
+      description="Gestiona cursos por semestre, sede y cantidad de estudiantes."
       createHref="/dashboard/grupos/nuevo"
       rows={rows}
       columns={columns}

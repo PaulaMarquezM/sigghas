@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { renderToStream } from "@react-pdf/renderer";
+import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth";
 import { MiHorarioPDF } from "@/lib/pdf/MiHorarioPDF";
@@ -18,11 +18,13 @@ export async function GET(request: Request) {
   const supabase = await createClient();
 
   // 1. Obtener periodo activo
-  const { data: periodoActivo } = await supabase
+  const { data: periodosActivos } = await supabase
     .from("periodos")
     .select("*")
     .eq("activo", true)
-    .maybeSingle() as any;
+    .order("fecha_inicio", { ascending: false })
+    .limit(1) as any;
+  const periodoActivo = periodosActivos?.[0] ?? null;
 
   if (!periodoActivo) {
     return new Response("No hay periodo activo", { status: 400 });
@@ -49,6 +51,9 @@ export async function GET(request: Request) {
 
   if (grupoId) {
     // Consulta por grupo específico (usada por el coordinador desde la consulta de horarios)
+    if (perfil.rol !== "coordinador" && perfil.rol !== "administrador") {
+      return new Response("No autorizado", { status: 403 });
+    }
     const { data: grupo } = await supabase
       .from("grupos")
       .select("nombre")
@@ -58,8 +63,8 @@ export async function GET(request: Request) {
     if (!grupo) return notFound();
 
     sesiones = (await getSesionesByPeriodoyGrupoAction(periodoActivo.id, grupoId)).sesiones;
-    userNombre = `Grupo ${grupo.nombre}`;
-    userRolLabel = "Grupo";
+    userNombre = `Curso ${grupo.nombre}`;
+    userRolLabel = "Curso";
   } else if (docenteId) {
     // Caso Coordinador/Admin: Consultando un docente específico
     if (perfil.rol !== "coordinador" && perfil.rol !== "administrador" && user.id !== docenteId) {
@@ -101,7 +106,7 @@ export async function GET(request: Request) {
   }
 
   // 3. Generar PDF Stream
-  const stream = await renderToStream(
+  const buffer = await renderToBuffer(
     React.createElement(MiHorarioPDF, {
       periodo: periodoActivo,
       sesiones,
@@ -110,10 +115,11 @@ export async function GET(request: Request) {
     }) as any
   );
 
-  return new Response(stream as any, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="mi-horario.pdf"`,
+      "Cache-Control": "private, no-store",
     },
   });
 }

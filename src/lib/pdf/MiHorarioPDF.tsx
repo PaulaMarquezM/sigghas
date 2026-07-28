@@ -126,7 +126,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
                         <View key={s.id} style={[styles.sessionBlock, customBlockStyle]}>
                           <View>
                             <Text style={[styles.sessionMateria, { color: textColors[colorIdx] }]}>
-                              {s.materias?.codigo} - {s.materias?.nombre}
+                              {s.materias?.nombre}
                             </Text>
                             <Text style={styles.sessionDocente}>
                               Doc: {s.docentes?.perfiles?.nombre || "Docente"}

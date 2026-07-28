@@ -8,13 +8,15 @@ import { asUntypedDb, errorMessage, formBoolean, formNumber, formString, type Ac
 import type { TipoEspacio } from "@/types/database";
 
 function payload(formData: FormData) {
-  const nombre = formString(formData, "nombre");
+  const numero = formString(formData, "numero").replace(/[^0-9A-Za-z-]/g, "");
   const sede_id = formString(formData, "sede_id");
-  if (!nombre || !sede_id) throw new Error("Nombre y sede son obligatorios.");
+  const tipo = formString(formData, "tipo") as TipoEspacio;
+  if (!numero || !sede_id) throw new Error("Indica el número del aula y selecciona una sede.");
+  const prefijo = tipo === "laboratorio" ? "Laboratorio" : tipo === "auditorio" ? "Auditorio" : tipo === "sala_reuniones" ? "Sala" : "Aula";
   return {
-    nombre,
+    nombre: `${prefijo} ${numero}`,
     sede_id,
-    tipo: formString(formData, "tipo") as TipoEspacio,
+    tipo,
     capacidad: formNumber(formData, "capacidad", 30),
     accesible: formBoolean(formData, "accesible"),
     tiene_proyector: formBoolean(formData, "tiene_proyector"),
@@ -28,8 +30,17 @@ export async function createEspacio(_state: ActionResult, formData: FormData): P
   await requireRol("coordinador", "administrador");
   const supabase = await createClient();
   try {
-    const { error } = await asUntypedDb(supabase).from("espacios").insert(payload(formData));
-    if (error) return { ok: false, message: error.message };
+    const { data: aula, error } = await asUntypedDb(supabase).from("espacios").insert(payload(formData)).select("id").single();
+    if (error || !aula) return { ok: false, message: error?.message ?? "No se pudo crear el aula." };
+    const franjas = [1, 2, 3, 4, 5].map((dia_semana) => ({
+      espacio_id: aula.id,
+      dia_semana,
+      hora_inicio: "08:00",
+      hora_fin: "17:00",
+      disponible: true,
+    }));
+    const { error: disponibilidadError } = await asUntypedDb(supabase).from("disponibilidad_espacio").insert(franjas);
+    if (disponibilidadError) return { ok: false, message: `El aula se creó, pero no se pudo configurar su horario de lunes a viernes: ${disponibilidadError.message}` };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }

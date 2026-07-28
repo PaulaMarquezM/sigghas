@@ -30,15 +30,16 @@ export function EspacioForm({
   cancelHref?: string;
 }) {
   const [state, formAction] = useActionState(action, { ok: true });
+  const numeroActual = value?.nombre?.match(/\d+[A-Za-z]?/)?.[0] ?? "";
 
   return (
     <form action={formAction} className="grid gap-4">
       <FormMessage message={state.message} />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Nombre" htmlFor="nombre">
-          <Input id="nombre" name="nombre" defaultValue={value?.nombre} required minLength={2} />
+        <Field label="Número" htmlFor="numero" hint="El nombre se formará automáticamente, por ejemplo: Aula 204.">
+          <Input id="numero" name="numero" defaultValue={numeroActual} required minLength={1} placeholder="204" inputMode="numeric" />
         </Field>
-        <Field label="Tipo de espacio" htmlFor="tipo">
+        <Field label="Tipo de aula" htmlFor="tipo">
           <NativeSelect id="tipo" name="tipo" defaultValue={value?.tipo} required>
             <option value="aula">Aula</option>
             <option value="laboratorio">Laboratorio</option>
@@ -75,7 +76,7 @@ export function EspacioForm({
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="activo" defaultChecked={value?.activo ?? value?.disponible ?? true} className="size-4" />
-          Espacio activo
+          Aula activa y disponible
         </label>
       </div>
       <FormActions cancelHref={cancelHref} />

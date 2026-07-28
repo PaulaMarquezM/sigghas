@@ -56,7 +56,7 @@ export function BloqueDraggable({
       <div className="flex flex-col gap-1 justify-between h-full">
         <div>
           <div className="b-title font-semibold truncate" title={materiaNombre}>
-            {materiaCodigo} - {materiaNombre}
+            {materiaNombre}
           </div>
           <div className="b-meta truncate" title={docenteNombre}>
             Doc: {docenteNombre}

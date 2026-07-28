@@ -1,5 +1,5 @@
 import React from "react";
-import { renderToStream, type DocumentProps } from "@react-pdf/renderer";
+import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { requireRol } from "@/lib/auth";
 import { HorarioPDF } from "@/lib/pdf/HorarioPDF";
@@ -51,12 +51,13 @@ export async function GET(
     sesiones,
     grupoNombre: "Reporte Completo",
   }) as unknown as React.ReactElement<DocumentProps>;
-  const stream = await renderToStream(document);
+  const buffer = await renderToBuffer(document);
 
-  return new Response(stream as unknown as BodyInit, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="horario-${periodo.nombre}.pdf"`,
+      "Cache-Control": "private, no-store",
     },
   });
 }
