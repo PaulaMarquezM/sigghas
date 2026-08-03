@@ -13,7 +13,6 @@ interface BloqueDraggableProps {
   grupoNombre: string;
   modalidad: string;
   colorClass?: string;
-  docenteColor?: string;
   disabled?: boolean;
 }
 
@@ -25,7 +24,6 @@ export function BloqueDraggable({
   grupoNombre,
   modalidad,
   colorClass = "blue",
-  docenteColor,
   disabled = false,
 }: BloqueDraggableProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -44,7 +42,6 @@ export function BloqueDraggable({
     position: transform ? "absolute" : "relative",
     width: transform ? "200px" : "100%",
     zIndex: transform ? 999 : 1,
-    borderLeft: docenteColor ? `5px solid ${docenteColor}` : undefined,
   };
 
   return (

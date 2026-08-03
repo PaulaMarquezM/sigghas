@@ -36,9 +36,8 @@ function horasEntre(inicio: string, fin: string): number {
   return (parseTime(fin) - parseTime(inicio)) / 60;
 }
 
-// El fondo identifica la materia y la franja lateral identifica al docente.
+// Cada docente mantiene el mismo color en todas sus clases.
 const COLORS = ["blue", "amber", "ink", "rose", "green"];
-const DOCENTE_COLORS = ["#6D28D9", "#0F766E", "#B45309", "#BE123C", "#0369A1", "#4D7C0F", "#7C2D12"];
 export function HorarioGrid({
   sesiones,
   editable = false,
@@ -48,17 +47,12 @@ export function HorarioGrid({
 }: HorarioGridProps) {
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
-  const materiaColorMap: Record<string, string> = {};
   const docenteColorMap: Record<string, string> = {};
-  // Assign color to each unique materia
   let colorIdx = 0;
   sesiones.forEach((s) => {
-    if (!materiaColorMap[s.materia_id]) {
-      materiaColorMap[s.materia_id] = COLORS[colorIdx % COLORS.length];
-      colorIdx++;
-    }
     if (!docenteColorMap[s.docente_id]) {
-      docenteColorMap[s.docente_id] = DOCENTE_COLORS[Object.keys(docenteColorMap).length % DOCENTE_COLORS.length];
+      docenteColorMap[s.docente_id] = COLORS[colorIdx % COLORS.length];
+      colorIdx++;
     }
   });
 
@@ -96,7 +90,7 @@ export function HorarioGrid({
                   <HorarioCell key={`${dia.id}-${hora}`} dia={dia.id} hora={hora}>
                     {sesionesEnCelda.map((s) => {
                       const duracion = horasEntre(s.hora_inicio, s.hora_fin);
-                      const colorClass = materiaColorMap[s.materia_id] || "blue";
+                      const colorClass = docenteColorMap[s.docente_id] || "blue";
 
                       return (
                         <div
@@ -117,7 +111,6 @@ export function HorarioGrid({
                             grupoNombre={s.grupos?.nombre || "Grupo"}
                             modalidad={s.modalidad}
                             colorClass={colorClass}
-                            docenteColor={docenteColorMap[s.docente_id]}
                             disabled={!editable}
                           />
 
@@ -169,9 +162,9 @@ export function HorarioGrid({
       {/* Leyenda */}
       <div className="sc-foot mt-6 space-y-3 border-t border-[#E5DFCC] pt-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-xs font-semibold text-[#1F242D]">Fondo: materia</span>
-          {Object.entries(materiaColorMap).map(([mId, color]) => {
-            const sesion = sesiones.find((s) => s.materia_id === mId);
+          <span className="text-xs font-semibold text-[#1F242D]">Color: docente</span>
+          {Object.entries(docenteColorMap).map(([docenteId, color]) => {
+            const sesion = sesiones.find((s) => s.docente_id === docenteId);
             if (!sesion) return null;
             const bgClass =
               color === "blue"
@@ -184,23 +177,15 @@ export function HorarioGrid({
                 ? "bg-[#C8523B]"
                 : "bg-[#2E7D5B]";
             return (
-              <span key={mId} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
+              <span key={docenteId} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
                 <i className={`w-3 h-3 rounded ${bgClass}`} />
-                {sesion.materias?.nombre || "Materia"}
+                {sesion.docentes?.perfiles?.nombre || "Docente"}
               </span>
             );
           })}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-xs font-semibold text-[#1F242D]">Franja lateral: docente</span>
-          {Object.entries(docenteColorMap).map(([docenteId, color]) => {
-            const sesion = sesiones.find((item) => item.docente_id === docenteId);
-            if (!sesion) return null;
-            return <span key={docenteId} className="flex items-center gap-1.5 text-xs text-[#4A515E]"><i className="h-3 w-1 rounded-full" style={{ backgroundColor: color }} />{sesion.docentes?.perfiles?.nombre || "Docente"}</span>;
-          })}
-        </div>
         <div className="text-xs text-[#4A515E] font-mono">
-          * El fondo identifica la materia; la franja lateral mantiene el mismo color para cada docente.
+          * Todas las clases de un mismo docente usan el mismo color.
         </div>
       </div>
     </div>
