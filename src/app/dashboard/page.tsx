@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { QuickCard } from "./quick-card";
+import { BookOpen, Building2, UserCheck, Users } from "lucide-react";
 
 const LABEL_ROL: Record<string, string> = {
   coordinador:   "Coordinador Académico",
@@ -26,16 +27,16 @@ export default async function DashboardPage() {
     ]);
 
   const stats = [
-    { label: "Docentes",  value: totalDocentes ?? 0,  icon: "👤" },
-    { label: "Materias",  value: totalMaterias ?? 0,  icon: "📖" },
-    { label: "Cursos",    value: totalGrupos ?? 0,    icon: "👥" },
-    { label: "Aulas",     value: totalEspacios ?? 0,  icon: "🏛️" },
+    { label: "Docentes",  value: totalDocentes ?? 0,  icon: UserCheck },
+    { label: "Materias",  value: totalMaterias ?? 0,  icon: BookOpen },
+    { label: "Cursos",    value: totalGrupos ?? 0,    icon: Users },
+    { label: "Aulas",     value: totalEspacios ?? 0,  icon: Building2 },
   ];
 
   const nombre = perfil.nombre.split(" ")[0] ?? "";
 
   return (
-    <div style={{ maxWidth: 900 }}>
+    <div style={{ width: "100%", maxWidth: 1440, margin: "0 auto" }}>
 
       {/* Encabezado */}
       <div style={{
@@ -72,12 +73,18 @@ export default async function DashboardPage() {
       {/* Stats — coordinador/admin */}
       {isCoord && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 36 }}>
-          {stats.map(({ label, value, icon }) => (
+          {stats.map(({ label, value, icon: Icon }) => (
             <div key={label} style={{
               background: "#EFEAD9", border: "1px solid #D8D1BD",
               borderRadius: 12, padding: "20px 22px",
             }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
+              <div style={{
+                width: 38, height: 38, display: "grid", placeItems: "center",
+                borderRadius: 10, marginBottom: 16,
+                background: "#0E1116", color: "#F5F1E8",
+              }}>
+                <Icon style={{ width: 19, height: 19 }} aria-hidden="true" />
+              </div>
               <div style={{
                 fontFamily: "JetBrains Mono, monospace",
                 fontSize: 32, fontWeight: 500, letterSpacing: "-0.03em", color: "#0E1116",
