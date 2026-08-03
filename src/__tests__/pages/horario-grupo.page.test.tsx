@@ -43,7 +43,7 @@ describe("GrupoHorarioPage (Server Component)", () => {
     });
     const jsx = await GrupoHorarioPage({ params: Promise.resolve({ grupoId: "g-1" }) });
     render(jsx);
-    expect(screen.getByText("Horario del Grupo: SW-5A")).toBeTruthy();
+    expect(screen.getByText("Horario del Curso: SW-5A")).toBeTruthy();
     expect(screen.getByRole("link", { name: /editar horario/i })).toBeTruthy();
   });
 });

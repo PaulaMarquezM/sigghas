@@ -31,7 +31,7 @@ describe("horario actions (consulta de horarios)", () => {
     const resultado = await getSesionesByPeriodoyGrupoAction("p-1", "g-1");
     expect(resultado.horario).toEqual({ id: "h-1", estado: "publicado" });
     expect(resultado.sesiones).toHaveLength(2);
-    expect(resultado.sesiones[1]).toMatchObject({ id: "s-2", grupo_id: "g-1", grupos: { nombre: "Grupo compartido" } });
+    expect(resultado.sesiones[1]).toMatchObject({ id: "s-2", grupo_id: "g-1", grupos: { nombre: "Curso compartido" } });
   });
 
   it("getSesionesByPeriodoyDocenteAction: un docente no puede consultar el horario de otro docente", async () => {

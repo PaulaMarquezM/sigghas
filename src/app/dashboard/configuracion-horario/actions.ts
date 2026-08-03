@@ -43,6 +43,22 @@ export async function guardarDisponibilidadEspacio(formData: FormData) {
   revalidatePath("/dashboard/configuracion-horario");
 }
 
+export async function actualizarDisponibilidadEspacio(id: string, formData: FormData) {
+  await requireRol("coordinador", "administrador");
+  const dia_semana = Number(formString(formData, "dia_semana"));
+  const hora_inicio = formString(formData, "hora_inicio");
+  const hora_fin = formString(formData, "hora_fin");
+  if (!Number.isInteger(dia_semana) || dia_semana < 1 || dia_semana > 6 || !hora_inicio || !hora_fin || hora_inicio >= hora_fin) {
+    throw new Error("Indica una franja válida para el espacio.");
+  }
+  const supabase = await createClient();
+  const { error } = await asUntypedDb(supabase).from("disponibilidad_espacio")
+    .update({ dia_semana, hora_inicio, hora_fin, disponible: formBoolean(formData, "disponible") })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/dashboard/configuracion-horario");
+}
+
 export async function eliminarDisponibilidadEspacio(id: string) {
   await requireRol("coordinador", "administrador");
   const supabase = await createClient();
