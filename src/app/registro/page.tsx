@@ -89,7 +89,7 @@ function RegisterFormContent() {
           )}
 
           {/* Role picker */}
-          <div className="s-field" style={{ gap: 10 }}>
+          <div className="s-field role-selector" style={{ gap: 10 }}>
             <label>Soy</label>
             <div className="role-pick">
               {ROLES.map(({ id, label, icon }) => (
