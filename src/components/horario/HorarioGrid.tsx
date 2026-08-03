@@ -36,8 +36,9 @@ function horasEntre(inicio: string, fin: string): number {
   return (parseTime(fin) - parseTime(inicio)) / 60;
 }
 
-// Colors for styling sessions dynamically based on materia or grupo
+// El fondo identifica la materia y la franja lateral identifica al docente.
 const COLORS = ["blue", "amber", "ink", "rose", "green"];
+const DOCENTE_COLORS = ["#6D28D9", "#0F766E", "#B45309", "#BE123C", "#0369A1", "#4D7C0F", "#7C2D12"];
 export function HorarioGrid({
   sesiones,
   editable = false,
@@ -48,12 +49,16 @@ export function HorarioGrid({
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
   const materiaColorMap: Record<string, string> = {};
+  const docenteColorMap: Record<string, string> = {};
   // Assign color to each unique materia
   let colorIdx = 0;
   sesiones.forEach((s) => {
     if (!materiaColorMap[s.materia_id]) {
       materiaColorMap[s.materia_id] = COLORS[colorIdx % COLORS.length];
       colorIdx++;
+    }
+    if (!docenteColorMap[s.docente_id]) {
+      docenteColorMap[s.docente_id] = DOCENTE_COLORS[Object.keys(docenteColorMap).length % DOCENTE_COLORS.length];
     }
   });
 
@@ -112,6 +117,7 @@ export function HorarioGrid({
                             grupoNombre={s.grupos?.nombre || "Grupo"}
                             modalidad={s.modalidad}
                             colorClass={colorClass}
+                            docenteColor={docenteColorMap[s.docente_id]}
                             disabled={!editable}
                           />
 
@@ -161,8 +167,9 @@ export function HorarioGrid({
       </div>
 
       {/* Leyenda */}
-      <div className="sc-foot mt-6 pt-4 border-t border-[#E5DFCC] flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-        <div className="sc-legend flex gap-4 flex-wrap">
+      <div className="sc-foot mt-6 space-y-3 border-t border-[#E5DFCC] pt-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-xs font-semibold text-[#1F242D]">Fondo: materia</span>
           {Object.entries(materiaColorMap).map(([mId, color]) => {
             const sesion = sesiones.find((s) => s.materia_id === mId);
             if (!sesion) return null;
@@ -184,8 +191,16 @@ export function HorarioGrid({
             );
           })}
         </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-xs font-semibold text-[#1F242D]">Franja lateral: docente</span>
+          {Object.entries(docenteColorMap).map(([docenteId, color]) => {
+            const sesion = sesiones.find((item) => item.docente_id === docenteId);
+            if (!sesion) return null;
+            return <span key={docenteId} className="flex items-center gap-1.5 text-xs text-[#4A515E]"><i className="h-3 w-1 rounded-full" style={{ backgroundColor: color }} />{sesion.docentes?.perfiles?.nombre || "Docente"}</span>;
+          })}
+        </div>
         <div className="text-xs text-[#4A515E] font-mono">
-          * Arrastra los bloques para cambiar día y hora. El aula se edita al pasar el cursor sobre la tarjeta.
+          * El fondo identifica la materia; la franja lateral mantiene el mismo color para cada docente.
         </div>
       </div>
     </div>

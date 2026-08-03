@@ -30,6 +30,7 @@ function horasEntre(inicio: string, fin: string): number {
 }
 
 const COLORS = ["blue", "amber", "ink", "rose", "green"];
+const DOCENTE_COLORS = ["#6D28D9", "#0F766E", "#B45309", "#BE123C", "#0369A1", "#4D7C0F", "#7C2D12"];
 const colorClasses: Record<string, string> = {
   blue: "bg-blue-50 border-blue-200 text-blue-900",
   amber: "bg-amber-50 border-amber-200 text-amber-900",
@@ -42,12 +43,16 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
   const materiaColorMap: Record<string, string> = {};
+  const docenteColorMap: Record<string, string> = {};
   let colorIdx = 0;
 
   sesiones.forEach((s) => {
     if (!materiaColorMap[s.materia_id]) {
       materiaColorMap[s.materia_id] = COLORS[colorIdx % COLORS.length];
       colorIdx++;
+    }
+    if (!docenteColorMap[s.docente_id]) {
+      docenteColorMap[s.docente_id] = DOCENTE_COLORS[Object.keys(docenteColorMap).length % DOCENTE_COLORS.length];
     }
   });
 
@@ -108,6 +113,8 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                             style={{
                               height: `${duracion * 86 - 4}px`,
                               minHeight: "39px",
+                              borderLeftColor: docenteColorMap[s.docente_id],
+                              borderLeftWidth: "5px",
                             }}
                             className={`absolute left-1 right-1 top-1 rounded-lg border p-2 text-[10px] leading-tight flex flex-col justify-between shadow-sm ${styleClass}`}
                           >
