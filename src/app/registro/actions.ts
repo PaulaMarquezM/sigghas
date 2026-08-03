@@ -17,7 +17,10 @@ export async function register(formData: FormData) {
   const nombre   = (formData.get("nombre")   as string).trim();
   const email    = (formData.get("email")    as string).trim().toLowerCase();
   const password = formData.get("password") as string;
-  const rol      = ((formData.get("rol") as string) || "docente") as RolUsuario;
+  const rol = ((formData.get("rol") as string) || "docente") as RolUsuario;
+  if (rol !== "docente" && rol !== "estudiante") {
+    redirect(`/registro?error=${encodeURIComponent("Solo puedes crear una cuenta de estudiante o docente.")}`);
+  }
 
   // Crear usuario en Supabase Auth. El perfil lo crea automáticamente
   // el trigger handle_new_user a partir de esta metadata (ver

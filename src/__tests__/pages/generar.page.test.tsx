@@ -34,7 +34,7 @@ describe("GenerarPage (Server Component + GenerarForm)", () => {
   it("lista el periodo disponible en el select", async () => {
     const jsx = await GenerarPage();
     render(jsx);
-    const select = screen.getByRole("combobox") as HTMLSelectElement;
+    const select = screen.getByLabelText(/período académico/i) as HTMLSelectElement;
     expect(Array.from(select.options).some((o) => o.textContent === "2026-I")).toBe(true);
   });
 });

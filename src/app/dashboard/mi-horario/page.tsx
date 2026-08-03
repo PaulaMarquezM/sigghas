@@ -109,6 +109,30 @@ export default async function MiHorarioPage() {
     );
   }
 
+  if (perfil.rol === "estudiante") {
+    const { data: matriculas } = await supabase
+      .from("matriculas_estudiante")
+      .select("materia_id, grupo_id, materias(nombre), grupos(nombre)")
+      .eq("estudiante_id", user.id)
+      .eq("periodo_id", periodoActivo.id);
+    const matriculasActivas = matriculas ?? [];
+    const pares = new Set((matriculasActivas as Array<{ materia_id: string; grupo_id: string }>).map((m) => `${m.materia_id}:${m.grupo_id}`));
+    const { data: sesionesPeriodo } = await supabase
+      .from("sesiones")
+      .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
+      .eq("horario_id", horario.id);
+    const sesiones = ((sesionesPeriodo ?? []) as unknown as Array<{ materia_id: string; grupo_id: string }>).filter((s) => pares.has(`${s.materia_id}:${s.grupo_id}`));
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#D8D1BD] pb-5">
+          <div><h1 className="text-2xl font-bold tracking-tight text-[#0E1116]">Mi Horario</h1><p className="text-xs text-gray-500 mt-1">Estudiante: <span className="font-semibold text-gray-800">{perfil.nombre}</span> | Periodo: <span className="font-semibold text-gray-800">{periodoActivo.nombre}</span></p></div>
+          {sesiones.length > 0 && <a href="/api/pdf/mi-horario" target="_blank" rel="noopener noreferrer" className="s-btn s-btn-ghost flex items-center gap-2 border-[#C7BFA6] hover:bg-[#EFEAD9] py-2 px-4 text-xs"><FileText className="w-4 h-4 text-gray-600" /><span>Descargar PDF</span></a>}
+        </div>
+        {sesiones.length > 0 ? <HorarioReadOnly sesiones={sesiones} title={`Horario de ${perfil.nombre}`} subtitle={`Periodo Académico: ${periodoActivo.nombre}`} /> : <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">No tienes materias matriculadas con clases publicadas en este periodo.</div>}
+      </div>
+    );
+  }
+
   // Otros roles no tienen un horario personal; el coordinador consulta
   // los horarios desde /dashboard/horario.
   return (

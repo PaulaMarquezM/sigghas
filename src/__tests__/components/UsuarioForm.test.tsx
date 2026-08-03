@@ -19,11 +19,11 @@ describe("UsuarioForm", () => {
     expect((screen.getByLabelText(/usuario activo/i) as HTMLInputElement).checked).toBe(false);
   });
 
-  it("no permite seleccionar el rol docente ni estudiante", () => {
+  it("no permite seleccionar el rol docente, pero permite crear estudiantes", () => {
     render(<UsuarioForm action={vi.fn()} sedes={sedes} />);
     const select = screen.getByLabelText(/^rol/i) as HTMLSelectElement;
     const opciones = Array.from(select.options).map((o) => o.value);
     expect(opciones).not.toContain("docente");
-    expect(opciones).not.toContain("estudiante");
+    expect(opciones).toContain("estudiante");
   });
 });

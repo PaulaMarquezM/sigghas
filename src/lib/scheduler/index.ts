@@ -11,7 +11,7 @@ const fallo = (codigo: string, mensaje: string): Conflicto => ({ regla: "CONFIGU
  * Genera un borrador completo. No elimina ni modifica un horario existente
  * hasta haber encontrado una solución válida para todas las sesiones.
  */
-export async function generate(periodoId: string, reemplazarBorradorId?: string | null): Promise<ResultadoGeneracion> {
+export async function generate(periodoId: string, reemplazarBorradorId?: string | null, criterio: { grupoId?: string; sedeId?: string } = {}): Promise<ResultadoGeneracion> {
   const log = [`Iniciando generación para el período ${periodoId}.`];
   const sessionSupabase = await createClient();
   const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
@@ -30,8 +30,13 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   if (materiasRes.error || gruposRes.error || espaciosRes.error || docentesRes.error || asignacionesRes.error || disponibilidadEspaciosRes.error) {
     return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_CARGANDO_DATOS", "No se pudieron cargar todos los datos de configuración del horario.")], log: [...log, "Error cargando datos: revisa que la migración 009 esté aplicada."] };
   }
-  const materias = materiasRes.data ?? [];
-  const grupos = gruposRes.data ?? [];
+  let materias = materiasRes.data ?? [];
+  let grupos = gruposRes.data ?? [];
+  if (criterio.grupoId) grupos = grupos.filter((grupo) => grupo.id === criterio.grupoId);
+  if (criterio.sedeId) grupos = grupos.filter((grupo) => grupo.sede_id === criterio.sedeId);
+  if (!grupos.length) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("CRITERIO_SIN_RESULTADOS", "El criterio seleccionado no tiene cursos activos para generar.")], log };
+  const materiasConCurso = new Set(grupos.map((grupo) => grupo.semestre));
+  materias = materias.filter((materia) => materiasConCurso.has(materia.semestre));
   const espacios = espaciosRes.data ?? [];
   const docentes: DocenteConDisponibilidad[] = ((docentesRes.data ?? []) as any[]).map((docente) => ({
     id: docente.id,
@@ -47,7 +52,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
       es_tiempo_oficina: bloque.es_tiempo_oficina,
     })),
   }));
-  log.push(`${materias.length} materias activas, ${grupos.length} grupos activos y ${espacios.length} espacios habilitados.`);
+  log.push(`${materias.length} materias activas, ${grupos.length} cursos activos y ${espacios.length} aulas habilitadas${criterio.grupoId || criterio.sedeId ? " para el criterio seleccionado" : ""}.`);
 
   const conflictosConfiguracion: Conflicto[] = [];
   for (const materia of materias) {

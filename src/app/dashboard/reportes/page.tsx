@@ -9,7 +9,7 @@ import { getSession } from "@/lib/auth";
 export default async function ReportesRedirectPage() {
   const { perfil } = await getSession();
 
-  if (perfil?.rol === "docente") {
+  if (perfil?.rol === "docente" || perfil?.rol === "estudiante") {
     redirect("/api/pdf/mi-horario");
   }
 

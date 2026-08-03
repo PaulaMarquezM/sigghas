@@ -11,6 +11,8 @@ interface Periodo {
   id: string;
   nombre: string;
 }
+interface Grupo { id: string; nombre: string; sede_id: string }
+interface Sede { id: string; nombre: string }
 
 const ESTADO_LABEL: Record<string, string> = {
   publicado: "publicado",
@@ -18,13 +20,15 @@ const ESTADO_LABEL: Record<string, string> = {
   borrador:  "en borrador",
 };
 
-export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
+export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; grupos: Grupo[]; sedes: Sede[] }) {
   const router = useRouter();
   const [periodoId, setPeriodoId]     = useState(periodos.find((p) => p.nombre.includes("2026"))?.id ?? "");
   const [loading, setLoading]         = useState(false);
   const [verificando, setVerificando] = useState(false);
   const [resultado, setResultado]     = useState<ResultadoGeneracion | null>(null);
   const [logs, setLogs]               = useState<string[]>([]);
+  const [grupoId, setGrupoId]         = useState("");
+  const [sedeId, setSedeId]           = useState("");
 
   // Estado del modal de confirmación
   const [confirm, setConfirm] = useState<{
@@ -62,7 +66,7 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
     setLogs([]);
 
     try {
-      const res = await generarHorario(periodoId, reemplazarBorradorId);
+      const res = await generarHorario(periodoId, reemplazarBorradorId, { grupoId: grupoId || undefined, sedeId: sedeId || undefined });
       setResultado(res);
       setLogs(res.log);
     } catch (err) {
@@ -172,6 +176,16 @@ export function GenerarForm({ periodos }: { periodos: Periodo[] }) {
                 </option>
               ))}
             </select>
+          </div>
+          <div className="flex-1">
+            <label htmlFor="sede" className="block text-base font-medium text-gray-800 mb-1.5">Sede <span className="text-gray-400 text-xs">(opcional)</span></label>
+            <select id="sede" value={sedeId} onChange={(e) => { setSedeId(e.target.value); setGrupoId(""); }} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando}>
+              <option value="">Todas las sedes</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}</select>
+          </div>
+          <div className="flex-1">
+            <label htmlFor="curso" className="block text-base font-medium text-gray-800 mb-1.5">Curso <span className="text-gray-400 text-xs">(opcional)</span></label>
+            <select id="curso" value={grupoId} onChange={(e) => setGrupoId(e.target.value)} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando}>
+              <option value="">Todos los cursos</option>{grupos.filter((g) => !sedeId || g.sede_id === sedeId).map((g) => <option key={g.id} value={g.id}>{g.nombre}</option>)}</select>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row"><Button

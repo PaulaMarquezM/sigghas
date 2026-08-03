@@ -5,9 +5,11 @@ import { generate } from "@/lib/scheduler";
 import { createClient } from "@/lib/supabase/server";
 import type { ResultadoGeneracion } from "@/lib/scheduler/types";
 
-export async function generarHorario(periodoId: string, reemplazarBorradorId?: string | null): Promise<ResultadoGeneracion> {
+export type CriterioGeneracion = { grupoId?: string; sedeId?: string };
+
+export async function generarHorario(periodoId: string, reemplazarBorradorId?: string | null, criterio: CriterioGeneracion = {}): Promise<ResultadoGeneracion> {
   await requireRol("coordinador", "administrador");
-  return generate(periodoId, reemplazarBorradorId);
+  return generate(periodoId, reemplazarBorradorId, criterio);
 }
 
 export async function crearHorarioManual(periodoId: string) {

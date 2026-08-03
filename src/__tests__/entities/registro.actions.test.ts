@@ -21,7 +21,7 @@ function fd(fields: Record<string, string>) {
   return formData;
 }
 
-const validForm = () => fd({ nombre: "Ana Pérez", email: "ana@puce.edu.ec", password: "secreta123", rol: "coordinador" });
+const validForm = () => fd({ nombre: "Ana Pérez", email: "ana@puce.edu.ec", password: "secreta123", rol: "estudiante" });
 
 describe("registro actions", () => {
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe("registro actions", () => {
     expect(signUpMock).toHaveBeenCalledWith(
       expect.objectContaining({
         email: "ana@puce.edu.ec",
-        options: expect.objectContaining({ data: { nombre: "Ana Pérez", rol: "coordinador" } }),
+        options: expect.objectContaining({ data: { nombre: "Ana Pérez", rol: "estudiante" } }),
       })
     );
   });

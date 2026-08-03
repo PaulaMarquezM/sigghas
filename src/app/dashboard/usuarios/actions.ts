@@ -19,6 +19,9 @@ export async function createUsuario(_state: ActionResult, formData: FormData): P
     if (rol === "docente") {
       throw new Error("Para crear un docente usa la sección Docentes (necesita datos adicionales de contrato).");
     }
+    if (!['coordinador', 'estudiante', 'administrador', 'apoyo'].includes(rol)) {
+      throw new Error("El rol seleccionado no es válido.");
+    }
 
     const tempPassword = crypto.randomUUID();
     const { data: userData, error: userError } = await admin.auth.admin.createUser({
@@ -57,6 +60,9 @@ export async function updateUsuario(id: string, _state: ActionResult, formData: 
     requireFields({ Rol: rol });
     if (rol === "docente") {
       throw new Error("No se puede asignar el rol docente desde aquí; usa la sección Docentes.");
+    }
+    if (!['coordinador', 'estudiante', 'administrador', 'apoyo'].includes(rol)) {
+      throw new Error("El rol seleccionado no es válido.");
     }
 
     const { error } = await asUntypedDb(admin).from("perfiles").update({ rol, sede_id, activo }).eq("id", id);

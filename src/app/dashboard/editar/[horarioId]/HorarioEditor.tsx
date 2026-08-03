@@ -155,7 +155,8 @@ export default function HorarioEditor({
       return;
     }
 
-    // Guardar inmediatamente si pasa
+    if (!window.confirm("¿Confirmas mover esta clase? Se registrará el cambio en el historial.")) return;
+    // Guardar después de la confirmación y la validación.
     const updates: Pick<Asignacion, "dia_semana" | "hora_inicio" | "hora_fin" | "espacio_id"> = {
       dia_semana: nuevoDia as Asignacion["dia_semana"],
       hora_inicio: nuevaHoraInicio,
@@ -243,6 +244,7 @@ export default function HorarioEditor({
       })
     );
 
+    if (!window.confirm("¿Confirmas cambiar el aula de esta clase? Se registrará el cambio en el historial.")) return;
     const res = await guardarMovimientoAction(sesionId, updates, horario.id);
     if (res.exito) {
       toast.success("Aula asignada correctamente.");

@@ -1,4 +1,4 @@
-export type RolUsuario = "coordinador" | "docente" | "administrador" | "apoyo";
+export type RolUsuario = "coordinador" | "docente" | "estudiante" | "administrador" | "apoyo";
 export type TipoContrato = "tiempo_completo" | "por_horas" | "titular" | "contratado" | "honorarios";
 export type ModalidadClase = "presencial" | "hibrida" | "virtual";
 export type TipoEspacio = "aula" | "laboratorio" | "sala_reuniones" | "auditorio";
@@ -29,6 +29,18 @@ export interface Database {
         };
         Insert: Omit<Database["public"]["Tables"]["docentes"]["Row"], never>;
         Update: Partial<Database["public"]["Tables"]["docentes"]["Insert"]>;
+        Relationships: [];
+      };
+      estudiantes: {
+        Row: { id: string; creado_en: string };
+        Insert: Omit<Database["public"]["Tables"]["estudiantes"]["Row"], "creado_en">;
+        Update: never;
+        Relationships: [];
+      };
+      matriculas_estudiante: {
+        Row: { id: string; estudiante_id: string; periodo_id: string; materia_id: string; grupo_id: string; motivo: "regular" | "arrastre" | "repeticion" | "convalidacion"; creado_en: string };
+        Insert: Omit<Database["public"]["Tables"]["matriculas_estudiante"]["Row"], "id" | "creado_en">;
+        Update: Partial<Database["public"]["Tables"]["matriculas_estudiante"]["Insert"]>;
         Relationships: [];
       };
       disponibilidad_docente: {

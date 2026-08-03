@@ -10,6 +10,8 @@ export default async function GenerarPage() {
     .from("periodos")
     .select("*")
     .order("nombre", { ascending: false });
+  const { data: grupos } = await supabase.from("grupos").select("id, nombre, sede_id").eq("activo", true).order("nombre");
+  const { data: sedes } = await supabase.from("sedes").select("id, nombre").order("nombre");
 
   const { count: statsMaterias } = await supabase.from("materias").select("id", { count: "exact", head: true });
   const { count: statsDocentes } = await supabase.from("docentes").select("id", { count: "exact", head: true });
@@ -37,7 +39,7 @@ export default async function GenerarPage() {
         materias, grupos activos y espacios disponibles. El periodo debe tener datos cargados.
       </div>
 
-      <GenerarForm periodos={periodos ?? []} />
+      <GenerarForm periodos={periodos ?? []} grupos={grupos ?? []} sedes={sedes ?? []} />
     </div>
   );
 }

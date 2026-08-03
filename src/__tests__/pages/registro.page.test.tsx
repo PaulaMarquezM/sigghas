@@ -17,10 +17,10 @@ describe("RegisterPage", () => {
     expect(screen.getByRole("button", { name: /^docente/i }).getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("cambia el rol a coordinador al hacer clic", () => {
+  it("cambia el rol a estudiante al hacer clic", () => {
     render(<RegisterPage />);
-    fireEvent.click(screen.getByRole("button", { name: /coordinador/i }));
-    expect(screen.getByRole("button", { name: /coordinador/i }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: /estudiante/i }));
+    expect(screen.getByRole("button", { name: /estudiante/i }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("alterna mostrar/ocultar contraseña", () => {

@@ -89,20 +89,32 @@ export async function GET(request: Request) {
     userNombre = perfilDocente.nombre;
     userRolLabel = "Docente";
   } else {
-    // Caso Docente: Consultando su propio horario
-    if (perfil.rol !== "docente") {
+    // Caso Docente/Estudiante: únicamente su propio horario.
+    if (perfil.rol === "estudiante") {
+      const { data: matriculas } = await supabase
+        .from("matriculas_estudiante")
+        .select("materia_id, grupo_id")
+        .eq("estudiante_id", user.id)
+        .eq("periodo_id", periodoActivo.id);
+      const pares = new Set(((matriculas ?? []) as Array<{ materia_id: string; grupo_id: string }>).map((m) => `${m.materia_id}:${m.grupo_id}`));
+      const { data } = await supabase
+        .from("sesiones")
+        .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
+        .eq("horario_id", horario.id);
+      sesiones = ((data ?? []) as any[]).filter((sesion) => pares.has(`${sesion.materia_id}:${sesion.grupo_id}`));
+      userRolLabel = "Estudiante";
+    } else if (perfil.rol !== "docente") {
       return new Response("No autorizado", { status: 403 });
+    } else {
+      const { data } = await supabase
+        .from("sesiones")
+        .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
+        .eq("horario_id", horario.id)
+        .eq("docente_id", user.id);
+      sesiones = data || [];
+      userRolLabel = "Docente";
     }
-
-    const { data } = await supabase
-      .from("sesiones")
-      .select("*, materias(nombre, codigo), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre), espacios(nombre)")
-      .eq("horario_id", horario.id)
-      .eq("docente_id", user.id);
-
-    sesiones = data || [];
     userNombre = perfil.nombre;
-    userRolLabel = "Docente";
   }
 
   // 3. Generar PDF Stream

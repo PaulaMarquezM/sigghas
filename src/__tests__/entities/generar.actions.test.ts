@@ -22,7 +22,7 @@ describe("generar actions", () => {
     generateMock.mockResolvedValue({ exito: true, log: [] });
     const resultado = await generarHorario("p-1", null);
     expect(requireRolMock).toHaveBeenCalledWith("coordinador", "administrador");
-    expect(generateMock).toHaveBeenCalledWith("p-1", null);
+    expect(generateMock).toHaveBeenCalledWith("p-1", null, {});
     expect(resultado).toEqual({ exito: true, log: [] });
   });
 

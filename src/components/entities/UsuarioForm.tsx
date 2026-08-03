@@ -11,6 +11,7 @@ import type { RolUsuario } from "@/types/database";
 // porque además necesita tipo_contrato, horas máximas, etc.
 const ROLES_DISPONIBLES: { value: RolUsuario; label: string }[] = [
   { value: "coordinador", label: "Coordinador Académico" },
+  { value: "estudiante", label: "Estudiante" },
   { value: "administrador", label: "Administrador" },
   { value: "apoyo", label: "Personal de Apoyo" },
 ];
