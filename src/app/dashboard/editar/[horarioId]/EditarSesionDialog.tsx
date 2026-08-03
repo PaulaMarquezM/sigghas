@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, type FormEvent } from "react";
 import { Pencil, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,11 +13,15 @@ export function EditarSesionDialog({ horarioId, sesion, opciones, onClose }: { h
   const router = useRouter();
   const [pendiente, startTransition] = useTransition();
   const inputClass = "h-10 w-full rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15";
-  const guardar = (formData: FormData) => startTransition(async () => {
+  const guardar = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
     const resultado = await editarSesionManualAction(horarioId, sesion.id, { materia_id: String(formData.get("materia_id") ?? ""), grupo_id: String(formData.get("grupo_id") ?? ""), docente_id: String(formData.get("docente_id") ?? ""), espacio_id: String(formData.get("espacio_id") ?? "") || null, dia_semana: Number(formData.get("dia_semana")), hora_inicio: String(formData.get("hora_inicio") ?? ""), hora_fin: String(formData.get("hora_fin") ?? "") });
     if (!resultado.exito) return toast.error(resultado.error);
     toast.success("Clase actualizada."); onClose(); router.refresh();
-  });
+    });
+  };
   const eliminar = () => {
     if (!window.confirm("¿Eliminar esta clase? Esta acción quedará registrada en el historial.")) return;
     startTransition(async () => { const resultado = await eliminarSesionManualAction(horarioId, sesion.id); if (!resultado.exito) return toast.error(resultado.error); toast.success("Clase eliminada."); onClose(); router.refresh(); });
@@ -25,7 +29,7 @@ export function EditarSesionDialog({ horarioId, sesion, opciones, onClose }: { h
   return <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="editar-clase-titulo">
     <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#D8D1BD] bg-[#F5F1E8] p-6 shadow-2xl">
       <div className="mb-5 flex items-start justify-between"><div><h2 id="editar-clase-titulo" className="flex items-center gap-2 text-2xl font-semibold"><Pencil className="size-5 text-[#1D3FD9]" />Editar clase</h2><p className="mt-1 text-sm text-gray-600">Los cambios se validan contra las reglas antes de guardarse.</p></div><button onClick={onClose} aria-label="Cerrar"><X className="size-5" /></button></div>
-      <form action={guardar} className="grid gap-4 sm:grid-cols-2">
+      <form onSubmit={guardar} className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5 text-sm font-medium">Curso *<select name="grupo_id" defaultValue={sesion.grupo_id} className={inputClass}>{opciones.cursos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
         <label className="grid gap-1.5 text-sm font-medium">Materia *<select name="materia_id" defaultValue={sesion.materia_id} className={inputClass}>{opciones.materias.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
         <label className="grid gap-1.5 text-sm font-medium">Docente *<select name="docente_id" defaultValue={sesion.docente_id} className={inputClass}>{opciones.docentes.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>

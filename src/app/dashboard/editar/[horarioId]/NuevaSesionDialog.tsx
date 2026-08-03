@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -22,7 +22,9 @@ export function NuevaSesionDialog({ horarioId, opciones }: { horarioId: string; 
   const cursos = useMemo(() => opciones.cursos.filter((item) => String(item.semestre) === semestre), [opciones.cursos, semestre]);
   const inputClass = "h-11 w-full min-w-0 rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15";
 
-  function guardar(formData: FormData) {
+  function guardar(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     startTransition(async () => {
       const resultado = await crearSesionManualAction(horarioId, {
         materia_id: String(formData.get("materia_id") ?? ""),
@@ -48,7 +50,7 @@ export function NuevaSesionDialog({ horarioId, opciones }: { horarioId: string; 
     {abierto && <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="nueva-clase-titulo">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#D8D1BD] bg-[#F5F1E8] p-6 shadow-2xl">
         <div className="mb-5 flex items-start justify-between"><div><h2 id="nueva-clase-titulo" className="text-2xl font-semibold">Agregar clase manualmente</h2><p className="mt-1 text-sm text-gray-600">Selecciona curso, materia, docente, aula y hora. Las reglas se validarán antes de guardar.</p></div><button onClick={() => setAbierto(false)} aria-label="Cerrar"><X className="size-5" /></button></div>
-        <form action={guardar} className="grid gap-4 sm:grid-cols-2">
+        <form onSubmit={guardar} className="grid gap-4 sm:grid-cols-2">
           <label className="grid gap-1.5 text-sm font-medium">Semestre *<select value={semestre} onChange={(e) => setSemestre(e.target.value)} className={inputClass}>{[...new Set(opciones.cursos.map((item) => item.semestre))].sort().map((item) => <option key={item} value={item}>{item}.º semestre</option>)}</select></label>
           <label className="grid gap-1.5 text-sm font-medium">Curso *<select key={`curso-${semestre}`} name="grupo_id" required className={inputClass}><option value="">Selecciona</option>{cursos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
           <label className="grid gap-1.5 text-sm font-medium">Materia *<select key={`materia-${semestre}`} name="materia_id" required className={inputClass}><option value="">Selecciona</option>{materias.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
