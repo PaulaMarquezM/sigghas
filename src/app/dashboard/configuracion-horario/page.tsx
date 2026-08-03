@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { eliminarAsignacionDocente, eliminarDisponibilidadEspacio, guardarDisponibilidadEspacio } from "./actions";
+import { eliminarAsignacionDocente, guardarDisponibilidadEspacio } from "./actions";
 import { AsignacionDocenteForm } from "./AsignacionDocenteForm";
+import { DisponibilidadEspacioRow } from "./DisponibilidadEspacioRow";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -36,7 +37,7 @@ export default async function ConfiguracionHorarioPage() {
         <label className="grid gap-1 text-sm">Hasta *<input name="hora_fin" type="time" min="08:00" max="17:00" step="1800" defaultValue="17:00" required className="rounded-lg border p-2.5" /></label>
         <div><label className="mb-2 flex gap-2 text-sm"><input name="disponible" type="checkbox" defaultChecked /> Disponible</label><button className="rounded-lg bg-[#1D3FD9] px-4 py-2.5 text-sm font-semibold text-white">Guardar franja</button></div>
       </form>
-      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="py-2">Aula</th><th>Día</th><th>Franja</th><th>Estado</th><th /></tr></thead><tbody>{(disponibilidad.data as any[] ?? []).map((b) => <tr key={b.id} className="border-t"><td className="py-2">{b.espacios?.nombre}</td><td>{DIAS[b.dia_semana - 1]}</td><td>{b.hora_inicio?.slice(0, 5)}–{b.hora_fin?.slice(0, 5)}</td><td>{b.disponible ? "Disponible" : "No disponible"}</td><td className="text-right"><form action={eliminarDisponibilidadEspacio.bind(null, b.id)}><button className="font-medium text-[#B33A2B]">Quitar</button></form></td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="py-2">Aula</th><th>Día</th><th>Franja</th><th>Estado</th><th /></tr></thead><tbody>{(disponibilidad.data as any[] ?? []).map((b) => <DisponibilidadEspacioRow key={b.id} row={{ id: b.id, espacioNombre: b.espacios?.nombre ?? "", dia_semana: b.dia_semana, hora_inicio: b.hora_inicio, hora_fin: b.hora_fin, disponible: b.disponible }} />)}</tbody></table></div>
     </section>
   </div>;
 }
