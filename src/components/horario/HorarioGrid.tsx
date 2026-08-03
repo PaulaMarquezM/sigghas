@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { Pencil } from "lucide-react";
 import { HorarioCell } from "./HorarioCell";
 import { BloqueDraggable } from "./BloqueDraggable";
 
@@ -9,6 +10,7 @@ interface HorarioGridProps {
   sesiones: any[];
   editable?: boolean;
   onEspacioChange?: (sesionId: string, nuevoEspacioId: string | null) => void;
+  onEditSession?: (sesion: any) => void;
   espaciosDisponibles?: any[];
 }
 
@@ -40,6 +42,7 @@ export function HorarioGrid({
   sesiones,
   editable = false,
   onEspacioChange,
+  onEditSession,
   espaciosDisponibles = [],
 }: HorarioGridProps) {
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
@@ -111,6 +114,19 @@ export function HorarioGrid({
                             colorClass={colorClass}
                             disabled={!editable}
                           />
+
+                          {editable && onEditSession && (
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => { event.stopPropagation(); onEditSession(s); }}
+                              className="absolute right-2 top-2 z-30 grid size-7 place-items-center rounded-md bg-black/55 text-white opacity-0 transition-opacity hover:bg-black/75 group-hover:opacity-100 focus:opacity-100"
+                              aria-label={`Editar ${s.materias?.nombre ?? "sesión"}`}
+                              title="Editar o eliminar sesión"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                          )}
 
                           {/* Selector de Aula cuando es presencial y es editable */}
                           {editable && s.modalidad === "presencial" && onEspacioChange && (

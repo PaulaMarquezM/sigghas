@@ -165,6 +165,44 @@ export async function crearSesionManualAction(horarioId: string, input: NuevaSes
   return { exito: true };
 }
 
+export async function editarSesionManualAction(horarioId: string, sesionId: string, input: NuevaSesionInput) {
+  const { perfil, admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
+  if (!input.materia_id || !input.grupo_id || !input.docente_id || !input.hora_inicio || !input.hora_fin) return { exito: false, error: "Completa todos los campos obligatorios." };
+  if (input.hora_inicio >= input.hora_fin) return { exito: false, error: "La hora de fin debe ser posterior a la hora de inicio." };
+
+  const { data: anterior } = await supabase.from("sesiones").select("*").eq("id", sesionId).eq("horario_id", horarioId).maybeSingle();
+  if (!anterior) return { exito: false, error: "La clase que intentas editar no existe en este horario." };
+  const data = await getHorarioEditorData(horarioId);
+  const materia = data.contexto.materias.find((item) => item.id === input.materia_id);
+  const curso = data.contexto.grupos.find((item) => item.id === input.grupo_id);
+  const docente = data.contexto.docentes.find((item) => item.id === input.docente_id);
+  const aula = data.contexto.espacios.find((item) => item.id === input.espacio_id);
+  if (!materia || !curso || !docente) return { exito: false, error: "La materia, curso o docente seleccionado ya no está disponible." };
+  if (materia.semestre !== curso.semestre) return { exito: false, error: "La materia y el curso deben pertenecer al mismo semestre." };
+  const espacioId = materia.modalidad === "presencial" ? input.espacio_id : null;
+  if (materia.modalidad === "presencial" && !espacioId) return { exito: false, error: "Selecciona un aula para la clase presencial." };
+  const candidato = { materia_id: materia.id, grupo_id: curso.id, docente_id: docente.id, espacio_id: espacioId, modalidad: materia.modalidad, dia: input.dia_semana as any, hora_inicio: input.hora_inicio, hora_fin: input.hora_fin, sede_id: aula?.sede_id ?? curso.sede_id };
+  const validacion = validarCandidato(candidato, data.contexto, data.asignaciones.filter((item) => item.id !== sesionId));
+  if (!validacion.valida) return { exito: false, error: validacion.conflicto.mensaje };
+  const { error } = await supabase.from("sesiones").update({ materia_id: materia.id, grupo_id: curso.id, docente_id: docente.id, espacio_id: espacioId, modalidad: materia.modalidad, dia_semana: input.dia_semana, hora_inicio: input.hora_inicio, hora_fin: input.hora_fin, sede_id: candidato.sede_id }).eq("id", sesionId).eq("horario_id", horarioId);
+  if (error) return { exito: false, error: error.message };
+  await supabase.from("historial_cambios").insert({ sesion_id: sesionId, horario_id: horarioId, usuario_id: perfil.id, accion: "edicion", detalle: { antes: anterior, despues: candidato } });
+  revalidatePath(`/dashboard/editar/${horarioId}`);
+  return { exito: true };
+}
+
+export async function eliminarSesionManualAction(horarioId: string, sesionId: string) {
+  const { perfil, admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
+  const { data: sesion } = await supabase.from("sesiones").select("*").eq("id", sesionId).eq("horario_id", horarioId).maybeSingle();
+  if (!sesion) return { exito: false, error: "La clase que intentas eliminar no existe en este horario." };
+  const { error: historialError } = await supabase.from("historial_cambios").insert({ sesion_id: sesionId, horario_id: horarioId, usuario_id: perfil.id, accion: "eliminacion", detalle: { sesion } });
+  if (historialError) return { exito: false, error: `No se pudo registrar el cambio: ${historialError.message}` };
+  const { error } = await supabase.from("sesiones").delete().eq("id", sesionId).eq("horario_id", horarioId);
+  if (error) return { exito: false, error: error.message };
+  revalidatePath(`/dashboard/editar/${horarioId}`);
+  return { exito: true };
+}
+
 /**
  * Valida un movimiento específico de una sesión antes de guardarlo
  */
