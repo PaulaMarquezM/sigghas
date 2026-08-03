@@ -18,13 +18,16 @@ export function EditarSesionDialog({ horarioId, sesion, opciones, onClose }: { h
     const formData = new FormData(event.currentTarget);
     startTransition(async () => {
     const resultado = await editarSesionManualAction(horarioId, sesion.id, { materia_id: String(formData.get("materia_id") ?? ""), grupo_id: String(formData.get("grupo_id") ?? ""), docente_id: String(formData.get("docente_id") ?? ""), espacio_id: String(formData.get("espacio_id") ?? "") || null, dia_semana: Number(formData.get("dia_semana")), hora_inicio: String(formData.get("hora_inicio") ?? ""), hora_fin: String(formData.get("hora_fin") ?? "") });
-    if (!resultado.exito) return toast.error(resultado.error);
+    if (!resultado.exito) {
+      toast.error(resultado.error);
+      return;
+    }
     toast.success("Clase actualizada."); onClose(); router.refresh();
     });
   };
   const eliminar = () => {
     if (!window.confirm("¿Eliminar esta clase? Esta acción quedará registrada en el historial.")) return;
-    startTransition(async () => { const resultado = await eliminarSesionManualAction(horarioId, sesion.id); if (!resultado.exito) return toast.error(resultado.error); toast.success("Clase eliminada."); onClose(); router.refresh(); });
+    startTransition(async () => { const resultado = await eliminarSesionManualAction(horarioId, sesion.id); if (!resultado.exito) { toast.error(resultado.error); return; } toast.success("Clase eliminada."); onClose(); router.refresh(); });
   };
   return <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="editar-clase-titulo">
     <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#D8D1BD] bg-[#F5F1E8] p-6 shadow-2xl">

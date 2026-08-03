@@ -5,6 +5,7 @@ import React from "react";
 import { Pencil } from "lucide-react";
 import { HorarioCell } from "./HorarioCell";
 import { BloqueDraggable } from "./BloqueDraggable";
+import { generarSlots30, indiceColorEstable } from "@/lib/horario";
 
 interface HorarioGridProps {
   sesiones: any[];
@@ -23,7 +24,7 @@ const DIAS = [
   { id: 6, label: "Sábado" },
 ];
 
-const HORAS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
+const SLOT_HEIGHT_PX = 42;
 
 // Helper to convert time "HH:MM" to minutes
 function parseTime(t: string): number {
@@ -46,13 +47,12 @@ export function HorarioGrid({
   espaciosDisponibles = [],
 }: HorarioGridProps) {
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const horas = generarSlots30(sesiones);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
   const docenteColorMap: Record<string, string> = {};
-  let colorIdx = 0;
   sesiones.forEach((s) => {
     if (!docenteColorMap[s.docente_id]) {
-      docenteColorMap[s.docente_id] = COLORS[colorIdx % COLORS.length];
-      colorIdx++;
+      docenteColorMap[s.docente_id] = COLORS[indiceColorEstable(s.docente_id, COLORS.length)];
     }
   });
 
@@ -71,8 +71,8 @@ export function HorarioGrid({
 
         {/* Grilla principal */}
         <div className="relative">
-          {HORAS.map((hora) => (
-            <div key={hora} className="grid min-h-[45px] border-b border-[#E5DFCC]/60 last:border-b-0" style={gridStyle}>
+          {horas.map((hora) => (
+            <div key={hora} className="grid min-h-[42px] border-b border-[#E5DFCC]/60 last:border-b-0" style={gridStyle}>
               {/* Hora row label */}
               <div className="flex items-start justify-center pt-2 text-[#4A515E] font-mono text-xs font-medium pr-3">
                 {hora}
@@ -97,8 +97,8 @@ export function HorarioGrid({
                           key={s.id}
                           className="relative w-full group"
                           style={{
-                            height: `${duracion * 90 - 4}px`,
-                            minHeight: "41px",
+                            height: `${duracion * SLOT_HEIGHT_PX - 4}px`,
+                            minHeight: "38px",
                             zIndex: 10,
                           }}
                         >

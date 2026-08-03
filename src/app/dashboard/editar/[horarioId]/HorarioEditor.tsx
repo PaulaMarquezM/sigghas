@@ -58,7 +58,7 @@ export default function HorarioEditor({
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>(initialAsignaciones);
   const [sesiones, setSesiones] = useState<SesionVista[]>(initialSesiones);
   const [isPending, startTransition] = useTransition();
-  const [cursoFiltroId, setCursoFiltroId] = useState("");
+  const [cursoFiltroId, setCursoFiltroId] = useState(opcionesManuales.cursos[0]?.id ?? "");
   const [sesionEnEdicion, setSesionEnEdicion] = useState<SesionVista | null>(null);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function HorarioEditor({
     return localConflictos;
   }, [asignaciones, contexto]);
   const sesionesVisibles = useMemo(
-    () => cursoFiltroId ? sesiones.filter((sesion) => sesion.grupo_id === cursoFiltroId) : sesiones,
+    () => cursoFiltroId ? sesiones.filter((sesion) => sesion.grupo_id === cursoFiltroId) : [],
     [cursoFiltroId, sesiones]
   );
 
@@ -341,7 +341,7 @@ export default function HorarioEditor({
         <label className="grid gap-1.5 text-sm font-medium text-[#252B36] sm:w-80">
           <span className="flex items-center gap-2"><Filter className="size-4 text-[#1D3FD9]" />Filtrar por curso</span>
           <select value={cursoFiltroId} onChange={(event) => setCursoFiltroId(event.target.value)} className="h-10 rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15">
-            <option value="">Todos los cursos</option>
+            <option value="" disabled>Selecciona un curso</option>
             {opcionesManuales.cursos.map((curso) => <option key={curso.id} value={curso.id}>{curso.nombre}</option>)}
           </select>
         </label>

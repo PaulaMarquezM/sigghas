@@ -41,6 +41,7 @@ export function BloqueDraggable({
     touchAction: "none",
     position: transform ? "absolute" : "relative",
     width: transform ? "200px" : "100%",
+    height: "100%",
     zIndex: transform ? 999 : 1,
   };
 

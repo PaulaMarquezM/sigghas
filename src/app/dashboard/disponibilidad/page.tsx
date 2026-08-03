@@ -35,7 +35,8 @@ export default async function DisponibilidadAulasPage() {
       .select("id")
       .eq("periodo_id", periodoActivo.id);
 
-    const horarioIds = (horarios ?? []).map((horario) => horario.id);
+    const horarioRows = Array.isArray(horarios) ? horarios : horarios ? [horarios] : [];
+    const horarioIds = horarioRows.map((horario) => horario.id);
 
     if (horarioIds.length > 0) {
       // 4. Cruzar las sesiones de todos los horarios del período activo.

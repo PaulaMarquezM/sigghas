@@ -2,6 +2,7 @@
 import React from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { styles } from "./styles";
+import { generarSlots30, indiceColorEstable } from "@/lib/horario";
 
 interface MiHorarioPDFProps {
   periodo: any;
@@ -18,31 +19,16 @@ const DIAS = [
   { id: 5, label: "Viernes" },
 ];
 
-const HORAS = [
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
-
 // Colors
 const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5"];
 const borderColors = ["#BEE3F8", "#FEEB8C", "#E2E8F0", "#FEB2B2", "#9AE6B4"];
 const textColors = ["#2B6CB0", "#744210", "#2D3748", "#9B2C2C", "#22543D"];
 
 export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: MiHorarioPDFProps) {
-  const uniqueMateriaIds = Array.from(new Set(sesiones.map((s) => s.materia_id)));
-  const materiaColors: Record<string, number> = {};
-  uniqueMateriaIds.forEach((id, idx) => {
-    materiaColors[id] = idx % bgColors.length;
+  const uniqueDocenteIds = Array.from(new Set(sesiones.map((s) => s.docente_id)));
+  const docenteColors: Record<string, number> = {};
+  uniqueDocenteIds.forEach((id) => {
+    docenteColors[id] = indiceColorEstable(id, bgColors.length);
   });
 
   return (
@@ -95,7 +81,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
           </View>
 
           {/* Hour Rows */}
-          {HORAS.map((hora) => (
+          {generarSlots30(sesiones).map((hora) => (
             <View key={hora} style={styles.tableRow}>
               {/* Hour Label */}
               <View style={styles.tableColHour}>
@@ -115,7 +101,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
                 return (
                   <View key={dia.id} style={colStyle}>
                     {sesionesEnCelda.map((s) => {
-                      const colorIdx = materiaColors[s.materia_id] ?? 0;
+                      const colorIdx = docenteColors[s.docente_id] ?? 0;
                       const customBlockStyle = {
                         backgroundColor: bgColors[colorIdx],
                         borderColor: borderColors[colorIdx],
