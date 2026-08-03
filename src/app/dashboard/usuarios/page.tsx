@@ -72,7 +72,6 @@ export default async function UsuariosPage({
             <option value="">Todos los roles</option>
             <option value="coordinador">Coordinador</option>
             <option value="docente">Docente</option>
-            <option value="estudiante">Estudiante</option>
             <option value="administrador">Administrador</option>
             <option value="apoyo">Personal de apoyo</option>
           </NativeSelect>

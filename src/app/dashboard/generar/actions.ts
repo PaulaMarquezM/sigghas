@@ -16,7 +16,7 @@ export async function crearHorarioManual(periodoId: string) {
   const supabase = await createClient();
   const { data: borradores } = await supabase.from("horarios").select("id").eq("periodo_id", periodoId).eq("estado", "borrador").order("generado_en", { ascending: false }).limit(1);
   if (borradores?.[0]) return { exito: true, horario_id: borradores[0].id };
-  const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString() }).select("id").single();
+  const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString(), aprobado_en: null, aprobado_por: null }).select("id").single();
   if (error || !data) return { exito: false, error: error?.message ?? "No se pudo crear el horario manual." };
   return { exito: true, horario_id: data.id };
 }
