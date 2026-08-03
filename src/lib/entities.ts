@@ -63,6 +63,12 @@ export function formBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on" || formData.get(key) === "true";
 }
 
+export function requireFields(fields: Record<string, string | null>) {
+  for (const [label, value] of Object.entries(fields)) {
+    if (!value) throw new Error(`${label} es obligatorio.`);
+  }
+}
+
 export async function getSedes(): Promise<Sede[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("sedes").select("*").order("nombre");

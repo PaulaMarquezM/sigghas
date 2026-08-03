@@ -4,16 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { asUntypedDb, errorMessage, formBoolean, formString, type ActionResult } from "@/lib/entities";
-
-function payload(formData: FormData) {
-  const nombre = formString(formData, "nombre").toUpperCase();
-  const fecha_inicio = formString(formData, "fecha_inicio");
-  const fecha_fin = formString(formData, "fecha_fin");
-  if (!nombre || !fecha_inicio || !fecha_fin) throw new Error("Todos los campos del periodo son obligatorios.");
-  if (fecha_inicio >= fecha_fin) throw new Error("La fecha de inicio debe ser menor que la fecha de fin.");
-  return { nombre, fecha_inicio, fecha_fin, activo: formBoolean(formData, "activo") };
-}
+import { asUntypedDb, errorMessage, type ActionResult } from "@/lib/entities";
+import { payload } from "./validation";
 
 async function deactivateOthers(active: boolean, exceptId?: string) {
   if (!active) return;

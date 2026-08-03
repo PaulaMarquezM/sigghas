@@ -33,7 +33,10 @@ export function NuevaSesionDialog({ horarioId, opciones }: { horarioId: string; 
         hora_inicio: String(formData.get("hora_inicio") ?? ""),
         hora_fin: String(formData.get("hora_fin") ?? ""),
       });
-      if (!resultado.exito) return toast.error(resultado.error);
+      if (!resultado.exito) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success("Clase agregada al horario.");
       setAbierto(false);
       router.refresh();

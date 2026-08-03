@@ -13,7 +13,6 @@ const ROLES_DISPONIBLES: { value: RolUsuario; label: string }[] = [
   { value: "coordinador", label: "Coordinador Académico" },
   { value: "administrador", label: "Administrador" },
   { value: "apoyo", label: "Personal de Apoyo" },
-  { value: "estudiante", label: "Estudiante" },
 ];
 
 export type UsuarioFormValue = {
@@ -54,7 +53,7 @@ export function UsuarioForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Rol" htmlFor="rol">
-          <NativeSelect id="rol" name="rol" defaultValue={value?.rol ?? "estudiante"} required>
+          <NativeSelect id="rol" name="rol" defaultValue={value?.rol ?? "apoyo"} required>
             {ROLES_DISPONIBLES.map((rol) => (
               <option key={rol.value} value={rol.value}>{rol.label}</option>
             ))}

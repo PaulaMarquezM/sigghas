@@ -29,9 +29,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Rutas públicas que no requieren autenticación
-  const publicPaths = ["/", "/login", "/registro", "/auth/callback"];
-  const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));
+  // Rutas públicas que no requieren autenticación. "/" se compara exacto:
+  // con startsWith("/") cualquier ruta (todas empiezan con "/") calificaría
+  // como pública y el middleware nunca redirigiría a nadie.
+  const publicPrefixes = ["/login", "/registro", "/auth/callback"];
+  const isPublicPath = pathname === "/" || publicPrefixes.some((p) => pathname.startsWith(p));
 
   // Si no hay usuario y la ruta no es pública → redirigir al login
   if (!user && !isPublicPath) {

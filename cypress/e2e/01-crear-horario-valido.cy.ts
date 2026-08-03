@@ -27,7 +27,7 @@ describe("Generación de horarios — caso válido", () => {
     cy.get("select#periodo").should("be.visible");
     cy.wait(1000);
     cy.get("select#periodo").select(fixture.periodoNombre);
-    cy.contains("button", "Generar Horario").click();
+    cy.contains("button", "Generar automáticamente").click();
     cy.contains("Horario generado exitosamente", { timeout: 20000 }).should("be.visible");
     cy.contains("Editar Horario").should("be.visible");
     cy.screenshot("01-horario-valido-exito", { capture: "viewport" });

@@ -1,0 +1,698 @@
+<title>SIGGHAS — Reporte de Bugs</title>
+<style>
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #e7ebef;
+    --border: #d3d9e0;
+    --text: #1b1f27;
+    --text-muted: #5b6472;
+    --accent: #2f6f8f;
+    --accent-soft: rgba(47, 111, 143, 0.10);
+    --sev-alta: #c3453c;
+    --sev-alta-bg: rgba(195, 69, 60, 0.10);
+    --sev-media: #a97418;
+    --sev-media-bg: rgba(169, 116, 24, 0.12);
+    --sev-baja: #3f8a5f;
+    --sev-baja-bg: rgba(63, 138, 95, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --surface: #1c1f26;
+      --surface-2: #23272f;
+      --border: #333844;
+      --text: #eceef2;
+      --text-muted: #8b93a3;
+      --accent: #6ba7c4;
+      --accent-soft: rgba(107, 167, 196, 0.12);
+      --sev-alta: #e07068;
+      --sev-alta-bg: rgba(224, 112, 104, 0.14);
+      --sev-media: #dba33c;
+      --sev-media-bg: rgba(219, 163, 60, 0.14);
+      --sev-baja: #6cbf8c;
+      --sev-baja-bg: rgba(108, 191, 140, 0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --surface: #1c1f26;
+    --surface-2: #23272f;
+    --border: #333844;
+    --text: #eceef2;
+    --text-muted: #8b93a3;
+    --accent: #6ba7c4;
+    --accent-soft: rgba(107, 167, 196, 0.12);
+    --sev-alta: #e07068;
+    --sev-alta-bg: rgba(224, 112, 104, 0.14);
+    --sev-media: #dba33c;
+    --sev-media-bg: rgba(219, 163, 60, 0.14);
+    --sev-baja: #6cbf8c;
+    --sev-baja-bg: rgba(108, 191, 140, 0.14);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #e7ebef;
+    --border: #d3d9e0;
+    --text: #1b1f27;
+    --text-muted: #5b6472;
+    --accent: #2f6f8f;
+    --accent-soft: rgba(47, 111, 143, 0.10);
+    --sev-alta: #c3453c;
+    --sev-alta-bg: rgba(195, 69, 60, 0.10);
+    --sev-media: #a97418;
+    --sev-media-bg: rgba(169, 116, 24, 0.12);
+    --sev-baja: #3f8a5f;
+    --sev-baja-bg: rgba(63, 138, 95, 0.10);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  ::selection { background: var(--accent-soft); }
+
+  a { color: var(--accent); }
+
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .masthead .eyebrow {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .masthead h1 {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: clamp(1.7rem, 4vw, 2.35rem);
+    margin: 0;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .masthead .sub {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .meta-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+  }
+  .meta-row div span:first-child {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.15rem;
+  }
+  .meta-row div span:last-child {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+
+  /* ---------- Section headings ---------- */
+  h2.section-title {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 3rem 0 0.35rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-note {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin: 0 0 1.25rem;
+    max-width: 62ch;
+  }
+
+  /* ---------- Summary table ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+  table.summary {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+    min-width: 640px;
+  }
+  table.summary thead th {
+    background: var(--accent);
+    color: #fff;
+    text-align: left;
+    font-weight: 600;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  table.summary td {
+    padding: 0.55rem 0.75rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.summary tbody tr:nth-child(even) { background: var(--surface-2); }
+  table.summary td.num {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    color: var(--text-muted);
+  }
+  table.summary td a { text-decoration: none; }
+  table.summary td a:hover { text-decoration: underline; }
+
+  .chip {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chip.alta  { color: var(--sev-alta);  background: var(--sev-alta-bg); }
+  .chip.media { color: var(--sev-media); background: var(--sev-media-bg); }
+  .chip.baja  { color: var(--sev-baja);  background: var(--sev-baja-bg); }
+
+  /* ---------- Bug report cards ---------- */
+  .bug {
+    margin-top: 2.25rem;
+    scroll-margin-top: 1rem;
+  }
+  .bug-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+  .bug-id {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .bug-head h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  table.fields {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    font-size: 0.87rem;
+    margin-bottom: 1rem;
+  }
+  table.fields tr { border-top: 1px solid var(--border); }
+  table.fields tr:first-child { border-top: none; }
+  table.fields th {
+    text-align: left;
+    font-weight: 600;
+    background: var(--surface-2);
+    padding: 0.5rem 0.75rem;
+    width: 190px;
+    color: var(--text-muted);
+  }
+  table.fields td {
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+  }
+  table.fields td code, .prose code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    background: var(--surface-2);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
+
+  .prose h4 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 1rem 0 0.35rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3rem;
+  }
+  .prose p { margin: 0 0 0.6rem; max-width: 72ch; }
+  .prose ol, .prose ul { margin: 0 0 0.6rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: 0.3rem; }
+  .prose .result-actual { color: var(--sev-alta); }
+  .prose .result-esperado { color: var(--sev-baja); }
+
+  /* ---------- Code smells table ---------- */
+  table.smells {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 640px;
+  }
+  table.smells thead th {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    text-align: left;
+    font-weight: 600;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--border);
+  }
+  table.smells td {
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.smells tr:nth-child(even) td { background: var(--surface-2); }
+
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 640px) {
+    table.fields th { width: 130px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">QA · Reporte de Bugs</span>
+    <h1>SIGGHAS — Sistema Inteligente de Generación y Gestión de Horarios</h1>
+    <span class="sub">Revisión de esquema SQL, políticas RLS y motor de generación de horarios (rama <code>main</code>, post-pull de <code>origin/main</code>)</span>
+    <div class="meta-row">
+      <div><span>Tester</span><span>Elkin Renan Saltos Macías</span></div>
+      <div><span>Fecha del reporte</span><span>20/07/2026</span></div>
+      <div><span>Repositorio</span><span>PaulaMarquezM/sigghas</span></div>
+      <div><span>Rama revisada</span><span>main @ fd51001</span></div>
+      <div><span>Bugs abiertos</span><span>10</span></div>
+      <div><span>Bugs corregidos</span><span>2</span></div>
+      <div><span>Code smells</span><span>7</span></div>
+    </div>
+  </header>
+
+  <h2 class="section-title">Resumen</h2>
+  <p class="section-note">Vista rápida de todos los bugs encontrados, ordenados por prioridad. El detalle de cada uno está más abajo.</p>
+  <div class="table-wrap">
+    <table class="summary">
+      <thead>
+        <tr><th>No.</th><th>Título</th><th>Prioridad</th><th>Componente</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">001</td><td><a href="#bug-001">La tabla <code>sedes</code> nunca activa RLS</a></td><td><span class="chip alta">Alta</span></td><td>Base de datos · RLS</td><td>Abierto</td></tr>
+        <tr><td class="num">002</td><td><a href="#bug-002"><code>docentes</code> con RLS activo y cero policies</a></td><td><span class="chip alta">Alta</span></td><td>Base de datos · RLS</td><td>Abierto</td></tr>
+        <tr><td class="num">006</td><td><a href="#bug-006">Reglas RN01–RN16 no se ejecutan en producción</a></td><td><span class="chip alta">Alta</span></td><td>src/lib/scheduler</td><td>Abierto</td></tr>
+        <tr><td class="num">008</td><td><a href="#bug-008">Un horario publicado puede eliminarse con DELETE</a></td><td><span class="chip alta">Alta</span></td><td>Base de datos · Triggers</td><td>Abierto</td></tr>
+        <tr><td class="num">010</td><td><a href="#bug-010"><code>guardar_horario_generado</code> no revalida reglas en servidor</a></td><td><span class="chip alta">Alta</span></td><td>Base de datos · RPC</td><td>Abierto</td></tr>
+        <tr><td class="num">003</td><td><a href="#bug-003"><code>periodos</code> sin policy de escritura</a></td><td><span class="chip media">Media</span></td><td>Base de datos · RLS</td><td>Abierto</td></tr>
+        <tr><td class="num">004</td><td><a href="#bug-004"><code>historial_cambios.usuario_id</code> sin validar</a></td><td><span class="chip media">Media</span></td><td>Base de datos · RLS</td><td>Abierto</td></tr>
+        <tr><td class="num">005</td><td><a href="#bug-005">Sin restricción anti-solapamiento de horarios</a></td><td><span class="chip media">Media</span></td><td>Base de datos · Esquema</td><td>Abierto</td></tr>
+        <tr><td class="num">007</td><td><a href="#bug-007">Migración 009 revierte la 004 sobre "híbrida" sin documentarlo</a></td><td><span class="chip media">Media</span></td><td>Migraciones SQL</td><td>Abierto</td></tr>
+        <tr><td class="num">009</td><td><a href="#bug-009"><code>administrador</code> perdió escritura en horarios/sesiones</a></td><td><span class="chip media">Media</span></td><td>Base de datos · RLS</td><td>Abierto</td></tr>
+        <tr><td class="num">011</td><td><a href="#bug-011">Exportar una función síncrona desde un archivo <code>"use server"</code> tumba toda la app</a></td><td><span class="chip alta">Alta</span></td><td>src/app/dashboard/*/actions.ts</td><td>Corregido</td></tr>
+        <tr><td class="num">012</td><td><a href="#bug-012">El middleware nunca redirige a nadie: "/" en las rutas públicas matchea toda la app</a></td><td><span class="chip media">Media</span></td><td>src/middleware.ts</td><td>Corregido</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="section-title">Detalle de bugs</h2>
+
+  <!-- BUG 001 -->
+  <article class="bug" id="bug-001">
+    <div class="bug-head"><span class="bug-id">001</span><h3>La tabla <code>sedes</code> nunca activa Row Level Security; su política de lectura queda sin efecto</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-001</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/001_schema_inicial.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>El bloque de activación de RLS (líneas 194–204) habilita seguridad de fila en 11 tablas, pero <code>sedes</code> no está en esa lista aunque sí tiene una política de lectura definida más abajo (línea 213, <code>"Lectura autenticada"</code>). En PostgreSQL, una política sobre una tabla sin RLS habilitado simplemente se ignora: la tabla queda accesible sin ninguna restricción de rol.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Abrir <code>supabase/migrations/001_schema_inicial.sql</code>.</li>
+        <li>Ubicar el bloque <code>-- ROW LEVEL SECURITY</code> (líneas 191–204) y listar las tablas con <code>enable row level security</code>.</li>
+        <li>Buscar todas las <code>create policy</code> del archivo y anotar sobre qué tabla aplica cada una.</li>
+        <li>Comparar ambas listas: <code>sedes</code> aparece con policy (línea 213) pero no en el bloque de activación.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">Toda tabla con una política de lectura "autenticada" debería tener RLS habilitado, de forma que solo usuarios autenticados puedan leerla.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual"><code>sedes</code> queda expuesta sin restricción de rol: la política nunca se evalúa porque RLS está desactivado en la tabla.</p>
+    </div>
+  </article>
+
+  <!-- BUG 002 -->
+  <article class="bug" id="bug-002">
+    <div class="bug-head"><span class="bug-id">002</span><h3><code>docentes</code> tiene RLS activo pero ninguna política, bloqueando todo acceso</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-002</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/001_schema_inicial.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>La tabla <code>docentes</code> sí aparece en el bloque <code>enable row level security</code> (línea 195), pero en ningún archivo de migración (001 a 009) existe una <code>create policy</code> para ella. Con RLS activo y cero políticas, PostgreSQL deniega por defecto todo acceso a filas para cualquier rol que no sea <code>service_role</code>.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Buscar <code>"on docentes"</code> o <code>create policy</code> referida a <code>docentes</code> en toda la carpeta <code>supabase/migrations/</code>.</li>
+        <li>Confirmar que no hay ningún resultado (a diferencia de <code>disponibilidad_docente</code>, que sí tiene lectura y escritura).</li>
+        <li>Simular una consulta <code>select * from docentes</code> autenticada como coordinador vía el cliente de Supabase (anon/authenticated key).</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">El coordinador/administrador debería poder leer y administrar los registros de docentes; el resto de roles al menos debería poder leerlos (como ocurre con materias, grupos y espacios).</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Cualquier consulta a <code>docentes</code> desde el cliente autenticado devuelve cero filas o falla, porque no existe ninguna política que autorice el acceso.</p>
+    </div>
+  </article>
+
+  <!-- BUG 006 -->
+  <article class="bug" id="bug-006">
+    <div class="bug-head"><span class="bug-id">006</span><h3>Las reglas RN01–RN16 no se ejecutan en producción y ya divergen de la lógica real</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-006</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>src/lib/scheduler/rules/index.ts</code>, <code>src/lib/scheduler/greedy.ts</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p><code>validateSlot()</code> en <code>rules/index.ts</code> tiene comentado el bucle que recorre el arreglo <code>REGLAS</code> (las 16 reglas individuales <code>rn01</code>…<code>rn16</code>) y en su lugar llama directamente a <code>validarCandidato()</code> de <code>greedy.ts</code>. El resultado: los 16 archivos de reglas nunca corren ni en el generador automático ni en el editor manual — solo los ejecuta <code>rules.test.ts</code> de forma aislada, dando una cobertura de pruebas que no representa el comportamiento real. Ya se confirmó divergencia concreta: <code>rn11-docente-dos-sedes.ts</code> rechaza a un docente en dos sedes el mismo día sin importar la modalidad, mientras que la regla que sí corre (dentro de <code>validarCandidato</code>, líneas 136–139 de <code>greedy.ts</code>) solo lo bloquea cuando ambas sesiones son presenciales.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Abrir <code>src/lib/scheduler/rules/index.ts</code> y ver que el <code>for (const regla of REGLAS)</code> está dentro de un bloque <code>/* ... */</code>.</li>
+        <li>Confirmar con <code>grep -rn "REGLAS\b"</code> que el arreglo no se usa en ningún otro archivo de <code>src/</code>.</li>
+        <li>Comparar <code>rn11-docente-dos-sedes.ts</code> línea 10–12 contra <code>greedy.ts</code> línea 136–139: la condición de modalidad presencial existe en una pero no en la otra.</li>
+        <li>Ejecutar <code>rules.test.ts</code> y comprobar que pasa en verde, pese a testear código muerto.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">La validación que corre en producción (generador + editor manual) debería ser la misma que se documenta y se prueba unitariamente por regla (RN01–RN16), o el código muerto debería eliminarse.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Existen dos implementaciones de las reglas de negocio que ya no coinciden entre sí; los tests verdes de <code>rules.test.ts</code> no garantizan nada sobre el comportamiento real del sistema.</p>
+    </div>
+  </article>
+
+  <!-- BUG 008 -->
+  <article class="bug" id="bug-008">
+    <div class="bug-head"><span class="bug-id">008</span><h3>Un horario "publicado" puede eliminarse con DELETE pese a la regla de inmutabilidad</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-008</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/009_generador_horarios_confiable.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>El trigger <code>proteger_horario_publicado</code> se declara <code>before update on horarios</code> únicamente (línea 104–106), y su función solo lanza excepción cuando <code>estado</code> cambia desde <code>'publicado'</code>. Nunca se registra un trigger <code>before delete</code>. La política RLS <code>"Coordinador administra horarios"</code> es <code>for all</code>, así que un coordinador puede ejecutar <code>delete from horarios where id = ...</code> sobre un horario publicado sin que nada lo impida — y por los <code>on delete cascade</code> ya existentes, arrastra sus sesiones e historial.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Crear (o tomar) un <code>horario</code> con <code>estado = 'publicado'</code>.</li>
+        <li>Autenticarse como un usuario con <code>rol = 'coordinador'</code>.</li>
+        <li>Ejecutar <code>delete from horarios where id = '&lt;id_publicado&gt;'</code>.</li>
+        <li>Observar que la fila se elimina sin error, junto con sus sesiones e historial asociado.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">Si un horario publicado es "inmutable", debería ser imposible tanto editarlo como borrarlo — el DELETE debería fallar con el mismo mensaje que el UPDATE ("Un horario publicado es inmutable").</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">El UPDATE de <code>estado</code> está bloqueado, pero el DELETE completo del horario publicado se ejecuta sin restricción.</p>
+    </div>
+  </article>
+
+  <!-- BUG 010 -->
+  <article class="bug" id="bug-010">
+    <div class="bug-head"><span class="bug-id">010</span><h3><code>guardar_horario_generado</code> inserta sesiones del cliente sin revalidar las reglas de negocio en el servidor</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-010</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/009_generador_horarios_confiable.sql</code> (función RPC)</td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>La función <code>guardar_horario_generado(p_periodo_id, p_sesiones, p_reemplazar_borrador_id)</code> (líneas 116–174) valida el rol del llamante y que el período esté activo, pero luego inserta cada sesión del arreglo JSON <code>p_sesiones</code> directamente, sin comprobar solapamientos de docente/grupo/espacio, disponibilidad horaria, capacidad de aula ni ninguna otra regla RN. Toda esa validación vive únicamente en el cliente (<code>backtrack.ts</code> / <code>greedy.ts</code>). Cualquier llamada al RPC con un JWT de coordinador —sea desde la app o directamente— puede insertar un horario internamente inconsistente.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Autenticarse como coordinador y obtener el JWT de sesión.</li>
+        <li>Invocar <code>supabase.rpc("guardar_horario_generado", {...})</code> a mano con un <code>p_sesiones</code> que incluya, por ejemplo, dos sesiones del mismo docente el mismo día y hora.</li>
+        <li>Observar que el RPC las inserta igual, sin lanzar ningún error de conflicto.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">El RPC debería rechazar (o al menos reportar) sesiones que violen las reglas RN01–RN16, igual que lo hace el planificador del lado cliente.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">El RPC confía ciegamente en el JSON recibido; la integridad del horario depende por completo de que el cliente nunca falle ni sea manipulado.</p>
+    </div>
+  </article>
+
+  <!-- BUG 003 -->
+  <article class="bug" id="bug-003">
+    <div class="bug-head"><span class="bug-id">003</span><h3><code>periodos</code> no tiene ninguna política de escritura para coordinador/administrador</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-003</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/001_schema_inicial.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p><code>periodos</code> solo tiene la política <code>"Lectura autenticada"</code> (línea 214, <code>for select</code>). Ninguna migración (001–009) agrega una política <code>for insert/update/delete</code> ni <code>for all</code> para coordinador/administrador. Sin ella, crear o activar un nuevo periodo académico (p. ej. "2026-II") desde el cliente autenticado es imposible.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Autenticarse como coordinador.</li>
+        <li>Intentar <code>insert into periodos (nombre, fecha_inicio, fecha_fin) values (...)</code> desde el cliente de Supabase.</li>
+        <li>Observar el rechazo por RLS (ninguna política de escritura coincide).</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">El coordinador debería poder crear y activar periodos académicos, igual que puede hacerlo con materias, grupos y espacios.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">La operación de escritura es rechazada por RLS para todo rol que no sea <code>service_role</code>.</p>
+    </div>
+  </article>
+
+  <!-- BUG 004 -->
+  <article class="bug" id="bug-004">
+    <div class="bug-head"><span class="bug-id">004</span><h3><code>historial_cambios.usuario_id</code> no se valida contra <code>auth.uid()</code> al insertar</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-004</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/001_schema_inicial.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>La política <code>"Insertar historial"</code> (líneas 252–253) solo exige <code>auth.role() = 'authenticated'</code> en su cláusula <code>with check</code>; no valida que la columna <code>usuario_id</code> del registro insertado coincida con <code>auth.uid()</code>. Cualquier usuario autenticado puede insertar una fila de auditoría atribuida a otro <code>usuario_id</code>.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Autenticarse como un usuario cualquiera (p. ej. un docente).</li>
+        <li>Insertar en <code>historial_cambios</code> con <code>usuario_id</code> igual al <code>id</code> de otro perfil (p. ej. el coordinador).</li>
+        <li>Observar que el insert se acepta sin error.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">El <code>with check</code> debería incluir <code>usuario_id = auth.uid()</code>, de forma que nadie pueda registrar un cambio a nombre de otra persona.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Se puede falsificar la autoría de cualquier entrada del historial de auditoría.</p>
+    </div>
+  </article>
+
+  <!-- BUG 005 -->
+  <article class="bug" id="bug-005">
+    <div class="bug-head"><span class="bug-id">005</span><h3>No existe una restricción de base de datos contra sesiones solapadas</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-005</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/001_schema_inicial.sql</code> (tabla <code>sesiones</code>)</td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>Los índices <code>idx_sesiones_docente</code>, <code>idx_sesiones_grupo</code> e <code>idx_sesiones_espacio</code> (líneas 184–186) solo aceleran consultas; ninguno es un <code>unique</code> ni un <code>exclude</code> constraint. Nada en la base de datos impide que dos filas de <code>sesiones</code> con el mismo <code>docente_id</code>, <code>grupo_id</code> o <code>espacio_id</code> tengan rangos <code>hora_inicio</code>–<code>hora_fin</code> que se crucen el mismo <code>dia_semana</code>. Toda la protección depende de la lógica de aplicación (<code>validarCandidato</code> y, ya bajo sospecha, el RPC del BUG-010).</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Insertar directamente (vía SQL o <code>service_role</code>) dos filas en <code>sesiones</code> para el mismo <code>docente_id</code>, mismo <code>dia_semana</code>, con horarios cruzados (ej. 08:00–10:00 y 09:00–11:00).</li>
+        <li>Confirmar que ambos <code>insert</code> se ejecutan sin error.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">La base de datos debería rechazar el segundo insert con una violación de constraint (p. ej. un <code>exclude using gist</code> sobre el rango horario).</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Ambas filas se guardan sin problema; el choque de horario solo se evita si la capa de aplicación funciona correctamente.</p>
+    </div>
+  </article>
+
+  <!-- BUG 007 -->
+  <article class="bug" id="bug-007">
+    <div class="bug-head"><span class="bug-id">007</span><h3>La migración 009 revierte la 004 sobre la modalidad "híbrida" sin documentarlo</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-007</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/004_fix_chk_espacio_modalidad_hibrida.sql</code> y <code>009_generador_horarios_confiable.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>La migración 004 cambia <code>chk_espacio_modalidad</code> para exigir <code>espacio_id is not null</code> cuando <code>modalidad = 'hibrida'</code>, explicando en su comentario que "hibrida... tiene componente presencial". La migración 009 (líneas 23–27) dropea ese mismo constraint y crea uno nuevo que exige exactamente lo contrario: <code>espacio_id is null</code> para <code>'hibrida'</code>, agrupándola con <code>'virtual'</code>. El código de <code>greedy.ts</code> (línea 141) sigue la versión de 009, así que el sistema es consistente hoy — pero el archivo 004 queda en el historial con una justificación que ya no aplica, lo que puede confundir a quien lo lea o reconstruya la base de datos desde cero.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Leer el comentario y el <code>check</code> de <code>004_fix_chk_espacio_modalidad_hibrida.sql</code>.</li>
+        <li>Leer el <code>check</code> de <code>009_generador_horarios_confiable.sql</code> líneas 23–27.</li>
+        <li>Comparar: son mutuamente excluyentes para <code>modalidad = 'hibrida'</code>.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">El historial de migraciones debería ser coherente, o al menos la migración que revierte una decisión anterior debería explicar por qué cambió el criterio.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">004 queda como una migración "fantasma": su efecto fue anulado por 009 sin ninguna nota que lo aclare.</p>
+    </div>
+  </article>
+
+  <!-- BUG 009 -->
+  <article class="bug" id="bug-009">
+    <div class="bug-head"><span class="bug-id">009</span><h3>El rol <code>administrador</code> perdió permisos de escritura en <code>horarios</code>/<code>sesiones</code> (regresión de la migración 009)</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-009</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>20/07/2026</td></tr>
+      <tr><th>Componente</th><td><code>supabase/migrations/009_generador_horarios_confiable.sql</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Por asignar</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>En 001, <code>"Coordinador escribe horarios"</code> y <code>"Coordinador escribe sesiones"</code> usaban <code>auth_rol() in ('coordinador', 'administrador')</code>. La migración 009 (líneas 72–83) dropea esas políticas y las reemplaza por <code>"Coordinador administra horarios"</code> / <code>"...sesiones"</code>, que solo aceptan <code>auth_rol() = 'coordinador'</code>. En el resto del esquema (<code>materias</code>, <code>grupos</code>, <code>espacios</code>, <code>disponibilidad_docente</code>) <code>administrador</code> sigue teniendo los mismos permisos que <code>coordinador</code>, así que esta pérdida de acceso rompe el patrón sin que quede claro si fue intencional.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>Autenticarse con un perfil de <code>rol = 'administrador'</code>.</li>
+        <li>Intentar insertar/editar una fila en <code>horarios</code> o <code>sesiones</code>.</li>
+        <li>Comparar con el mismo intento sobre <code>materias</code> o <code>grupos</code>, donde sí se permite.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">Si <code>administrador</code> es un superconjunto de permisos de <code>coordinador</code> en el resto del sistema, debería serlo también aquí — o documentarse explícitamente por qué la generación de horarios es exclusiva del coordinador.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Un administrador no puede escribir en <code>horarios</code> ni <code>sesiones</code>, a diferencia de todas las demás tablas administrativas.</p>
+    </div>
+  </article>
+
+  <!-- BUG 011 -->
+  <article class="bug" id="bug-011">
+    <div class="bug-head"><span class="bug-id">011</span><h3>Exportar una función síncrona desde un archivo <code>"use server"</code> rompe el compilador de Server Actions y tumba toda la app</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-011</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>02/08/2026</td></tr>
+      <tr><th>Componente</th><td><code>src/app/dashboard/{materias,grupos,espacios,periodos,sedes,docentes,usuarios}/actions.ts</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip alta">Alta</span></td></tr>
+      <tr><th>Asignado a</th><td>Corregido en la sesión del 02/08/2026</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>Next.js exige que <strong>todo</strong> lo exportado desde un módulo con la directiva <code>"use server"</code> sea una función <code>async</code> (son Server Actions por definición); no admite exportar también funciones síncronas auxiliares, tipos con valor, ni constantes desde el mismo archivo. Al agregar tests unitarios para la función interna <code>payload()</code> de cada <code>actions.ts</code> de entidad, se le puso <code>export</code> para poder importarla desde Vitest — pero <code>payload()</code> es una función síncrona de validación de <code>FormData</code>. En cuanto Next.js recompiló esos archivos en modo desarrollo, el compilador de Server Actions rechazó el módulo con <code>Error: Server Actions must be async functions</code>, y como el error ocurre a nivel de módulo (no de request), <strong>todas</strong> las rutas de la app — incluido <code>/login</code> y <code>/</code> — empezaron a devolver <code>500</code>, no solo las páginas de esas entidades.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>En cualquier archivo con <code>"use server";</code> como primera línea (p. ej. <code>src/app/dashboard/materias/actions.ts</code>), agregar <code>export</code> delante de una función que no sea <code>async</code>.</li>
+        <li>Con <code>npm run dev</code> corriendo, visitar cualquier ruta del dashboard que importe (directa o indirectamente) ese archivo.</li>
+        <li>Observar en la terminal del servidor: <code>⨯ Error: Server Actions must be async functions</code>, y que la respuesta HTTP de <strong>cualquier</strong> ruta es <code>500</code>, no solo la que usa el archivo modificado.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">Un archivo <code>"use server"</code> debería seguir sirviendo la app con normalidad, o Next.js debería fallar solo en la ruta afectada, no en toda la aplicación.</p>
+      <h4>Resultado actual</h4>
+      <p class="result-actual">Un solo <code>export</code> mal puesto en un archivo de Server Actions deja caída toda la app (todas las rutas en 500), incluida la página de login.</p>
+      <h4>Corrección aplicada</h4>
+      <p>Se movió <code>payload()</code> (y <code>requireFields()</code> de <code>docentes</code>/<code>usuarios</code>) a un archivo hermano <code>validation.ts</code> sin la directiva <code>"use server"</code>, y <code>actions.ts</code> ahora la importa desde ahí. Sin cambios de lógica ni de comportamiento; solo se movió el código a un módulo que sí puede exportar funciones síncronas. <code>requireFields()</code>, al estar duplicada de forma idéntica en <code>docentes</code> y <code>usuarios</code>, se centralizó en <code>src/lib/entities.ts</code> (que ya no es un archivo <code>"use server"</code>).</p>
+    </div>
+  </article>
+
+  <!-- BUG 012 -->
+  <article class="bug" id="bug-012">
+    <div class="bug-head"><span class="bug-id">012</span><h3>El middleware nunca redirige a nadie: <code>"/"</code> en las rutas públicas hace que <code>startsWith</code> matchee cualquier ruta</h3></div>
+    <table class="fields">
+      <tr><th>Número de bug</th><td>BUG-012</td></tr>
+      <tr><th>Nombre del tester</th><td>Elkin Renan Saltos Macías</td></tr>
+      <tr><th>Día del reporte</th><td>02/08/2026</td></tr>
+      <tr><th>Componente</th><td><code>src/middleware.ts</code></td></tr>
+      <tr><th>Prioridad</th><td><span class="chip media">Media</span></td></tr>
+      <tr><th>Asignado a</th><td>Corregido en la sesión del 02/08/2026</td></tr>
+    </table>
+    <div class="prose">
+      <h4>Descripción</h4>
+      <p>El middleware definía <code>const publicPaths = ["/", "/login", "/registro", "/auth/callback"]; const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));</code>. Como <strong>todas</strong> las rutas de la app empiezan por <code>"/"</code>, la comprobación <code>pathname.startsWith("/")</code> es verdadera siempre, sin importar la ruta real (<code>/dashboard</code>, <code>/dashboard/usuarios</code>, etc. todas "empiezan con /"). Esto hace que <code>isPublicPath</code> sea <code>true</code> para cualquier URL, y la condición <code>if (!user &amp;&amp; !isPublicPath)</code> nunca se cumple: el middleware jamás redirige a un usuario sin sesión a <code>/login</code>. El único motivo por el que la app sigue pareciendo protegida es que cada página protegida llama por su cuenta a <code>requireRol()</code>/<code>getSession()</code> (en <code>src/lib/auth.ts</code>), que sí redirige — el middleware es, en la práctica, código muerto que no aporta ninguna protección real a nivel de edge.</p>
+      <h4>Pasos para la reproducción</h4>
+      <ol>
+        <li>En <code>src/middleware.ts</code>, agregar un <code>console.log(isPublicPath)</code> justo después de calcularlo.</li>
+        <li>Visitar <code>/dashboard</code> sin sesión iniciada (cookies borradas).</li>
+        <li>Ver en la consola del servidor que <code>isPublicPath</code> imprime <code>true</code> para <code>/dashboard</code>, cuando debería ser <code>false</code>.</li>
+        <li>Sin el fallback de <code>requireRol()</code> en cada página, esta ruta cargaría sin redirigir al login.</li>
+      </ol>
+      <h4>Resultado esperado</h4>
+      <p class="result-esperado">Solo <code>/</code> (exacto), <code>/login</code>, <code>/registro</code> y <code>/auth/callback</code> deberían considerarse públicas; cualquier otra ruta sin sesión debería redirigir a <code>/login</code> desde el middleware.</p>
+      <h4>Resultado actual (antes del fix)</h4>
+      <p class="result-actual">Toda ruta se trata como pública en el middleware; la única barrera real es la que cada página impone por separado.</p>
+      <h4>Corrección aplicada</h4>
+      <p>Se separó <code>"/"</code> de la lista de prefijos: ahora <code>isPublicPath = pathname === "/" || publicPrefixes.some((p) => pathname.startsWith(p))</code>, con <code>publicPrefixes = ["/login", "/registro", "/auth/callback"]</code> (sin el <code>"/"</code>). Verificado con 4 tests unitarios nuevos en <code>src/__tests__/lib/middleware.test.ts</code>.</p>
+    </div>
+  </article>
+
+  <h2 class="section-title">Code smells</h2>
+  <p class="section-note">Observaciones de mantenibilidad — no rompen el sistema hoy, pero aumentan el riesgo de futuros bugs.</p>
+  <div class="table-wrap">
+    <table class="smells">
+      <thead>
+        <tr><th>#</th><th>Hallazgo</th><th>Ubicación</th><th>Por qué importa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Políticas RLS con la misma condición repetida ~15 veces</td><td><code>001_schema_inicial.sql:213-247</code></td><td>Cambiar qué roles pueden escribir obliga a tocar cada policy por separado; falta una función <code>es_admin()</code>.</td></tr>
+        <tr><td>2</td><td>Enums "a medias": valores válidos solo en comentarios, no forzados</td><td><code>historial_cambios.accion</code>, <code>dia_semana</code>, <code>sedes.nombre</code></td><td>Nada impide insertar un valor fuera de lo documentado.</td></tr>
+        <tr><td>3</td><td><code>sede_id</code> duplicado en varias tablas sin validación cruzada</td><td><code>sesiones</code>, <code>grupos</code>, <code>espacios</code>, <code>docentes</code></td><td>Riesgo de inconsistencia silenciosa entre la sede de una sesión y la de su espacio/grupo.</td></tr>
+        <tr><td>4</td><td><code>perfiles.actualizado_en</code> no se refresca sola</td><td><code>001_schema_inicial.sql:44</code></td><td>No hay trigger <code>before update</code>; la columna de auditoría queda pegada en la fecha de creación.</td></tr>
+        <tr><td>5</td><td>Estrategia de auditoría inconsistente entre tablas</td><td>Todo el esquema</td><td>Solo <code>perfiles</code> registra <code>actualizado_en</code>; el resto solo <code>creado_en</code>.</td></tr>
+        <tr><td>6</td><td>Nombres de columnas de horario no uniformes</td><td><code>docentes.hora_entrada/hora_salida</code> vs. <code>hora_inicio/hora_fin</code></td><td>Mismo concepto, dos convenciones distintas en el mismo esquema.</td></tr>
+        <tr><td>7</td><td>Nombre de policy idéntico repetido en 9 tablas</td><td><code>"Lectura autenticada"</code></td><td>Dificulta depurar o referenciar una policy puntual sin especificar también la tabla.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Reporte generado a partir de la revisión del esquema SQL (<code>supabase/migrations/001–009</code>) y del motor de generación de horarios (<code>src/lib/scheduler/</code>) tras sincronizar con <code>origin/main</code>. Bugs ya corregidos en el historial reciente (recursión de <code>auth_rol()</code> en RLS — migración 007; falta de escritura en <code>sesiones_grupos_compartidos</code> — migración 009) no se incluyen en este listado.
+  </footer>
+
+</div>

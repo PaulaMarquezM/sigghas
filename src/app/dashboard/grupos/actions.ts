@@ -4,21 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { asUntypedDb, errorMessage, formBoolean, formNumber, formString, type ActionResult } from "@/lib/entities";
-
-function payload(formData: FormData) {
-  const nombre = formString(formData, "nombre").toUpperCase();
-  const sede_id = formString(formData, "sede_id");
-  if (!nombre || !sede_id) throw new Error("Nombre y sede son obligatorios.");
-  return {
-    nombre,
-    sede_id,
-    semestre: formNumber(formData, "semestre", 1),
-    cantidad_estudiantes: formNumber(formData, "cantidad_estudiantes", 0),
-    requiere_accesibilidad: formBoolean(formData, "requiere_accesibilidad"),
-    activo: formBoolean(formData, "activo"),
-  };
-}
+import { asUntypedDb, errorMessage, type ActionResult } from "@/lib/entities";
+import { payload } from "./validation";
 
 export async function createGrupo(_state: ActionResult, formData: FormData): Promise<ActionResult> {
   await requireRol("coordinador", "administrador");

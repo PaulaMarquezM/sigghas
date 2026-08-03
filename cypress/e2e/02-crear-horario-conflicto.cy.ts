@@ -25,9 +25,9 @@ describe("Generación de horarios — caso con conflicto", () => {
     cy.get("select#periodo").should("be.visible");
     cy.wait(1000);
     cy.get("select#periodo").select(fixture.periodoNombre);
-    cy.contains("button", "Generar Horario").click();
+    cy.contains("button", "Generar automáticamente").click();
     cy.contains("Horario generado con conflictos", { timeout: 20000 }).should("be.visible");
-    cy.contains("Conflictos detectados:").should("be.visible");
+    cy.contains("Corrige estos datos antes de volver a intentar:").should("be.visible");
     cy.screenshot("02-horario-conflicto", { capture: "viewport" });
 
     cy.task("e2e:contarHorarios", fixture.periodoId).then((cantidad) => {

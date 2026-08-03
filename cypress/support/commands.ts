@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
 // Cuentas creadas por scripts/seed.mjs (ver cypress/support/tasks.ts).
+// El rol "estudiante" se eliminó del sistema (migración 010_remove_rol_estudiante.sql).
 const CREDENCIALES = {
   coordinador: { email: "coordinador@sigghas.test", password: "Sigghas2026!", label: "Coordinador" },
   docente: { email: "docente.tc@sigghas.test", password: "Sigghas2026!", label: "Docente" },
-  estudiante: { email: "estudiante1@sigghas.test", password: "Sigghas2026!", label: "Estudiante" },
 } as const;
 
 type Rol = keyof typeof CREDENCIALES;

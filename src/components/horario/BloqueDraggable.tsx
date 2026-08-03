@@ -18,7 +18,6 @@ interface BloqueDraggableProps {
 
 export function BloqueDraggable({
   sesionId,
-  materiaCodigo,
   materiaNombre,
   docenteNombre,
   aulaNombre,
