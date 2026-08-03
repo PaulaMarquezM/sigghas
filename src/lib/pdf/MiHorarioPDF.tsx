@@ -25,6 +25,7 @@ const borderColors = ["#BEE3F8", "#FEEB8C", "#E2E8F0", "#FEB2B2", "#9AE6B4"];
 const textColors = ["#2B6CB0", "#744210", "#2D3748", "#9B2C2C", "#22543D"];
 
 export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: MiHorarioPDFProps) {
+  const esCurso = userRolLabel === "Curso";
   const uniqueDocenteIds = Array.from(new Set(sesiones.map((s) => s.docente_id)));
   const docenteColors: Record<string, number> = {};
   uniqueDocenteIds.forEach((id) => {
@@ -41,7 +42,7 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
             <Text style={styles.career}>Carrera de Software</Text>
           </View>
           <View style={styles.titleSection}>
-            <Text style={styles.title}>Horario Personal</Text>
+            <Text style={styles.title}>{esCurso ? "Horario del Curso" : "Horario Personal"}</Text>
             <Text style={styles.subtitle}>SIGGHAS - Generador Inteligente</Text>
           </View>
         </View>
@@ -49,12 +50,8 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
         {/* Metadata */}
         <View style={styles.metaGrid}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Usuario</Text>
+            <Text style={styles.metaLabel}>{esCurso ? "Curso" : "Usuario"}</Text>
             <Text style={styles.metaValue}>{userNombre}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>Rol</Text>
-            <Text style={styles.metaValue}>{userRolLabel}</Text>
           </View>
           <View style={styles.metaItem}>
             <Text style={styles.metaLabel}>Periodo Académico</Text>
