@@ -59,6 +59,10 @@ export default function HorarioEditor({
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    // Resincroniza el estado editable local con los datos del servidor tras
+    // un router.refresh() tras guardar (no es estado derivable en el render:
+    // el usuario puede haber estado arrastrando bloques localmente).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAsignaciones(initialAsignaciones);
     setSesiones(initialSesiones);
   }, [initialAsignaciones, initialSesiones]);

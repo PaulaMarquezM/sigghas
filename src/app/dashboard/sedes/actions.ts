@@ -4,16 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { asUntypedDb, errorMessage, formBoolean, formString, type ActionResult } from "@/lib/entities";
-
-function payload(formData: FormData) {
-  const nombre = formString(formData, "nombre");
-  if (!nombre) throw new Error("El nombre es obligatorio.");
-  return {
-    nombre,
-    es_central: formBoolean(formData, "es_central"),
-  };
-}
+import { asUntypedDb, errorMessage, type ActionResult } from "@/lib/entities";
+import { payload } from "./validation";
 
 export async function createSede(_state: ActionResult, formData: FormData): Promise<ActionResult> {
   await requireRol("administrador");

@@ -4,14 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { consolidarBloquesDisponibilidad } from "@/lib/disponibilidad";
-import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, type ActionResult } from "@/lib/entities";
+import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, requireFields, type ActionResult } from "@/lib/entities";
 import type { TipoContrato } from "@/types/database";
-
-function requireFields(fields: Record<string, string | null>) {
-  for (const [label, value] of Object.entries(fields)) {
-    if (!value) throw new Error(`${label} es obligatorio.`);
-  }
-}
 
 export async function createDocente(_state: ActionResult, formData: FormData): Promise<ActionResult> {
   const { admin } = await requireRolAndAdminClient("coordinador", "administrador");

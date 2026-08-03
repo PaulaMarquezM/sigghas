@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "cypress:open": "cypress open",
     "test:e2e:cypress": "cypress run --reporter mochawesome --reporter-options reportDir=mochawesome-report,overwrite=false,html=false,json=true",
+    "test:e2e:cypress:firefox": "cypress run --browser firefox --reporter mochawesome --reporter-options reportDir=mochawesome-report,overwrite=false,html=false,json=true",
     "posttest:e2e:cypress": "mochawesome-merge mochawesome-report/*.json -o mochawesome-report/output.json && marge mochawesome-report/output.json -o mochawesome-report --inline -f report",
     "db:migrate": "npx supabase link --project-ref gcambzhsvizeqzpkxcig && npx supabase db push",
     "db:seed": "node --env-file=.env.local scripts/seed.mjs"

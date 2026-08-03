@@ -10,6 +10,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       reportsDirectory: "./coverage",
+      include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "**/node_modules/**",
         "**/e2e/**",
@@ -17,6 +18,7 @@ export default defineConfig({
         "**/*.config.*",
         "**/src/types/**",
         "**/.next/**",
+        "src/__tests__/**",
       ],
     },
   },

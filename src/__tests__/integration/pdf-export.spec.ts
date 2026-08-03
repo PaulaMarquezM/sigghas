@@ -4,9 +4,7 @@ import { GET as getMiHorarioPDF } from "@/app/api/pdf/mi-horario/route";
 
 // Mock react-pdf renderer
 vi.mock("@react-pdf/renderer", () => ({
-  renderToStream: vi.fn().mockResolvedValue({
-    pipe: vi.fn(),
-  }),
+  renderToBuffer: vi.fn().mockResolvedValue(Buffer.from("fake-pdf")),
   StyleSheet: {
     create: vi.fn().mockReturnValue({}),
   },
