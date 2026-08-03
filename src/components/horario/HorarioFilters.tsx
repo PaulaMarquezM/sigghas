@@ -52,10 +52,10 @@ export function HorarioFilters({
           </select>
         </div>
 
-        {/* Selector de Grupo */}
+        {/* Selector de Curso */}
         <div className="flex flex-col gap-1 w-full md:w-56">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1">
-            Grupo Académico
+            Curso
           </label>
           <select
             value={selectedGrupoId}
@@ -66,7 +66,7 @@ export function HorarioFilters({
             className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20 focus:border-[#1D3FD9]"
             disabled={!selectedPeriodoId}
           >
-            <option value="">Seleccione un Grupo</option>
+            <option value="">Seleccione un Curso</option>
             {grupos.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.nombre} (Nivel {g.semestre})
@@ -102,7 +102,7 @@ export function HorarioFilters({
       </div>
 
       <div className="text-xs text-gray-400 font-mono text-right w-full xl:w-auto">
-        * Filtra por grupo o por docente para ver su horario.
+        * Filtra por curso o por docente para ver su horario.
       </div>
     </div>
   );

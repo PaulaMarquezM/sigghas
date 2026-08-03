@@ -33,7 +33,7 @@ async function getSesionesGrupo(supabase: any, horarioId: string, grupoId: strin
   const adicionales = (compartidas.data ?? []).map((fila: any) => ({
     ...fila.sesiones,
     grupo_id: grupoId,
-    grupos: { nombre: "Grupo compartido" },
+    grupos: { nombre: "Curso compartido" },
   }));
   return [...(directas.data ?? []), ...adicionales];
 }

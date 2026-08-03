@@ -36,7 +36,7 @@ export default async function HorarioConsultasPage() {
           Consulta de Horarios
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Visualiza los horarios de clases de cualquier grupo académico o docente en los distintos periodos.
+          Visualiza los horarios de clases de cualquier curso o docente en los distintos periodos.
         </p>
       </div>
 

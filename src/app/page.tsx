@@ -128,7 +128,7 @@ export default function LandingPage() {
             <a href="#reglas">Reglas</a>
           </nav>
 
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div className="sigghas-nav-actions">
             <Link href="/login" className="s-btn s-btn-ghost">Iniciar sesión</Link>
             <Link href="/registro" className="s-btn s-btn-primary">
               Crear cuenta <ArrowRight />
@@ -244,7 +244,7 @@ export default function LandingPage() {
               </div>
               <div className="feature-vis">
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontFamily: "JetBrains Mono, monospace", fontSize: 11 }}>
-                  {["disponibilidad","capacidad","accesibilidad","tipo de aula","conflicto docente","conflicto grupo","multi-sede","virtual"].map(t => (
+                  {["disponibilidad","capacidad","accesibilidad","tipo de aula","conflicto docente","conflicto curso","multi-sede","virtual"].map(t => (
                     <span key={t} style={{ background: "color-mix(in oklab, white 12%, transparent)", padding: "6px 10px", borderRadius: 6 }}>{t}</span>
                   ))}
                 </div>
@@ -415,9 +415,9 @@ export default function LandingPage() {
                 { code: "RN02", desc: "Un docente no puede dar clases presenciales en dos sedes el mismo día", badge: "Crítica" },
                 { code: "RN07", desc: "Los bloques de tiempo oficina no se usan para asignar clases", badge: "Crítica" },
                 { code: "RN13", desc: "Un aula no puede usarse por dos clases presenciales al mismo tiempo", badge: "Crítica" },
-                { code: "RN14", desc: "No se asignan grupos a aulas con capacidad insuficiente", badge: "Crítica" },
+                { code: "RN14", desc: "No se asignan cursos a aulas con capacidad insuficiente", badge: "Crítica" },
                 { code: "RN16", desc: "Las materias que requieren laboratorio solo van a laboratorios", badge: "Crítica" },
-                { code: "RN21", desc: "Varios grupos pueden compartir sesión virtual si coincide materia, docente y horario", badge: "Permite" },
+                { code: "RN21", desc: "Varios cursos pueden compartir sesión virtual si coincide materia, docente y horario", badge: "Permite" },
                 { code: "RN37", desc: "Todos los cambios quedan registrados en el historial de auditoría", badge: "Sistema" },
               ].map(({ code, desc, badge }) => (
                 <div key={code} className="rule">

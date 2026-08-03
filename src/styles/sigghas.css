@@ -524,3 +524,20 @@
   .tech-grid { grid-template-columns: repeat(2, 1fr); }
   .features-grid > * { grid-column: span 12 !important; }
 }
+
+@media (max-width: 640px) {
+  .wrap { padding: 0 20px; }
+  .sigghas-nav-inner { height: 60px; }
+  .sigghas-nav-links, .sigghas-nav-actions .s-btn-ghost { display: none; }
+  .sigghas-nav-actions { display: flex; align-items: center; }
+  .sigghas-nav-actions .s-btn { padding: 9px 12px; font-size: 13px; }
+  .sigghas-hero { padding: 40px 0 48px; }
+  .sigghas-hero-meta-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sigghas-meta-item { padding: 0 10px; }
+  .sigghas-meta-item:first-child { padding-left: 0; }
+  .sigghas-meta-item .v { font-size: 12px; }
+  .sigghas-hero h1 { font-size: clamp(42px, 12vw, 48px); line-height: 1; }
+  .sigghas-hero h1 br { display: none; }
+  .s-lead { font-size: 17px; }
+  .sigghas-hero-actions { flex-wrap: wrap; margin-top: 24px; }
+}

@@ -190,7 +190,7 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
                   </div>
                 ) : (
                   <div className="text-xs text-gray-500 pt-2 flex flex-col justify-center h-12">
-                    <p>Espacio libre para asignación o estudio libre.</p>
+                    <p>Aula libre para asignación o estudio libre.</p>
                   </div>
                 )}
               </div>

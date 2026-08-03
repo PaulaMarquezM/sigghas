@@ -53,7 +53,7 @@ export default async function GrupoHorarioPage({ params }: GrupoHorarioPageProps
           </Link>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#0E1116]">
-              Horario del Grupo: {grupo.nombre}
+              Horario del Curso: {grupo.nombre}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
               Periodo Académico Activo: <span className="font-semibold text-gray-800">{periodoActivo.nombre}</span>
