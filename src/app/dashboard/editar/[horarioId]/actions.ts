@@ -43,7 +43,7 @@ export async function getHorarioEditorData(horarioId: string) {
     supabase.from("materias").select("*"),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("disponible", true),
-    supabase.from("docentes").select("*, disponibilidad_docente(*)")
+    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*)")
   ]);
 
   const materias = materiasRes.data || [];
