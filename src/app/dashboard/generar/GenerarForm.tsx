@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { crearHorarioManual, generarHorario, verificarHorarioExistente } from "./actions";
 import type { ResultadoGeneracion } from "@/lib/scheduler/types";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, XCircle, AlertTriangle, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 
 interface Periodo {
   id: string;
@@ -13,12 +13,6 @@ interface Periodo {
 }
 interface Grupo { id: string; nombre: string; sede_id: string }
 interface Sede { id: string; nombre: string }
-
-const ESTADO_LABEL: Record<string, string> = {
-  publicado: "publicado",
-  aprobado:  "aprobado",
-  borrador:  "en borrador",
-};
 
 export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; grupos: Grupo[]; sedes: Sede[] }) {
   const router = useRouter();
@@ -30,14 +24,6 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
   const [grupoId, setGrupoId]         = useState("");
   const [sedeId, setSedeId]           = useState("");
 
-  // Estado del modal de confirmación
-  const [confirm, setConfirm] = useState<{
-    visible: boolean;
-    id: string | null;
-    estado: string | null;
-    generado_en: string | null;
-  }>({ visible: false, id: null, estado: null, generado_en: null });
-
   // 1. Al hacer submit primero verificamos si ya hay horario
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,27 +32,24 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
     setVerificando(true);
     try {
       const info = await verificarHorarioExistente(periodoId);
-      if (info.existe && info.estado === "borrador") {
-        // Solo un borrador se puede sustituir; uno publicado queda inmutable.
-        setConfirm({ visible: true, id: info.id, estado: info.estado, generado_en: info.generado_en });
-      } else {
-        // Si solo hay borrador o no hay nada, generar directamente
-        await ejecutarGeneracion();
+      if (info.existe) {
+        setLogs(["Ya existe un horario para este período. Edítalo desde el editor manual."]);
+        return;
       }
+      await ejecutarGeneracion();
     } finally {
       setVerificando(false);
     }
   }
 
   // 2. Ejecución real de la generación
-  async function ejecutarGeneracion(reemplazarBorradorId?: string | null) {
-    setConfirm({ visible: false, id: null, estado: null, generado_en: null });
+  async function ejecutarGeneracion() {
     setLoading(true);
     setResultado(null);
     setLogs([]);
 
     try {
-      const res = await generarHorario(periodoId, reemplazarBorradorId, { grupoId: grupoId || undefined, sedeId: sedeId || undefined });
+      const res = await generarHorario(periodoId, null, { grupoId: grupoId || undefined, sedeId: sedeId || undefined });
       setResultado(res);
       setLogs(res.log);
     } catch (err) {
@@ -85,77 +68,11 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
     else setLogs([resultado.error ?? "No se pudo iniciar el horario manual."]);
   }
 
-  const fechaConfirm = confirm.generado_en
-    ? new Date(confirm.generado_en).toLocaleString("es-EC", {
-        day: "2-digit", month: "short", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
-      })
-    : "";
-
   return (
     <div className="space-y-6">
       <div className="grid gap-3 md:grid-cols-3">
         {["1. Prepara materias, cursos y docentes", "2. Elige generación automática o manual", "3. Revisa, ajusta y publica"].map((paso) => <div key={paso} className="rounded-xl border border-[#D8D1BD] bg-[#EFEAD9] p-4 text-sm font-medium text-[#1F242D]">{paso}</div>)}
       </div>
-      {/* Modal de confirmación */}
-      {confirm.visible && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 50,
-          background: "rgba(0,0,0,0.45)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <div style={{
-            background: "#fff", borderRadius: 14, padding: "28px 32px",
-            maxWidth: 440, width: "90%", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 10,
-                background: "#FEF3C7", display: "grid", placeItems: "center", flexShrink: 0,
-              }}>
-                <AlertCircle style={{ width: 20, height: 20, color: "#D97706" }} />
-              </div>
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 15, margin: 0, color: "#0E1116" }}>
-                  ¿Reemplazar horario existente?
-                </p>
-                <p style={{ fontSize: 12, color: "#6B7280", margin: "3px 0 0" }}>
-                  Ya existe un horario {ESTADO_LABEL[confirm.estado ?? ""] ?? confirm.estado}
-                </p>
-              </div>
-            </div>
-
-            <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.6, marginBottom: 20 }}>
-              El borrador actual fue generado el <strong>{fechaConfirm}</strong>.
-              Si continúas, será reemplazado solo después de completar con éxito un nuevo horario.
-            </p>
-
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setConfirm({ visible: false, id: null, estado: null, generado_en: null })}
-                style={{
-                  padding: "8px 18px", borderRadius: 8, border: "1px solid #D1D5DB",
-                  background: "#fff", fontSize: 13, fontWeight: 500, cursor: "pointer",
-                  color: "#374151",
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => ejecutarGeneracion(confirm.id)}
-                style={{
-                  padding: "8px 18px", borderRadius: 8, border: "none",
-                  background: "#0E1116", color: "#F5F1E8",
-                  fontSize: 13, fontWeight: 500, cursor: "pointer",
-                }}
-              >
-                Sí, reemplazar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col items-stretch gap-4 rounded-xl border border-[#D8D1BD] bg-white p-5 md:flex-row md:items-end">
           <div className="flex-1">

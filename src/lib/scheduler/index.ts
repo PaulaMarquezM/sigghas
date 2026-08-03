@@ -19,6 +19,18 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   if (periodoError || !periodo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_NO_ENCONTRADO", "No se encontró el período académico.")], log };
   if (!periodo.activo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_INACTIVO", "Solo se puede generar para el período académico activo.")], log };
 
+  const { data: horarioExistente, error: horarioExistenteError } = await supabase
+    .from("horarios")
+    .select("id")
+    .eq("periodo_id", periodoId)
+    .limit(1);
+  if (horarioExistenteError) {
+    return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_VALIDANDO_HORARIO_EXISTENTE", "No se pudo comprobar si el período ya tiene un horario." )], log };
+  }
+  if (horarioExistente?.[0]) {
+    return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("HORARIO_PERIODO_EXISTENTE", "Ya existe un horario para este período. Edítalo desde el editor manual.")], log: [...log, "No se creó un segundo horario para el mismo período."] };
+  }
+
   const [materiasRes, gruposRes, espaciosRes, docentesRes, asignacionesRes, disponibilidadEspaciosRes] = await Promise.all([
     supabase.from("materias").select("*").eq("activo", true),
     supabase.from("grupos").select("*").eq("activo", true),
