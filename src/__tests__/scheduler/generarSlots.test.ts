@@ -25,7 +25,14 @@ const pendiente: AsignacionPendiente = {
   total_sesiones: 1,
 };
 
-describe("generarSlots — filtros de espacio (RN14, RN16, RN39)", () => {
+describe("generarSlots — filtros de espacio (RN14, RN16, RN39, RN41)", () => {
+  it("RN41: no ofrece un espacio deshabilitado (disponible=false)", () => {
+    const ctx = baseContexto({ espacios: [{ id: "e-1", nombre: "Aula en mantenimiento", tipo: "aula", capacidad: 30, accesible: true, sede_id: "s-1", disponible: false, activo: true, tiene_proyector: true, tiene_internet: true, creado_en: "" }] });
+    const slots = generarSlots(pendiente, ctx);
+    expect(slots).toHaveLength(0);
+  });
+
+
   it("RN14: no ofrece un aula con capacidad menor a la del grupo", () => {
     const ctx = baseContexto({ espacios: [{ id: "e-1", nombre: "Aula pequeña", tipo: "aula", capacidad: 10, accesible: true, sede_id: "s-1", disponible: true, activo: true, tiene_proyector: true, tiene_internet: true, creado_en: "" }] });
     const slots = generarSlots(pendiente, ctx);

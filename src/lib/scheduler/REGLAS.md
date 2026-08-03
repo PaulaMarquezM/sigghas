@@ -1,10 +1,17 @@
 # Reglas de negocio del motor de horarios
 
-`SIGGHAS.md` dice que el sistema implementa **43 reglas de negocio**, pero solo documenta
-14 con código `RNxx` (tabla "Reglas de Negocio (resumen)"). El resto de la validación real
-vive en el código sin un número `RN` asignado — este documento no inventa numeración para
-esas; solo mapea las 14 que sí están nombradas, más el resto de códigos de conflicto que
-produce el motor.
+`SIGGHAS.md` dice que el sistema implementa **43 reglas de negocio**, pero en todo el
+repositorio (migraciones SQL, comentarios de código, `seed.mjs`/`seed.sql`, el propio
+`SIGGHAS.md`, `DIVISION_TRABAJO.md` y la landing pública `src/app/page.tsx`) solo aparecen
+**15 códigos `RNxx` reales**: 01, 02, 03, 04, 07, 10, 13, 14, 16, 19, 21, 30, 37, 39 y 41
+(este último solo como comentario SQL en `espacios.disponible`, no estaba en la tabla
+resumen de `SIGGHAS.md`). Se buscó exhaustivamente con `grep -rn "RN\d{2}"` en todo el
+proyecto — las 28 restantes (RN05, RN06, RN08, RN09, RN11, RN12, RN15, RN17, RN18, RN20,
+RN22–RN29, RN31–RN36, RN38, RN40, RN42, RN43) **no existen en ningún archivo de este
+repositorio**. El "documento de requisitos" que menciona `DIVISION_TRABAJO.md` como fuente
+de las 43 reglas no está en el repo (probablemente un doc externo del curso, tipo Google
+Doc/PDF) — no se puede completar esa lista sin ese documento; no se inventaron reglas para
+rellenar el número.
 
 > Nota histórica: el proyecto tuvo en algún momento un archivo por regla
 > (`src/lib/scheduler/rules/rn01-...ts` ... `rn43-...ts`), pero era código muerto que nunca
@@ -12,7 +19,7 @@ produce el motor.
 > [`greedy.ts`](./greedy.ts) (`validarCandidato`, `generarSlots`) y
 > [`backtrack.ts`](./backtrack.ts) (`resolverConBacktrack`).
 
-## Las 14 reglas nombradas en SIGGHAS.md
+## Las 15 reglas con código `RNxx` encontradas en el repo
 
 | RN | Regla | Dónde vive | Test |
 |---|---|---|---|
@@ -30,6 +37,7 @@ produce el motor.
 | RN30 | El sistema bloquea guardar si hay conflictos críticos | `guardar_horario_generado` (RPC de Postgres) + `src/lib/scheduler/index.ts`: si `resolverConBacktrack` falla, no se persiste nada | Cypress `02-crear-horario-conflicto.cy.ts` (verifica que no se guarda ningún horario); no cubierto en Vitest — `index.ts` depende de Supabase real |
 | RN37 | Todos los cambios quedan registrados en el historial | Trigger de Postgres sobre `historial_cambios` (migración `001_schema_inicial.sql` + `20260725120000_...sql`) | Nivel de base de datos, fuera del alcance de Vitest/Cypress actual — **gap conocido** |
 | RN39 | Los grupos de una sede reciben clases presenciales solo en esa sede | `generarSlots`, filtro `e.sede_id === grupo.sede_id` | `generarSlots.test.ts` → "RN39: ...solo en espacios de su propia sede" |
+| RN41 | Las aulas/laboratorios pueden habilitarse o deshabilitarse según el periodo (columna `espacios.disponible`) | `generarSlots`, filtro `e.disponible` | `generarSlots.test.ts` → "RN41: no ofrece un espacio deshabilitado" |
 
 ## Otros códigos de conflicto del motor (sin `RN` asignado en SIGGHAS.md)
 
