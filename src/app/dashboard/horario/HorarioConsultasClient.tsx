@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useTransition } from "react";
 import { HorarioFilters } from "@/components/horario/HorarioFilters";
 import { HorarioReadOnly } from "@/components/horario/HorarioReadOnly";
-import { getSesionesByPeriodoyGrupoAction, getSesionesByPeriodoyDocenteAction } from "./actions";
+import { getSesionesByPeriodoyGrupoAction } from "./actions";
 import { Loader2, Edit, FileText } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps } from "react";
@@ -33,32 +33,24 @@ export default function HorarioConsultasClient({
   const [horario, setHorario] = useState<HorarioConsulta>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Load sessions when period, group or docente selection changes
+  // El curso es obligatorio: nunca se carga un horario mezclando cursos.
   useEffect(() => {
-    if (!selectedPeriodoId || (!selectedGrupoId && !selectedDocenteId)) return;
+    if (!selectedPeriodoId || !selectedGrupoId) {
+      return;
+    }
 
     startTransition(() => {
       void (async () => {
-        if (selectedGrupoId) {
-          const res = await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId);
-          setSesiones(res.sesiones);
-          setHorario(res.horario);
-        } else if (selectedDocenteId) {
-          const res = await getSesionesByPeriodoyDocenteAction(selectedPeriodoId, selectedDocenteId);
-          setSesiones(res.sesiones);
-          setHorario(res.horario);
-        }
+        const res = await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId);
+        setSesiones(selectedDocenteId ? res.sesiones.filter((sesion: { docente_id?: string }) => sesion.docente_id === selectedDocenteId) : res.sesiones);
+        setHorario(res.horario);
       })();
     });
   }, [selectedPeriodoId, selectedGrupoId, selectedDocenteId]);
 
-  const pdfUrl = selectedGrupoId
-    ? `/api/pdf/mi-horario?grupoId=${selectedGrupoId}`
-    : `/api/pdf/mi-horario?docenteId=${selectedDocenteId}`;
+  const pdfUrl = `/api/pdf/mi-horario?grupoId=${selectedGrupoId}`;
 
-  const viewTitle = selectedGrupoId
-    ? `Grupo: ${grupos.find((g) => g.id === selectedGrupoId)?.nombre}`
-    : `Docente: ${docentes.find((d) => d.id === selectedDocenteId)?.nombre}`;
+  const viewTitle = `Curso: ${grupos.find((g) => g.id === selectedGrupoId)?.nombre}${selectedDocenteId ? ` · ${docentes.find((d) => d.id === selectedDocenteId)?.nombre}` : ""}`;
 
   return (
     <div className="space-y-6">
@@ -76,7 +68,7 @@ export default function HorarioConsultasClient({
       />
 
       {/* Acciones del horario seleccionado */}
-      {horario && (selectedGrupoId || selectedDocenteId) && (
+      {horario && selectedGrupoId && (
         <div className="flex justify-end gap-3">
           {/* Descargar PDF */}
           <a
@@ -108,7 +100,7 @@ export default function HorarioConsultasClient({
           <Loader2 className="w-8 h-8 animate-spin mb-2" />
           <p className="text-sm">Cargando horario...</p>
         </div>
-      ) : selectedPeriodoId && (selectedGrupoId || selectedDocenteId) ? (
+      ) : selectedPeriodoId && selectedGrupoId ? (
         sesiones.length > 0 ? (
           <HorarioReadOnly
             sesiones={sesiones}
@@ -122,7 +114,7 @@ export default function HorarioConsultasClient({
         )
       ) : (
         <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
-          Seleccione un periodo y un filtro (grupo o docente) para ver el horario.
+          Seleccione un periodo y un curso para ver el horario.
         </div>
       )}
     </div>

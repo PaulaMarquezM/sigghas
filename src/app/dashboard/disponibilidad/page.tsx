@@ -27,19 +27,23 @@ export default async function DisponibilidadAulasPage() {
   let sesiones: ComponentProps<typeof DisponibilidadAulas>["sesiones"] = [];
 
   if (periodoActivo) {
-    // 3. Obtener el horario del periodo activo
-    const { data: horario } = await supabase
+    // 3. Un aula está ocupada si CUALQUIER horario del período activo la usa.
+    // No se usa `maybeSingle()`: pueden coexistir borradores, aprobados y el
+    // publicado, y todos reservan físicamente el aula mientras existen.
+    const { data: horarios } = await supabase
       .from("horarios")
       .select("id")
-      .eq("periodo_id", periodoActivo.id)
-      .maybeSingle();
+      .eq("periodo_id", periodoActivo.id);
 
-    if (horario) {
-      // 4. Obtener todas las sesiones de este horario para cruzar disponibilidad
+    const horarioRows = Array.isArray(horarios) ? horarios : horarios ? [horarios] : [];
+    const horarioIds = horarioRows.map((horario) => horario.id);
+
+    if (horarioIds.length > 0) {
+      // 4. Cruzar las sesiones de todos los horarios del período activo.
       const { data } = await supabase
         .from("sesiones")
         .select("*, materias(nombre), docentes:docente_id(perfiles(nombre)), grupos!grupo_id(nombre)")
-        .eq("horario_id", horario.id);
+        .in("horario_id", horarioIds);
       sesiones = (data ?? []) as unknown as ComponentProps<typeof DisponibilidadAulas>["sesiones"];
     }
   }

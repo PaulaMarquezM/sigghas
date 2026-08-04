@@ -2,13 +2,16 @@
 "use client";
 
 import React from "react";
+import { Pencil } from "lucide-react";
 import { HorarioCell } from "./HorarioCell";
 import { BloqueDraggable } from "./BloqueDraggable";
+import { generarSlots30, indiceColorEstable } from "@/lib/horario";
 
 interface HorarioGridProps {
   sesiones: any[];
   editable?: boolean;
   onEspacioChange?: (sesionId: string, nuevoEspacioId: string | null) => void;
+  onEditSession?: (sesion: any) => void;
   espaciosDisponibles?: any[];
 }
 
@@ -21,7 +24,7 @@ const DIAS = [
   { id: 6, label: "Sábado" },
 ];
 
-const HORAS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
+const SLOT_HEIGHT_PX = 42;
 
 // Helper to convert time "HH:MM" to minutes
 function parseTime(t: string): number {
@@ -34,23 +37,22 @@ function horasEntre(inicio: string, fin: string): number {
   return (parseTime(fin) - parseTime(inicio)) / 60;
 }
 
-// Colors for styling sessions dynamically based on materia or grupo
+// Cada docente mantiene el mismo color en todas sus clases.
 const COLORS = ["blue", "amber", "ink", "rose", "green"];
 export function HorarioGrid({
   sesiones,
   editable = false,
   onEspacioChange,
+  onEditSession,
   espaciosDisponibles = [],
 }: HorarioGridProps) {
   const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const horas = generarSlots30(sesiones);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
-  const materiaColorMap: Record<string, string> = {};
-  // Assign color to each unique materia
-  let colorIdx = 0;
+  const docenteColorMap: Record<string, string> = {};
   sesiones.forEach((s) => {
-    if (!materiaColorMap[s.materia_id]) {
-      materiaColorMap[s.materia_id] = COLORS[colorIdx % COLORS.length];
-      colorIdx++;
+    if (!docenteColorMap[s.docente_id]) {
+      docenteColorMap[s.docente_id] = COLORS[indiceColorEstable(s.docente_id, COLORS.length)];
     }
   });
 
@@ -69,8 +71,8 @@ export function HorarioGrid({
 
         {/* Grilla principal */}
         <div className="relative">
-          {HORAS.map((hora) => (
-            <div key={hora} className="grid min-h-[45px] border-b border-[#E5DFCC]/60 last:border-b-0" style={gridStyle}>
+          {horas.map((hora) => (
+            <div key={hora} className="grid min-h-[42px] border-b border-[#E5DFCC]/60 last:border-b-0" style={gridStyle}>
               {/* Hora row label */}
               <div className="flex items-start justify-center pt-2 text-[#4A515E] font-mono text-xs font-medium pr-3">
                 {hora}
@@ -88,15 +90,15 @@ export function HorarioGrid({
                   <HorarioCell key={`${dia.id}-${hora}`} dia={dia.id} hora={hora}>
                     {sesionesEnCelda.map((s) => {
                       const duracion = horasEntre(s.hora_inicio, s.hora_fin);
-                      const colorClass = materiaColorMap[s.materia_id] || "blue";
+                      const colorClass = docenteColorMap[s.docente_id] || "blue";
 
                       return (
                         <div
                           key={s.id}
                           className="relative w-full group"
                           style={{
-                            height: `${duracion * 90 - 4}px`,
-                            minHeight: "41px",
+                            height: `${duracion * SLOT_HEIGHT_PX - 4}px`,
+                            minHeight: "38px",
                             zIndex: 10,
                           }}
                         >
@@ -111,6 +113,19 @@ export function HorarioGrid({
                             colorClass={colorClass}
                             disabled={!editable}
                           />
+
+                          {editable && onEditSession && (
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => { event.stopPropagation(); onEditSession(s); }}
+                              className="absolute right-2 top-2 z-30 grid size-7 place-items-center rounded-md bg-black/55 text-white opacity-0 transition-opacity hover:bg-black/75 group-hover:opacity-100 focus:opacity-100"
+                              aria-label={`Editar ${s.materias?.nombre ?? "sesión"}`}
+                              title="Editar o eliminar sesión"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                          )}
 
                           {/* Selector de Aula cuando es presencial y es editable */}
                           {editable && s.modalidad === "presencial" && onEspacioChange && (
@@ -145,10 +160,11 @@ export function HorarioGrid({
       </div>
 
       {/* Leyenda */}
-      <div className="sc-foot mt-6 pt-4 border-t border-[#E5DFCC] flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-        <div className="sc-legend flex gap-4 flex-wrap">
-          {Object.entries(materiaColorMap).map(([mId, color]) => {
-            const sesion = sesiones.find((s) => s.materia_id === mId);
+      <div className="sc-foot mt-6 space-y-3 border-t border-[#E5DFCC] pt-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-xs font-semibold text-[#1F242D]">Color: docente</span>
+          {Object.entries(docenteColorMap).map(([docenteId, color]) => {
+            const sesion = sesiones.find((s) => s.docente_id === docenteId);
             if (!sesion) return null;
             const bgClass =
               color === "blue"
@@ -161,15 +177,15 @@ export function HorarioGrid({
                 ? "bg-[#C8523B]"
                 : "bg-[#2E7D5B]";
             return (
-              <span key={mId} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
+              <span key={docenteId} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
                 <i className={`w-3 h-3 rounded ${bgClass}`} />
-                {sesion.materias?.nombre || "Materia"}
+                {sesion.docentes?.perfiles?.nombre || "Docente"}
               </span>
             );
           })}
         </div>
         <div className="text-xs text-[#4A515E] font-mono">
-          * Arrastra los bloques para cambiar día y hora. El aula se edita al pasar el cursor sobre la tarjeta.
+          * Todas las clases de un mismo docente usan el mismo color.
         </div>
       </div>
     </div>

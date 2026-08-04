@@ -5,13 +5,14 @@ import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "
 import { HorarioGrid } from "@/components/horario/HorarioGrid";
 import { ConflictPanel } from "@/components/horario/ConflictPanel";
 import { toast } from "sonner";
-import { ArrowLeft, Check, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, FileText, Filter, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Asignacion, Conflicto, ContextoProgramacion, DiaSemana, Slot } from "@/lib/scheduler/types";
 import { validarCandidato } from "@/lib/scheduler/greedy";
 import { guardarMovimientoAction, publicarHorarioAction } from "./actions";
 import { NuevaSesionDialog, type OpcionesManuales } from "./NuevaSesionDialog";
+import { EditarSesionDialog } from "./EditarSesionDialog";
 
 type HorarioEditorHorario = { id: string; estado: string };
 type HorarioEditorPeriodo = { nombre: string };
@@ -57,6 +58,8 @@ export default function HorarioEditor({
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>(initialAsignaciones);
   const [sesiones, setSesiones] = useState<SesionVista[]>(initialSesiones);
   const [isPending, startTransition] = useTransition();
+  const [cursoFiltroId, setCursoFiltroId] = useState(opcionesManuales.cursos[0]?.id ?? "");
+  const [sesionEnEdicion, setSesionEnEdicion] = useState<SesionVista | null>(null);
 
   useEffect(() => {
     // Resincroniza el estado editable local con los datos del servidor tras
@@ -105,6 +108,10 @@ export default function HorarioEditor({
     }
     return localConflictos;
   }, [asignaciones, contexto]);
+  const sesionesVisibles = useMemo(
+    () => cursoFiltroId ? sesiones.filter((sesion) => sesion.grupo_id === cursoFiltroId) : [],
+    [cursoFiltroId, sesiones]
+  );
 
   // Manejar el arrastre y soltado de bloques
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -330,14 +337,26 @@ export default function HorarioEditor({
         </div>
       </div>
 
+      <div className="flex flex-col gap-3 rounded-xl border border-[#D8D1BD] bg-[#FEFCF6] p-4 sm:flex-row sm:items-end sm:justify-between">
+        <label className="grid gap-1.5 text-sm font-medium text-[#252B36] sm:w-80">
+          <span className="flex items-center gap-2"><Filter className="size-4 text-[#1D3FD9]" />Filtrar por curso</span>
+          <select value={cursoFiltroId} onChange={(event) => setCursoFiltroId(event.target.value)} className="h-10 rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15">
+            <option value="" disabled>Selecciona un curso</option>
+            {opcionesManuales.cursos.map((curso) => <option key={curso.id} value={curso.id}>{curso.nombre}</option>)}
+          </select>
+        </label>
+        <p className="text-xs text-[#697180]">Mostrando {sesionesVisibles.length} de {sesiones.length} clases. Pasa el cursor sobre una clase para editarla o eliminarla.</p>
+      </div>
+
       {/* Grid del editor con DndContext */}
       <DndContext id={`horario-editor-${horario.id}`} sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
           <div className="space-y-4">
             <HorarioGrid
-              sesiones={sesiones}
+              sesiones={sesionesVisibles}
               editable
               onEspacioChange={handleEspacioChange}
+              onEditSession={(sesion) => setSesionEnEdicion(sesion as SesionVista)}
               espaciosDisponibles={espaciosDisponibles}
             />
           </div>
@@ -347,6 +366,7 @@ export default function HorarioEditor({
           </div>
         </div>
       </DndContext>
+      {sesionEnEdicion && <EditarSesionDialog horarioId={horario.id} sesion={sesionEnEdicion} opciones={opcionesManuales} onClose={() => setSesionEnEdicion(null)} />}
     </div>
   );
 }

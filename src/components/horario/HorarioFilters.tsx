@@ -85,7 +85,6 @@ export function HorarioFilters({
               value={selectedDocenteId}
               onChange={(e) => {
                 if (onChangeDocente) onChangeDocente(e.target.value);
-                onChangeGrupo("");
               }}
               className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20 focus:border-[#1D3FD9]"
               disabled={!selectedPeriodoId}
@@ -102,7 +101,7 @@ export function HorarioFilters({
       </div>
 
       <div className="text-xs text-gray-400 font-mono text-right w-full xl:w-auto">
-        * Filtra por curso o por docente para ver su horario.
+        * El curso es obligatorio; el docente es un filtro adicional.
       </div>
     </div>
   );

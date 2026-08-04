@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { generarSlots30, indiceColorEstable } from "@/lib/horario";
 
 interface HorarioReadOnlyProps {
   sesiones: any[];
   title?: string;
   subtitle?: string;
+  filtrarPorCurso?: boolean;
 }
 
 const DIAS = [
@@ -18,7 +20,7 @@ const DIAS = [
   { id: 6, label: "Sábado" },
 ];
 
-const HORAS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
+const SLOT_HEIGHT_PX = 42;
 
 function parseTime(t: string): number {
   const [h, m] = t.split(":").map(Number);
@@ -38,16 +40,19 @@ const colorClasses: Record<string, string> = {
   green: "bg-emerald-50 border-emerald-200 text-emerald-900",
 };
 
-export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyProps) {
-  const dias = sesiones.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = true }: HorarioReadOnlyProps) {
+  const cursos = Array.from(new Map(sesiones.filter((sesion) => sesion.grupo_id).map((sesion) => [sesion.grupo_id, sesion.grupos?.nombre || "Curso"])).entries());
+  const [cursoSeleccionado, setCursoSeleccionado] = useState(cursos[0]?.[0] ?? "");
+  const cursoActivo = cursos.some(([id]) => id === cursoSeleccionado) ? cursoSeleccionado : cursos[0]?.[0] ?? "";
+  const sesionesVisibles = filtrarPorCurso ? (cursoActivo ? sesiones.filter((sesion) => sesion.grupo_id === cursoActivo) : []) : sesiones;
+  const dias = sesionesVisibles.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const horas = generarSlots30(sesionesVisibles);
   const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
-  const materiaColorMap: Record<string, string> = {};
-  let colorIdx = 0;
+  const docenteColorMap: Record<string, string> = {};
 
-  sesiones.forEach((s) => {
-    if (!materiaColorMap[s.materia_id]) {
-      materiaColorMap[s.materia_id] = COLORS[colorIdx % COLORS.length];
-      colorIdx++;
+  sesionesVisibles.forEach((s) => {
+    if (!docenteColorMap[s.docente_id]) {
+      docenteColorMap[s.docente_id] = COLORS[indiceColorEstable(s.docente_id, COLORS.length)];
     }
   });
 
@@ -57,6 +62,18 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
         <div className="border-b border-[#D8D1BD] pb-4 mb-6">
           {title && <h2 className="text-xl font-bold text-[#0E1116]">{title}</h2>}
           {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        </div>
+      )}
+
+      {filtrarPorCurso && cursos.length > 0 && (
+        <div className="mb-5 flex flex-col gap-1.5 rounded-lg border border-[#E5DFCC] bg-[#F9F7F2] p-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#4A515E]" htmlFor="horario-curso">
+            Curso
+            <select id="horario-curso" value={cursoActivo} onChange={(event) => setCursoSeleccionado(event.target.value)} className="h-9 rounded-md border border-[#C7BFA6] bg-white px-3 text-sm font-normal normal-case tracking-normal text-[#1F242D] outline-none focus:border-[#1D3FD9]">
+              {cursos.map(([id, nombre]) => <option key={id} value={id}>{nombre}</option>)}
+            </select>
+          </label>
+          <span className="text-xs text-[#697180]">{sesionesVisibles.length} clase{sesionesVisibles.length === 1 ? "" : "s"}</span>
         </div>
       )}
 
@@ -74,10 +91,10 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
 
           {/* Grilla Horaria */}
           <div>
-            {HORAS.map((hora) => (
+            {horas.map((hora) => (
               <div
                 key={hora}
-                className="grid min-h-[43px] border-b border-[#E5DFCC]/60 last:border-b-0"
+                className="grid min-h-[42px] border-b border-[#E5DFCC]/60 last:border-b-0"
                 style={gridStyle}
               >
                 {/* Hora label */}
@@ -87,7 +104,7 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
 
                 {/* Celdas */}
                 {dias.map((dia) => {
-                  const sesionesEnCelda = sesiones.filter((s) => {
+                  const sesionesEnCelda = sesionesVisibles.filter((s) => {
                     const sInicio = s.hora_inicio.slice(0, 5);
                     return s.dia_semana === dia.id && sInicio === hora;
                   });
@@ -95,19 +112,19 @@ export function HorarioReadOnly({ sesiones, title, subtitle }: HorarioReadOnlyPr
                   return (
                     <div
                       key={`${dia.id}-${hora}`}
-                      className="border-l border-[#E5DFCC]/40 p-1 min-h-[85px] relative hover:bg-gray-50/20 transition-colors"
+                      className="border-l border-[#E5DFCC]/40 p-1 min-h-[42px] relative hover:bg-gray-50/20 transition-colors"
                     >
                       {sesionesEnCelda.map((s) => {
                         const duracion = horasEntre(s.hora_inicio, s.hora_fin);
-                        const color = materiaColorMap[s.materia_id] || "blue";
+                        const color = docenteColorMap[s.docente_id] || "blue";
                         const styleClass = colorClasses[color] || colorClasses.blue;
 
                         return (
                           <div
                             key={s.id}
                             style={{
-                              height: `${duracion * 86 - 4}px`,
-                              minHeight: "39px",
+                              height: `${duracion * SLOT_HEIGHT_PX - 4}px`,
+                              minHeight: "38px",
                             }}
                             className={`absolute left-1 right-1 top-1 rounded-lg border p-2 text-[10px] leading-tight flex flex-col justify-between shadow-sm ${styleClass}`}
                           >

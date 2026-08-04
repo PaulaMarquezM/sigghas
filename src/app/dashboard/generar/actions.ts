@@ -9,24 +9,23 @@ export type CriterioGeneracion = { grupoId?: string; sedeId?: string };
 
 export async function generarHorario(periodoId: string, reemplazarBorradorId?: string | null, criterio: CriterioGeneracion = {}): Promise<ResultadoGeneracion> {
   await requireRol("coordinador", "administrador");
-  return generate(periodoId, reemplazarBorradorId, criterio);
+  // La edición de un horario existente se realiza desde el editor manual.
+  // La generación nunca crea un segundo horario para el mismo período.
+  return generate(periodoId, null, criterio);
 }
 
 export async function crearHorarioManual(periodoId: string) {
   await requireRol("coordinador", "administrador");
   if (!periodoId) return { exito: false, error: "Selecciona un período académico." };
   const supabase = await createClient();
-  const { data: borradores } = await supabase.from("horarios").select("id").eq("periodo_id", periodoId).eq("estado", "borrador").order("generado_en", { ascending: false }).limit(1);
-  if (borradores?.[0]) return { exito: true, horario_id: borradores[0].id };
+  const { data: existentes } = await supabase.from("horarios").select("id, estado").eq("periodo_id", periodoId).order("generado_en", { ascending: false }).limit(1);
+  if (existentes?.[0]) return { exito: false, error: "Ya existe un horario para este período. Edítalo desde el editor manual." };
   const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString(), aprobado_en: null, aprobado_por: null }).select("id").single();
   if (error || !data) return { exito: false, error: error?.message ?? "No se pudo crear el horario manual." };
   return { exito: true, horario_id: data.id };
 }
 
-/**
- * Verifica si ya existe un horario publicado para el periodo indicado.
- * Devuelve el estado y fecha del más reciente.
- */
+/** Verifica si ya existe cualquier horario para el período indicado. */
 export async function verificarHorarioExistente(periodoId: string): Promise<{
   existe: boolean;
   id: string | null;

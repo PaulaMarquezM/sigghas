@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DoorOpen, ShieldCheck, ShieldAlert, Clock, Calendar } from "lucide-react";
+import { generarSlots30 } from "@/lib/horario";
 
 type EspacioDisponible = { id: string; nombre: string; tipo: string; capacidad: number; accesible: boolean };
 type SesionOcupante = {
@@ -29,21 +30,6 @@ const DIAS = [
   { id: 6, label: "Sábado" },
 ];
 
-const HORAS = [
-  "07:00",
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
-
 export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasProps) {
   const router = useRouter();
 
@@ -57,6 +43,7 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
 
   const [selectedDia, setSelectedDia] = useState<number>(1); // Default determinista para SSR (Lunes)
   const [selectedHora, setSelectedHora] = useState<string>("07:00"); // Default determinista
+  const horas = generarSlots30(sesiones);
 
   return (
     <div className="space-y-6">
@@ -91,7 +78,7 @@ export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasP
               onChange={(e) => setSelectedHora(e.target.value)}
               className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20"
             >
-              {HORAS.map((h) => (
+              {horas.map((h) => (
                 <option key={h} value={h}>
                   {h}
                 </option>

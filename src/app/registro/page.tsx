@@ -5,18 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register } from "./actions";
 
-type Role = "estudiante" | "docente";
+type Role = "docente";
 
 const ROLES: { id: Role; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "estudiante",
-    label: "Estudiante",
-    icon: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4"/><path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/>
-      </svg>
-    ),
-  },
   {
     id: "docente",
     label: "Docente",
@@ -98,7 +89,7 @@ function RegisterFormContent() {
           )}
 
           {/* Role picker */}
-          <div className="s-field" style={{ gap: 10 }}>
+          <div className="s-field role-selector" style={{ gap: 10 }}>
             <label>Soy</label>
             <div className="role-pick">
               {ROLES.map(({ id, label, icon }) => (

@@ -31,6 +31,7 @@
 .sigghas-nav-links { display: flex; gap: 32px; align-items: center; }
 .sigghas-nav-links a { font-size: 14.5px; color: #1F242D; font-weight: 500; text-decoration: none; }
 .sigghas-nav-links a:hover { color: #0E1116; }
+.sigghas-nav-actions { display: flex; align-items: center; gap: 12px; }
 
 /* ---------- Buttons ---------- */
 .s-btn {
@@ -276,7 +277,7 @@
 /* ---------- Roles ---------- */
 .roles-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 .role-card {
@@ -500,7 +501,12 @@
 .s-checkbox { display: inline-flex; gap: 8px; align-items: center; color: #1F242D; cursor: pointer; }
 .s-checkbox input { width: 16px; height: 16px; accent-color: #0E1116; cursor: pointer; }
 .s-field-row a { color: #1D3FD9; font-weight: 500; text-decoration: none; }
-.role-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.role-selector { align-items: center; }
+.role-selector > label { align-self: stretch; text-align: center; }
+.role-pick {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;
+  width: min(100%, 430px); margin: 0 auto;
+}
 .role-pick-btn {
   background: white; border: 1px solid #C7BFA6; border-radius: 8px;
   padding: 10px 8px; font-size: 12px; font-weight: 500; color: #1F242D;
@@ -508,6 +514,10 @@
   transition: all .15s; cursor: pointer; font-family: 'Poppins', sans-serif;
 }
 .role-pick-btn.active { border-color: #0E1116; background: #0E1116; color: #F5F1E8; }
+
+@media (max-width: 480px) {
+  .role-pick { grid-template-columns: 1fr; }
+}
 
 /* ---------- Stats mini boxes ---------- */
 .stat-box {
