@@ -62,7 +62,7 @@ export function DocenteForm({
           </Field>
         </div>
       ) : null}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Field label="Tipo de contrato" htmlFor="tipo_contrato">
           <NativeSelect id="tipo_contrato" name="tipo_contrato" value={tipoContrato} onChange={(event) => cambiarContrato(event.target.value)} required>
             <option value="por_horas">Por horas</option>
@@ -75,18 +75,10 @@ export function DocenteForm({
         <Field label="Horas máximas semanales" htmlFor="max_horas_semana">
           <Input id="max_horas_semana" name="max_horas_semana" type="number" min={tipoContrato === "tiempo_completo" ? 40 : 1} max={60} value={maxHoras} onChange={(event) => setMaxHoras(event.target.value)} required />
         </Field>
-        <Field label="Sede principal" htmlFor="sede_principal_id">
-          <NativeSelect id="sede_principal_id" name="sede_principal_id" value={sedePrincipal} onChange={(event) => setSedePrincipal(event.target.value)} required>
-            <option value="">Seleccionar</option>
-            {sedes.filter((sede) => sedesAsignadas.includes(sede.id)).map((sede) => (
-              <option key={sede.id} value={sede.id}>{sede.nombre}</option>
-            ))}
-          </NativeSelect>
-        </Field>
       </div>
       <fieldset className="rounded-lg border border-[#D8D1BD] bg-white p-4">
         <legend className="px-1 text-sm font-medium text-[#1F242D]">Sedes donde puede impartir clases <span className="text-[#C8523B]">*</span></legend>
-        <p className="mb-3 text-xs text-[#727984]">Selecciona una o varias sedes. La primera de la lista se usa como sede principal.</p>
+        <p className="mb-3 text-xs text-[#727984]">Marca una o varias sedes. Después selecciona cuál de ellas será la sede principal.</p>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {sedes.map((sede) => (
             <label key={sede.id} className="flex items-center gap-2 text-sm text-[#1F242D]">
@@ -103,6 +95,14 @@ export function DocenteForm({
           ))}
         </div>
       </fieldset>
+      <Field label="Sede principal" htmlFor="sede_principal_id" hint={sedesAsignadas.length ? "Elige una de las sedes marcadas arriba." : "Primero marca al menos una sede."}>
+        <NativeSelect id="sede_principal_id" name="sede_principal_id" value={sedePrincipal} onChange={(event) => setSedePrincipal(event.target.value)} disabled={!sedesAsignadas.length} required>
+          <option value="">Seleccionar</option>
+          {sedes.filter((sede) => sedesAsignadas.includes(sede.id)).map((sede) => (
+            <option key={sede.id} value={sede.id}>{sede.nombre}</option>
+          ))}
+        </NativeSelect>
+      </Field>
       {!includeIdentityFields ? (
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="activo" defaultChecked={value?.activo ?? true} className="size-4" />
