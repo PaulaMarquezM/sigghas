@@ -24,7 +24,6 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
     { label: "Docentes",           href: "/dashboard/docentes",       icon: UserCheck },
     { label: "Materias",           href: "/dashboard/materias",       icon: BookOpen },
     { label: "Cursos",             href: "/dashboard/grupos",         icon: Users },
-    { label: "Matrículas",         href: "/dashboard/matriculas",     icon: UserCheck },
     { label: "Aulas",              href: "/dashboard/espacios",       icon: Building2 },
     { label: "Disponibilidad",     href: "/dashboard/disponibilidad", icon: Clock },
     { label: "Periodos",           href: "/dashboard/periodos",       icon: Settings },
