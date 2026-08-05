@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { payload } from "@/app/dashboard/materias/validation";
+import {
+  encontrarMateriaDuplicada,
+  payload,
+  sonNombresSimilares,
+} from "@/app/dashboard/materias/validation";
 
 function fd(fields: Record<string, string>) {
   const formData = new FormData();
@@ -61,6 +65,21 @@ describe("materias payload()", () => {
     expect(() => payload(fd({ nombre: "X", horas_teoria: "1.3", horas_practica: "0" }))).toThrow(
       /intervalos de 30 minutos/
     );
+  });
+
+  it("detecta nombres duplicados con faltas ortográficas o acentos", () => {
+    expect(sonNombresSimilares("Programación I", "Programacion I")).toBe(true);
+    expect(sonNombresSimilares("Programación I", "Programasion I")).toBe(true);
+    expect(sonNombresSimilares("Cálculo Diferencial", "Calculo Diferencial")).toBe(true);
+    expect(sonNombresSimilares("Programación I", "Base de Datos")).toBe(false);
+  });
+
+  it("encuentra la materia duplicada existente", () => {
+    const existente = encontrarMateriaDuplicada("programasion 1", [
+      { id: "1", nombre: "Programación I" },
+      { id: "2", nombre: "Base de Datos" },
+    ]);
+    expect(existente?.id).toBe("1");
   });
 
 });
