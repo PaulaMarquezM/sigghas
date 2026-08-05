@@ -24,6 +24,24 @@ export function generarSlots30(sesiones: SesionConHoras[] = []): string[] {
   return Array.from({ length: Math.floor((fin - inicio) / 30) + 1 }, (_, indice) => formatoHora(inicio + indice * 30));
 }
 
+/** Cantidad de franjas de 30 minutos entre hora_inicio y hora_fin (mínimo 1). */
+export function slotsDe30Min(inicio: string, fin: string): number {
+  const diff = minutos(fin) - minutos(inicio);
+  if (diff <= 0) return 1;
+  // ceil evita perder la última franja si hubiera decimales raros en el tiempo
+  return Math.max(1, Math.ceil(diff / 30 - 1e-9));
+}
+
+/** Offset en píxeles desde el inicio de la grilla hasta una hora. */
+export function offsetPxDesdeInicio(hora: string, gridStartMin: number, slotHeightPx: number): number {
+  return ((minutos(hora) - gridStartMin) / 30) * slotHeightPx;
+}
+
+/** Altura en píxeles de un bloque para la duración inicio→fin. */
+export function alturaBloquePx(inicio: string, fin: string, slotHeightPx: number, gapPx = 2): number {
+  return slotsDe30Min(inicio, fin) * slotHeightPx - gapPx;
+}
+
 /** Genera un índice estable para que un docente conserve su color entre cursos y vistas. */
 export function indiceColorEstable(valor: string | null | undefined, cantidad: number): number {
   const texto = valor || "sin-docente";

@@ -39,9 +39,10 @@ export function BloqueDraggable({
     opacity: isDragging ? 0.5 : 1,
     cursor: disabled ? "not-allowed" : "grab",
     touchAction: "none",
-    position: transform ? "absolute" : "relative",
-    width: transform ? "200px" : "100%",
-    height: "100%",
+    position: "absolute",
+    inset: 0,
+    width: transform ? "200px" : undefined,
+    height: transform ? "auto" : undefined,
     zIndex: transform ? 999 : 1,
   };
 

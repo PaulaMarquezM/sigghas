@@ -21,33 +21,44 @@ const DIAS = [
 ];
 
 const SLOT_HEIGHT_PX = 42;
+const TIME_COL_PX = 80;
 
-function parseTime(t: string): number {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
-}
-
-function horasEntre(inicio: string, fin: string): number {
-  return (parseTime(fin) - parseTime(inicio)) / 60;
-}
-
-const COLORS = ["blue", "amber", "ink", "rose", "green"];
+const COLORS = ["blue", "amber", "ink", "rose", "green", "teal", "coral", "slate", "lime", "plum"];
 const colorClasses: Record<string, string> = {
   blue: "bg-blue-50 border-blue-200 text-blue-900",
   amber: "bg-amber-50 border-amber-200 text-amber-900",
   ink: "bg-gray-50 border-gray-200 text-gray-900",
   rose: "bg-red-50 border-red-200 text-red-900",
   green: "bg-emerald-50 border-emerald-200 text-emerald-900",
+  teal: "bg-teal-50 border-teal-200 text-teal-900",
+  coral: "bg-orange-50 border-orange-200 text-orange-900",
+  slate: "bg-slate-50 border-slate-200 text-slate-900",
+  lime: "bg-lime-50 border-lime-200 text-lime-900",
+  plum: "bg-rose-50 border-rose-200 text-rose-900",
 };
+
+function minutoDe(hora: string): number {
+  const [h, m] = hora.slice(0, 5).split(":").map(Number);
+  return h * 60 + m;
+}
+
+function rangoFilas(horas: string[], horaInicio: string, horaFin: string): { start: number; end: number } {
+  const inicio = horaInicio.slice(0, 5);
+  const finMin = minutoDe(horaFin);
+  const start = horas.findIndex((h) => h === inicio);
+  let end = horas.findIndex((h) => minutoDe(h) >= finMin);
+  if (start < 0) return { start: 0, end: 1 };
+  if (end <= start) end = start + 1;
+  return { start, end };
+}
 
 export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = true }: HorarioReadOnlyProps) {
   const cursos = Array.from(new Map(sesiones.filter((sesion) => sesion.grupo_id).map((sesion) => [sesion.grupo_id, sesion.grupos?.nombre || "Curso"])).entries());
   const [cursoSeleccionado, setCursoSeleccionado] = useState(cursos[0]?.[0] ?? "");
   const cursoActivo = cursos.some(([id]) => id === cursoSeleccionado) ? cursoSeleccionado : cursos[0]?.[0] ?? "";
   const sesionesVisibles = filtrarPorCurso ? (cursoActivo ? sesiones.filter((sesion) => sesion.grupo_id === cursoActivo) : []) : sesiones;
-  const dias = sesionesVisibles.some((sesion) => sesion.dia_semana === 6) ? DIAS : DIAS.slice(0, 5);
+  const dias = DIAS;
   const horas = generarSlots30(sesionesVisibles);
-  const gridStyle = { gridTemplateColumns: `80px repeat(${dias.length}, minmax(140px, 1fr))` };
   const docenteColorMap: Record<string, string> = {};
 
   sesionesVisibles.forEach((s) => {
@@ -56,8 +67,14 @@ export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = t
     }
   });
 
+  const gridTemplate = {
+    display: "grid" as const,
+    gridTemplateColumns: `${TIME_COL_PX}px repeat(${dias.length}, minmax(140px, 1fr))`,
+    gridTemplateRows: `repeat(${horas.length}, ${SLOT_HEIGHT_PX}px)`,
+  };
+
   return (
-    <div className="bg-white border border-[#D8D1BD] rounded-xl shadow-md p-6 overflow-hidden">
+    <div className="bg-white border border-[#D8D1BD] rounded-xl shadow-md p-6 overflow-visible">
       {(title || subtitle) && (
         <div className="border-b border-[#D8D1BD] pb-4 mb-6">
           {title && <h2 className="text-xl font-bold text-[#0E1116]">{title}</h2>}
@@ -78,9 +95,11 @@ export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = t
       )}
 
       <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          {/* Header de Días */}
-          <div className="grid border-b border-[#D8D1BD] pb-3 text-center" style={gridStyle}>
+        <div className="min-w-[900px]">
+          <div
+            className="grid border-b border-[#D8D1BD] pb-3 text-center"
+            style={{ gridTemplateColumns: `${TIME_COL_PX}px repeat(${dias.length}, minmax(140px, 1fr))` }}
+          >
             <div className="font-semibold text-gray-400 text-xs flex items-center justify-center">Hora</div>
             {dias.map((d) => (
               <div key={d.id} className="font-semibold text-[#1F242D] text-sm py-1.5 border-l border-[#E5DFCC]/40">
@@ -89,67 +108,62 @@ export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = t
             ))}
           </div>
 
-          {/* Grilla Horaria */}
-          <div>
-            {horas.map((hora) => (
-              <div
-                key={hora}
-                className="grid min-h-[42px] border-b border-[#E5DFCC]/60 last:border-b-0"
-                style={gridStyle}
-              >
-                {/* Hora label */}
-                <div className="flex items-start justify-center pt-2.5 text-[#4A515E] font-mono text-xs font-medium">
+          <div className="relative" style={gridTemplate}>
+            {horas.map((hora, rowIdx) => (
+              <React.Fragment key={hora}>
+                <div
+                  className="flex items-start justify-center pt-2.5 text-[#4A515E] font-mono text-xs font-medium border-b border-[#E5DFCC]/60"
+                  style={{ gridColumn: 1, gridRow: rowIdx + 1 }}
+                >
                   {hora}
                 </div>
-
-                {/* Celdas */}
-                {dias.map((dia) => {
-                  const sesionesEnCelda = sesionesVisibles.filter((s) => {
-                    const sInicio = s.hora_inicio.slice(0, 5);
-                    return s.dia_semana === dia.id && sInicio === hora;
-                  });
-
-                  return (
-                    <div
-                      key={`${dia.id}-${hora}`}
-                      className="border-l border-[#E5DFCC]/40 p-1 min-h-[42px] relative hover:bg-gray-50/20 transition-colors"
-                    >
-                      {sesionesEnCelda.map((s) => {
-                        const duracion = horasEntre(s.hora_inicio, s.hora_fin);
-                        const color = docenteColorMap[s.docente_id] || "blue";
-                        const styleClass = colorClasses[color] || colorClasses.blue;
-
-                        return (
-                          <div
-                            key={s.id}
-                            style={{
-                              height: `${duracion * SLOT_HEIGHT_PX - 4}px`,
-                              minHeight: "38px",
-                            }}
-                            className={`absolute left-1 right-1 top-1 rounded-lg border p-2 text-[10px] leading-tight flex flex-col justify-between shadow-sm ${styleClass}`}
-                          >
-                            <div>
-                              <div className="font-bold truncate" title={s.materias?.nombre}>
-                                {s.materias?.nombre}
-                              </div>
-                              <div className="mt-1 opacity-80 truncate">
-                                Docente: {s.docentes?.perfiles?.nombre}
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between border-t border-current/10 pt-1 text-[9px] mt-1">
-                              <span className="font-semibold">{s.grupos?.nombre}</span>
-                              <span className="bg-current/10 px-1 py-0.5 rounded text-[8px]">
-                                {s.modalidad === "presencial" ? s.espacios?.nombre || "S/A" : s.modalidad === "hibrida" ? "Híbrida" : "Virtual"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
+                {dias.map((dia, diaIdx) => (
+                  <div
+                    key={`${dia.id}-${hora}`}
+                    className="border-b border-[#E5DFCC]/60 border-l border-[#E5DFCC]/40"
+                    style={{ gridColumn: diaIdx + 2, gridRow: rowIdx + 1 }}
+                  />
+                ))}
+              </React.Fragment>
             ))}
+
+            {sesionesVisibles.map((s) => {
+              const diaIdx = dias.findIndex((d) => d.id === s.dia_semana);
+              if (diaIdx < 0) return null;
+              const { start, end } = rangoFilas(horas, s.hora_inicio, s.hora_fin);
+              const color = docenteColorMap[s.docente_id] || "blue";
+              const styleClass = colorClasses[color] || colorClasses.blue;
+
+              return (
+                <div
+                  key={s.id}
+                  style={{
+                    gridColumn: diaIdx + 2,
+                    gridRow: `${start + 1} / ${end + 1}`,
+                    minHeight: 0,
+                  }}
+                  className={`relative z-20 m-0.5 rounded-lg border p-2 text-[10px] leading-tight flex flex-col justify-between shadow-sm ${styleClass}`}
+                >
+                  <div>
+                    <div className="font-bold truncate" title={s.materias?.nombre}>
+                      {s.materias?.nombre}
+                    </div>
+                    <div className="mt-1 opacity-80 truncate">
+                      Docente: {s.docentes?.perfiles?.nombre}
+                    </div>
+                    <div className="mt-0.5 font-mono text-[9px] opacity-70">
+                      {s.hora_inicio.slice(0, 5)} – {s.hora_fin.slice(0, 5)}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-current/10 pt-1 text-[9px] mt-1">
+                    <span className="font-semibold">{s.grupos?.nombre}</span>
+                    <span className="bg-current/10 px-1 py-0.5 rounded text-[8px]">
+                      {s.modalidad === "presencial" ? s.espacios?.nombre || "S/A" : s.modalidad === "hibrida" ? "Híbrida" : "Virtual"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

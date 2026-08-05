@@ -157,7 +157,8 @@
 }
 .sc-grid .sc-hour { font-feature-settings: "tnum"; border-right: 1px solid #E5DFCC; }
 .sc-block {
-  position: absolute; left: 3px; right: 3px; top: 3px;
+  position: absolute;
+  inset: 0;
   border-radius: 6px;
   padding: 5px 7px;
   font-size: 10px;
@@ -174,6 +175,11 @@
 .sc-block.outline { background: #F5F1E8; border: 1px dashed #8A8F99; color: #1F242D; }
 .sc-block.rose { background: #C8523B; color: white; }
 .sc-block.green { background: #2E7D5B; color: white; }
+.sc-block.teal { background: #0F766E; color: white; }
+.sc-block.coral { background: #B45309; color: white; }
+.sc-block.slate { background: #475569; color: white; }
+.sc-block.lime { background: #4D7C0F; color: white; }
+.sc-block.plum { background: #9F1239; color: white; }
 .sc-foot {
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 12px; padding-top: 12px; border-top: 1px solid #E5DFCC;

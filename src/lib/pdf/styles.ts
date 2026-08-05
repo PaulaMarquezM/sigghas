@@ -80,13 +80,13 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#D8D1BD",
     borderRadius: 6,
-    overflow: "hidden",
   },
   tableRow: {
     flexDirection: "row",
     minHeight: 35,
     borderBottomWidth: 1,
     borderBottomColor: "#E5DFCC",
+    overflow: "visible",
   },
   tableRowHeader: {
     flexDirection: "row",
@@ -127,22 +127,23 @@ export const styles = StyleSheet.create({
   tableColDay: {
     flex: 1,
     padding: 3,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     borderRightWidth: 1,
     borderRightColor: "#E5DFCC",
     position: "relative",
+    overflow: "visible",
   },
   tableColDayLast: {
     flex: 1,
     padding: 3,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     position: "relative",
+    overflow: "visible",
   },
   sessionBlock: {
     borderRadius: 4,
     padding: 4,
     borderWidth: 1,
-    height: "100%",
     justifyContent: "space-between",
   },
   sessionMateria: {
