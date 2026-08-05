@@ -7,6 +7,10 @@ import { consolidarBloquesDisponibilidad } from "@/lib/disponibilidad";
 import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, requireFields, type ActionResult } from "@/lib/entities";
 import type { TipoContrato } from "@/types/database";
 
+function sedesSeleccionadas(formData: FormData) {
+  return [...new Set(formData.getAll("sedes_ids").filter((value): value is string => typeof value === "string" && value.length > 0))];
+}
+
 export async function createDocente(_state: ActionResult, formData: FormData): Promise<ActionResult> {
   const { admin } = await requireRolAndAdminClient("coordinador", "administrador");
 
@@ -15,9 +19,15 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
     const email = formString(formData, "email").toLowerCase();
     const tipo_contrato = formString(formData, "tipo_contrato") as TipoContrato;
     const sede_principal_id = formNullableString(formData, "sede_principal_id");
-    const max_horas_semana = formNumber(formData, "max_horas_semana", 20);
+    const sedes_ids = sedesSeleccionadas(formData);
+    const max_horas_semana = tipo_contrato === "tiempo_completo"
+      ? Math.max(40, formNumber(formData, "max_horas_semana", 40))
+      : formNumber(formData, "max_horas_semana", 20);
 
     requireFields({ Nombre: nombre, Email: email, Sede: sede_principal_id });
+    if (!sedes_ids.length || !sede_principal_id || !sedes_ids.includes(sede_principal_id)) {
+      throw new Error("Selecciona al menos una sede e indica cu\\u00e1l es la principal.");
+    }
 
     const tempPassword = crypto.randomUUID();
     const { data: userData, error: userError } = await admin.auth.admin.createUser({
@@ -49,6 +59,11 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
       hora_salida: null,
     });
     if (error) throw new Error(error.message);
+
+    const { error: sedesError } = await adminDb.from("docente_sedes").insert(
+      sedes_ids.map((sede_id) => ({ docente_id: id, sede_id })),
+    );
+    if (sedesError) throw new Error(sedesError.message);
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
@@ -62,8 +77,15 @@ export async function updateDocente(id: string, _state: ActionResult, formData: 
   try {
     const tipo_contrato = formString(formData, "tipo_contrato") as TipoContrato;
     const sede_principal_id = formNullableString(formData, "sede_principal_id");
-    const max_horas_semana = formNumber(formData, "max_horas_semana", 20);
+    const sedes_ids = sedesSeleccionadas(formData);
+    const max_horas_semana = tipo_contrato === "tiempo_completo"
+      ? Math.max(40, formNumber(formData, "max_horas_semana", 40))
+      : formNumber(formData, "max_horas_semana", 20);
     const activo = formBoolean(formData, "activo");
+
+    if (!sedes_ids.length || !sede_principal_id || !sedes_ids.includes(sede_principal_id)) {
+      throw new Error("Selecciona al menos una sede e indica cu\\u00e1l es la principal.");
+    }
 
     const db = asUntypedDb(admin);
     const { error } = await db
@@ -74,6 +96,13 @@ export async function updateDocente(id: string, _state: ActionResult, formData: 
 
     const { error: profileError } = await db.from("perfiles").update({ activo }).eq("id", id);
     if (profileError) throw new Error(profileError.message);
+
+    const { error: deleteSedesError } = await db.from("docente_sedes").delete().eq("docente_id", id);
+    if (deleteSedesError) throw new Error(deleteSedesError.message);
+    const { error: sedesError } = await db.from("docente_sedes").insert(
+      sedes_ids.map((sede_id) => ({ docente_id: id, sede_id })),
+    );
+    if (sedesError) throw new Error(sedesError.message);
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }

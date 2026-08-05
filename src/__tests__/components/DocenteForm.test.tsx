@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { DocenteForm } from "@/components/entities/DocenteForm";
 
 const sedes = [{ id: "s-1", nombre: "Manta", es_central: true, creado_en: "" }];
@@ -17,5 +17,11 @@ describe("DocenteForm", () => {
     expect(screen.queryByLabelText(/email/i)).toBeNull();
     expect((screen.getByLabelText(/tipo de contrato/i) as HTMLSelectElement).value).toBe("titular");
     expect((screen.getByLabelText(/docente activo/i) as HTMLInputElement).checked).toBe(false);
+  });
+
+  it("asigna una carga mÃ­nima de 40 horas al seleccionar tiempo completo", () => {
+    render(<DocenteForm action={vi.fn()} sedes={sedes} />);
+    fireEvent.change(screen.getByLabelText(/tipo de contrato/i), { target: { value: "tiempo_completo" } });
+    expect((screen.getByRole("spinbutton", { name: /horas/i }) as HTMLInputElement).value).toBe("40");
   });
 });

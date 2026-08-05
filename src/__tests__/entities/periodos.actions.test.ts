@@ -54,13 +54,21 @@ describe("periodos actions", () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
+  it("createPeriodo: rechaza fechas que se superponen con otro perÃ­odo", async () => {
+    fromMock.mockReturnValue(createChainableQuery(ok([
+      { id: "p-existente", nombre: "2026-I", fecha_inicio: "2026-01-05", fecha_fin: "2026-06-30" },
+    ])));
+    const result = await createPeriodo({ ok: true }, fd({ nombre: "2026-II", fecha_inicio: "2026-06-01", fecha_fin: "2026-10-01" }));
+    expect(result).toEqual(expect.objectContaining({ ok: false, message: expect.stringContaining("se superponen") }));
+  });
+
   it("updatePeriodo: actualiza y redirige cuando todo sale bien", async () => {
     fromMock.mockReturnValue(createChainableQuery(ok()));
     await expect(updatePeriodo("p-1", { ok: true }, validForm())).rejects.toThrow("NEXT_REDIRECT:/dashboard/periodos");
   });
 
   it("togglePeriodo: activa el periodo sin lanzar", async () => {
-    fromMock.mockReturnValue(createChainableQuery(ok()));
+    fromMock.mockReturnValue(createChainableQuery(ok({ id: "p-1", nombre: "2026-I", fecha_inicio: "2026-01-05", fecha_fin: "2026-06-30" })));
     await expect(togglePeriodo("p-1", true)).resolves.toBeUndefined();
   });
 

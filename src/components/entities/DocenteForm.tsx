@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Field, FormActions, NativeSelect } from "@/components/entities/FormShell";
 import { FormMessage } from "@/components/entities/FormShell";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ export type DocenteFormValue = {
   tipo_contrato?: string;
   max_horas_semana?: number;
   sede_principal_id?: string | null;
+  sede_ids?: string[];
   activo?: boolean;
 };
 
@@ -29,6 +30,24 @@ export function DocenteForm({
   includeIdentityFields?: boolean;
 }) {
   const [state, formAction] = useActionState(action, { ok: true });
+  const [tipoContrato, setTipoContrato] = useState(value?.tipo_contrato ?? "por_horas");
+  const [maxHoras, setMaxHoras] = useState(String(value?.max_horas_semana ?? (tipoContrato === "tiempo_completo" ? 40 : 20)));
+  const [sedesAsignadas, setSedesAsignadas] = useState<string[]>(value?.sede_ids ?? (value?.sede_principal_id ? [value.sede_principal_id] : []));
+  const [sedePrincipal, setSedePrincipal] = useState(value?.sede_principal_id ?? value?.sede_ids?.[0] ?? "");
+
+  function cambiarContrato(nuevoTipo: string) {
+    setTipoContrato(nuevoTipo);
+    if (nuevoTipo === "tiempo_completo" && Number(maxHoras) < 40) setMaxHoras("40");
+  }
+
+  function cambiarSede(sedeId: string, asignada: boolean) {
+    setSedesAsignadas((actuales) => {
+      const siguientes = asignada ? [...new Set([...actuales, sedeId])] : actuales.filter((id) => id !== sedeId);
+      if (sedePrincipal === sedeId && !asignada) setSedePrincipal(siguientes[0] ?? "");
+      if (!sedePrincipal && asignada) setSedePrincipal(sedeId);
+      return siguientes;
+    });
+  }
 
   return (
     <form action={formAction} className="grid gap-4">
@@ -45,7 +64,7 @@ export function DocenteForm({
       ) : null}
       <div className="grid gap-4 md:grid-cols-3">
         <Field label="Tipo de contrato" htmlFor="tipo_contrato">
-          <NativeSelect id="tipo_contrato" name="tipo_contrato" defaultValue={value?.tipo_contrato} required>
+          <NativeSelect id="tipo_contrato" name="tipo_contrato" value={tipoContrato} onChange={(event) => cambiarContrato(event.target.value)} required>
             <option value="por_horas">Por horas</option>
             <option value="tiempo_completo">Tiempo completo</option>
             <option value="titular">Titular</option>
@@ -54,17 +73,36 @@ export function DocenteForm({
           </NativeSelect>
         </Field>
         <Field label="Horas máximas semanales" htmlFor="max_horas_semana">
-          <Input id="max_horas_semana" name="max_horas_semana" type="number" min={1} max={60} defaultValue={value?.max_horas_semana ?? 20} required />
+          <Input id="max_horas_semana" name="max_horas_semana" type="number" min={tipoContrato === "tiempo_completo" ? 40 : 1} max={60} value={maxHoras} onChange={(event) => setMaxHoras(event.target.value)} required />
         </Field>
         <Field label="Sede principal" htmlFor="sede_principal_id">
-          <NativeSelect id="sede_principal_id" name="sede_principal_id" defaultValue={value?.sede_principal_id} required>
+          <NativeSelect id="sede_principal_id" name="sede_principal_id" value={sedePrincipal} onChange={(event) => setSedePrincipal(event.target.value)} required>
             <option value="">Seleccionar</option>
-            {sedes.map((sede) => (
+            {sedes.filter((sede) => sedesAsignadas.includes(sede.id)).map((sede) => (
               <option key={sede.id} value={sede.id}>{sede.nombre}</option>
             ))}
           </NativeSelect>
         </Field>
       </div>
+      <fieldset className="rounded-lg border border-[#D8D1BD] bg-white p-4">
+        <legend className="px-1 text-sm font-medium text-[#1F242D]">Sedes donde puede impartir clases <span className="text-[#C8523B]">*</span></legend>
+        <p className="mb-3 text-xs text-[#727984]">Selecciona una o varias sedes. La primera de la lista se usa como sede principal.</p>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {sedes.map((sede) => (
+            <label key={sede.id} className="flex items-center gap-2 text-sm text-[#1F242D]">
+              <input
+                type="checkbox"
+                name="sedes_ids"
+                value={sede.id}
+                checked={sedesAsignadas.includes(sede.id)}
+                onChange={(event) => cambiarSede(sede.id, event.target.checked)}
+                className="size-4 accent-[#1D3FD9]"
+              />
+              {sede.nombre}
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {!includeIdentityFields ? (
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="activo" defaultChecked={value?.activo ?? true} className="size-4" />

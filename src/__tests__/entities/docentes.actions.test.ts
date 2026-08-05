@@ -29,7 +29,7 @@ function fd(fields: Record<string, string>) {
   return formData;
 }
 
-const validForm = () => fd({ nombre: "Ana Pérez", email: "ana@puce.edu.ec", tipo_contrato: "por_horas", sede_principal_id: "sede-1", max_horas_semana: "20" });
+const validForm = () => fd({ nombre: "Ana Pérez", email: "ana@puce.edu.ec", tipo_contrato: "por_horas", sede_principal_id: "sede-1", sedes_ids: "sede-1", max_horas_semana: "20" });
 
 describe("docentes actions", () => {
   beforeEach(() => {
@@ -65,6 +65,16 @@ describe("docentes actions", () => {
     const result = await createDocente({ ok: true }, fd({ nombre: "Ana" }));
     expect(result.ok).toBe(false);
     expect(createUserMock).not.toHaveBeenCalled();
+  });
+
+  it("createDocente: conserva una carga mÃ­nima de 40 horas para tiempo completo", async () => {
+    createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    const docenteQuery = createChainableQuery(ok()) as { insert: ReturnType<typeof vi.fn> };
+    docenteQuery.insert = vi.fn(() => docenteQuery);
+    fromMock.mockImplementation((table: string) => table === "docentes" ? docenteQuery : createChainableQuery(ok()));
+    const form = fd({ nombre: "Ana PÃ©rez", email: "ana@puce.edu.ec", tipo_contrato: "tiempo_completo", sede_principal_id: "sede-1", sedes_ids: "sede-1", max_horas_semana: "20" });
+    await expect(createDocente({ ok: true }, form)).rejects.toThrow("NEXT_REDIRECT:/dashboard/docentes");
+    expect(docenteQuery.insert).toHaveBeenCalledWith(expect.objectContaining({ max_horas_semana: 40 }));
   });
 
   it("updateDocente: actualiza docente y perfil, luego redirige", async () => {

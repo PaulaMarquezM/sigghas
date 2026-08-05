@@ -10,13 +10,14 @@ import { Loader2, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 interface Periodo {
   id: string;
   nombre: string;
+  activo?: boolean;
 }
 interface Grupo { id: string; nombre: string; sede_id: string }
 interface Sede { id: string; nombre: string }
 
 export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; grupos: Grupo[]; sedes: Sede[] }) {
   const router = useRouter();
-  const [periodoId, setPeriodoId]     = useState(periodos.find((p) => p.nombre.includes("2026"))?.id ?? "");
+  const [periodoId, setPeriodoId]     = useState(periodos.find((p) => p.activo)?.id ?? "");
   const [loading, setLoading]         = useState(false);
   const [verificando, setVerificando] = useState(false);
   const [resultado, setResultado]     = useState<ResultadoGeneracion | null>(null);
@@ -88,8 +89,8 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
             >
               <option value="">Seleccionar periodo...</option>
               {periodos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
+                <option key={p.id} value={p.id} disabled={p.activo === false}>
+                  {p.nombre}{p.activo === false ? " (inactivo)" : ""}
                 </option>
               ))}
             </select>

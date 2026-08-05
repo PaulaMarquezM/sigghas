@@ -32,17 +32,26 @@ describe("generar actions", () => {
   });
 
   it("crearHorarioManual: rechaza cualquier horario existente en el periodo", async () => {
-    fromMock.mockReturnValue(createChainableQuery(ok([{ id: "h-existente", estado: "borrador" }])));
+    fromMock
+      .mockReturnValueOnce(createChainableQuery(ok({ id: "p-1", activo: true })))
+      .mockReturnValueOnce(createChainableQuery(ok([{ id: "h-existente", estado: "borrador" }])));
     const resultado = await crearHorarioManual("p-1");
     expect(resultado).toEqual({ exito: false, error: "Ya existe un horario para este período. Edítalo desde el editor manual." });
   });
 
   it("crearHorarioManual: crea un horario nuevo en borrador si no hay ninguno", async () => {
+    const periodoChain = createChainableQuery(ok({ id: "p-1", activo: true }));
     const limitChain = createChainableQuery(ok([]));
     const insertChain = createChainableQuery(ok({ id: "h-nuevo" }));
-    fromMock.mockReturnValueOnce(limitChain).mockReturnValueOnce(insertChain);
+    fromMock.mockReturnValueOnce(periodoChain).mockReturnValueOnce(limitChain).mockReturnValueOnce(insertChain);
     const resultado = await crearHorarioManual("p-1");
     expect(resultado).toEqual({ exito: true, horario_id: "h-nuevo" });
+  });
+
+  it("crearHorarioManual: bloquea un per\\u00edodo inactivo con el motivo correcto", async () => {
+    fromMock.mockReturnValue(createChainableQuery(ok({ id: "p-inactivo", activo: false })));
+    const resultado = await crearHorarioManual("p-inactivo");
+    expect(resultado).toEqual({ exito: false, error: "Solo se puede crear un horario para el per\\u00edodo acad\\u00e9mico activo." });
   });
 
   it("verificarHorarioExistente: informa que no existe cuando no hay horarios para el periodo", async () => {

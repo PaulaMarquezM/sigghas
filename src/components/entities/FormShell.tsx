@@ -120,12 +120,18 @@ export function NativeSelect({
   name,
   defaultValue,
   required,
+  disabled = false,
+  value,
+  onChange,
   children,
 }: {
   id: string;
   name: string;
   defaultValue?: string | number | null;
   required?: boolean;
+  disabled?: boolean;
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLSelectElement>;
   children: React.ReactNode;
 }) {
   return (
@@ -134,11 +140,14 @@ export function NativeSelect({
       name={name}
       defaultValue={defaultValue ?? ""}
       required={required}
+      disabled={disabled}
+      value={value}
+      onChange={onChange}
       style={{
         height: 38, width: "100%", padding: "0 12px",
-        border: "1px solid #D8D1BD", borderRadius: 8,
-        background: "white", fontSize: 13.5, color: "#0E1116",
-        fontFamily: "Poppins, sans-serif", outline: "none",
+        border: disabled ? "1px dashed #B9B2A1" : "1px solid #C7BFA6", borderRadius: 8,
+        background: disabled ? "#E9E5DA" : "white", fontSize: 13.5, color: disabled ? "#727984" : "#0E1116",
+        fontFamily: "Poppins, sans-serif", outline: "none", cursor: disabled ? "not-allowed" : "pointer",
       }}
     >
       {children}

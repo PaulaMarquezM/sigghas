@@ -18,6 +18,17 @@ export async function crearHorarioManual(periodoId: string) {
   await requireRol("coordinador", "administrador");
   if (!periodoId) return { exito: false, error: "Selecciona un período académico." };
   const supabase = await createClient();
+  const { data: periodo, error: periodoError } = await supabase
+    .from("periodos")
+    .select("id, activo")
+    .eq("id", periodoId)
+    .single();
+  if (periodoError || !periodo) {
+    return { exito: false, error: periodoError?.message ?? "No se encontr\\u00f3 el per\\u00edodo acad\\u00e9mico." };
+  }
+  if (!periodo.activo) {
+    return { exito: false, error: "Solo se puede crear un horario para el per\\u00edodo acad\\u00e9mico activo." };
+  }
   const { data: existentes } = await supabase.from("horarios").select("id, estado").eq("periodo_id", periodoId).order("generado_en", { ascending: false }).limit(1);
   if (existentes?.[0]) return { exito: false, error: "Ya existe un horario para este período. Edítalo desde el editor manual." };
   const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString(), aprobado_en: null, aprobado_por: null }).select("id").single();
