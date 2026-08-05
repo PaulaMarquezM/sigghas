@@ -16,22 +16,22 @@ export default async function EditarHorarioIndexPage() {
 
   const supabase = await createClient();
 
-  // Obtener periodo activo
   const { data: periodos } = await supabase
     .from("periodos")
     .select("*")
     .order("fecha_inicio", { ascending: false });
 
   const periodoActivo = periodos?.find((p) => p.activo) ?? periodos?.[0] ?? null;
+  const periodoPorId = new Map((periodos ?? []).map((p) => [p.id, p.nombre]));
 
-  // Obtener todos los horarios del periodo activo
+  // Horarios de todos los periodos, con su periodo etiquetado en cada tarjeta
   const { data: horarios } = await supabase
     .from("horarios")
     .select("id, estado, generado_en, periodo_id")
-    .eq("periodo_id", periodoActivo?.id ?? "")
     .order("generado_en", { ascending: false });
 
-  const hayDuplicados = (horarios?.length ?? 0) > 1;
+  const horariosPeriodoActivo = (horarios ?? []).filter((h) => h.periodo_id === periodoActivo?.id);
+  const hayDuplicados = horariosPeriodoActivo.length > 1;
 
   return (
     <div style={{ maxWidth: 700 }}>
@@ -51,8 +51,8 @@ export default async function EditarHorarioIndexPage() {
             </h1>
             <p style={{ fontSize: 13, color: "#4A515E", margin: "6px 0 0" }}>
               {periodoActivo
-                ? `Horarios del periodo académico ${periodoActivo.nombre}`
-                : "Selecciona un horario para editar"}
+                ? `Periodo activo: ${periodoActivo.nombre}`
+                : "Selecciona un periodo para ver los horarios"}
             </p>
           </div>
 
@@ -60,7 +60,7 @@ export default async function EditarHorarioIndexPage() {
           {hayDuplicados && periodoActivo && (
             <LimpiarDuplicadosBtn
               periodoId={periodoActivo.id}
-              total={horarios?.length ?? 0}
+              total={horariosPeriodoActivo.length}
             />
           )}
         </div>
@@ -74,7 +74,7 @@ export default async function EditarHorarioIndexPage() {
         }}>
           <Calendar style={{ width: 32, height: 32, margin: "0 auto 12px", opacity: 0.4 }} />
           <p style={{ margin: 0, fontSize: 14 }}>
-            No hay horarios generados para el periodo activo.
+            No hay horarios generados todavía.
           </p>
           <Link
             href="/dashboard/generar"
@@ -92,6 +92,8 @@ export default async function EditarHorarioIndexPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {horarios.map((h, idx) => {
             const estadoInfo = ESTADO_LABEL[h.estado] ?? { label: h.estado, color: "#4A515E", bg: "#EFEAD9" };
+            const periodoNombre = periodoPorId.get(h.periodo_id) ?? "Sin periodo";
+            const esMasRecienteActivo = h.id === horariosPeriodoActivo[0]?.id;
             const fecha = h.generado_en
               ? new Date(h.generado_en).toLocaleString("es-EC", {
                   day: "2-digit", month: "short", year: "numeric",
@@ -103,12 +105,12 @@ export default async function EditarHorarioIndexPage() {
               <div
                 key={h.id}
                 style={{
-                  background: idx === 0 ? "#fff" : "#FAFAF9",
-                  border: `1px solid ${idx === 0 ? "#D8D1BD" : "#E5E0D5"}`,
+                  background: esMasRecienteActivo ? "#fff" : "#FAFAF9",
+                  border: `1px solid ${esMasRecienteActivo ? "#D8D1BD" : "#E5E0D5"}`,
                   borderRadius: 12,
                   padding: "16px 20px", display: "flex", alignItems: "center",
                   justifyContent: "space-between", gap: 16,
-                  opacity: idx === 0 ? 1 : 0.7,
+                  opacity: esMasRecienteActivo ? 1 : 0.85,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
@@ -123,7 +125,7 @@ export default async function EditarHorarioIndexPage() {
                   </div>
 
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
                       <span style={{
                         fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 999,
                         background: estadoInfo.bg, color: estadoInfo.color,
@@ -132,7 +134,14 @@ export default async function EditarHorarioIndexPage() {
                       }}>
                         {estadoInfo.label}
                       </span>
-                      {idx === 0 && (
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 999,
+                        background: "#E8EEFF", color: "#1D3FD9",
+                        fontFamily: "JetBrains Mono, monospace", letterSpacing: "0.04em",
+                      }}>
+                        {periodoNombre}
+                      </span>
+                      {esMasRecienteActivo && (
                         <span style={{
                           fontSize: 10, padding: "2px 8px", borderRadius: 999,
                           background: "#0E1116", color: "#F5F1E8",
