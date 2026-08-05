@@ -10,7 +10,6 @@ export type MateriaFormValue = {
   nombre?: string;
   semestre?: number;
   horas_semana?: number;
-  requiere_laboratorio?: boolean;
   nivel?: number;
   horas_teoria?: number;
   horas_practica?: number;
@@ -61,10 +60,6 @@ export function MateriaForm({
         </Field>
       </div>
       <div className="flex flex-wrap gap-4">
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" name="requiere_laboratorio" defaultChecked={value?.requiere_laboratorio ?? false} className="size-4" />
-          Requiere laboratorio
-        </label>
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" name="activo" defaultChecked={value?.activo ?? true} className="size-4" />
           Materia activa

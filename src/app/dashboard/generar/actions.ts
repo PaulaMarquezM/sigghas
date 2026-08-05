@@ -30,7 +30,9 @@ export async function crearHorarioManual(periodoId: string) {
     return { exito: false, error: "Solo se puede crear un horario para el per\\u00edodo acad\\u00e9mico activo." };
   }
   const { data: existentes } = await supabase.from("horarios").select("id, estado").eq("periodo_id", periodoId).order("generado_en", { ascending: false }).limit(1);
-  if (existentes?.[0]) return { exito: false, error: "Ya existe un horario para este período. Edítalo desde el editor manual." };
+  // Un período solo puede tener un horario. Si ya existe, el flujo manual
+  // continúa en su editor en vez de crear un duplicado o bloquear al usuario.
+  if (existentes?.[0]) return { exito: true, horario_id: existentes[0].id, existente: true };
   const { data, error } = await supabase.from("horarios").insert({ periodo_id: periodoId, estado: "borrador", generado_en: new Date().toISOString(), aprobado_en: null, aprobado_por: null }).select("id").single();
   if (error || !data) return { exito: false, error: error?.message ?? "No se pudo crear el horario manual." };
   return { exito: true, horario_id: data.id };

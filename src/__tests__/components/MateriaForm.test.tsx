@@ -17,12 +17,11 @@ describe("MateriaForm", () => {
     render(
       <MateriaForm
         action={vi.fn()}
-        value={{ codigo: "SW-101", nombre: "Programación I", nivel: 3, horas_teoria: 2, horas_practica: 1, modalidad: "hibrida", requiere_laboratorio: true }}
+        value={{ codigo: "SW-101", nombre: "Programación I", nivel: 3, horas_teoria: 2, horas_practica: 1, modalidad: "hibrida" }}
       />
     );
     expect((screen.getByLabelText(/código/i) as HTMLInputElement).value).toBe("SW-101");
     expect((screen.getByLabelText(/^nombre/i) as HTMLInputElement).value).toBe("Programación I");
     expect((screen.getByLabelText(/modalidad/i) as HTMLSelectElement).value).toBe("hibrida");
-    expect((screen.getByLabelText(/requiere laboratorio/i) as HTMLInputElement).checked).toBe(true);
   });
 });

@@ -17,7 +17,6 @@ describe("materias payload()", () => {
         horas_teoria: "2",
         horas_practica: "1",
         modalidad: "presencial",
-        requiere_laboratorio: "on",
         activo: "on",
       })
     );
@@ -30,7 +29,7 @@ describe("materias payload()", () => {
       horas_teoria: 2,
       horas_practica: 1,
       modalidad: "presencial",
-      requiere_laboratorio: true,
+      requiere_laboratorio: false,
       activo: true,
     });
   });
@@ -64,31 +63,4 @@ describe("materias payload()", () => {
     );
   });
 
-  it("rechaza laboratorio en una materia no presencial", () => {
-    expect(() =>
-      payload(
-        fd({
-          nombre: "X",
-          horas_teoria: "2",
-          horas_practica: "0",
-          modalidad: "virtual",
-          requiere_laboratorio: "on",
-        })
-      )
-    ).toThrow(/no usa laboratorio/);
-  });
-
-  it("permite laboratorio cuando la modalidad sí es presencial", () => {
-    expect(() =>
-      payload(
-        fd({
-          nombre: "X",
-          horas_teoria: "2",
-          horas_practica: "0",
-          modalidad: "presencial",
-          requiere_laboratorio: "on",
-        })
-      )
-    ).not.toThrow();
-  });
 });

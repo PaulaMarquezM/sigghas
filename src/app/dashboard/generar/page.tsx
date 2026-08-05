@@ -1,6 +1,7 @@
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { GenerarForm } from "./GenerarForm";
+import { ConfiguracionGeneracion } from "../configuracion-horario/ConfiguracionGeneracion";
 import { AlertTriangle, BookOpen, Building2, UserCheck, Users } from "lucide-react";
 import type { ComponentType } from "react";
 
@@ -44,6 +45,10 @@ export default async function GenerarPage() {
       </div>
 
       <GenerarForm periodos={periodos ?? []} grupos={grupos ?? []} sedes={sedes ?? []} />
+
+      <section id="configuracion" className="scroll-mt-6 border-t border-[#D8D1BD] pt-8">
+        <ConfiguracionGeneracion />
+      </section>
     </div>
   );
 }

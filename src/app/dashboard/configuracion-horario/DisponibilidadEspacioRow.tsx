@@ -29,7 +29,7 @@ export function DisponibilidadEspacioRow({ row }: { row: DisponibilidadEspacioRo
             className="flex flex-wrap items-center gap-2 py-1.5"
           >
             <select name="dia_semana" defaultValue={row.dia_semana} className="rounded-lg border p-1.5 text-sm">
-              {DIAS.slice(0, 5).map((dia, index) => <option key={dia} value={index + 1}>{dia}</option>)}
+              {DIAS.map((dia, index) => <option key={dia} value={index + 1}>{dia}</option>)}
             </select>
             <input name="hora_inicio" type="time" min="08:00" max="17:00" step="1800" defaultValue={row.hora_inicio.slice(0, 5)} required className="rounded-lg border p-1.5 text-sm" />
             <span>–</span>

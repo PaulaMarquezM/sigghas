@@ -14,10 +14,6 @@ export function payload(formData: FormData) {
     throw new Error("Revisa las horas de teoría y práctica: juntas deben sumar entre 0,5 y 6 horas, usando intervalos de 30 minutos.");
   }
   const modalidad = formString(formData, "modalidad") as ModalidadClase;
-  const requiere_laboratorio = formBoolean(formData, "requiere_laboratorio");
-  if (modalidad !== "presencial" && requiere_laboratorio) {
-    throw new Error("Una materia virtual o híbrida no usa laboratorio. Desmarca “Requiere laboratorio” o cambia la modalidad a presencial.");
-  }
   return {
     codigo,
     nombre,
@@ -27,7 +23,7 @@ export function payload(formData: FormData) {
     horas_teoria,
     horas_practica,
     modalidad,
-    requiere_laboratorio,
+    requiere_laboratorio: false,
     activo: formBoolean(formData, "activo"),
   };
 }

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Calendar, Users, BookOpen, Building2,
-  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, SlidersHorizontal, Loader2
+  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, Loader2
 } from "lucide-react";
 import type { RolUsuario } from "@/types/database";
 
@@ -19,7 +19,6 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
   coordinador: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Generar Horario",    href: "/dashboard/generar",        icon: Calendar },
-    { label: "Configurar generación", href: "/dashboard/configuracion-horario", icon: SlidersHorizontal },
     { label: "Editar Horario",     href: "/dashboard/editar",         icon: Calendar },
     { label: "Consulta de Horarios", href: "/dashboard/horario",     icon: Eye },
     { label: "Docentes",           href: "/dashboard/docentes",       icon: UserCheck },

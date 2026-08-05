@@ -26,6 +26,7 @@ export async function eliminarAsignacionDocente(periodoId: string, materiaId: st
     .delete().eq("periodo_id", periodoId).eq("materia_id", materiaId).eq("grupo_id", grupoId);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/configuracion-horario");
+  revalidatePath("/dashboard/generar");
 }
 
 export async function guardarDisponibilidadEspacio(formData: FormData) {
@@ -41,6 +42,7 @@ export async function guardarDisponibilidadEspacio(formData: FormData) {
   const { error } = await asUntypedDb(supabase).from("disponibilidad_espacio").insert({ espacio_id, dia_semana, hora_inicio, hora_fin, disponible: formBoolean(formData, "disponible") });
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/configuracion-horario");
+  revalidatePath("/dashboard/generar");
 }
 
 export async function actualizarDisponibilidadEspacio(id: string, formData: FormData) {
@@ -57,6 +59,7 @@ export async function actualizarDisponibilidadEspacio(id: string, formData: Form
     .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/configuracion-horario");
+  revalidatePath("/dashboard/generar");
 }
 
 export async function eliminarDisponibilidadEspacio(id: string) {
@@ -65,4 +68,5 @@ export async function eliminarDisponibilidadEspacio(id: string) {
   const { error } = await asUntypedDb(supabase).from("disponibilidad_espacio").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/configuracion-horario");
+  revalidatePath("/dashboard/generar");
 }

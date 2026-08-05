@@ -31,12 +31,12 @@ describe("generar actions", () => {
     expect(resultado).toEqual({ exito: false, error: "Selecciona un período académico." });
   });
 
-  it("crearHorarioManual: rechaza cualquier horario existente en el periodo", async () => {
+  it("crearHorarioManual: abre el horario existente del período", async () => {
     fromMock
       .mockReturnValueOnce(createChainableQuery(ok({ id: "p-1", activo: true })))
       .mockReturnValueOnce(createChainableQuery(ok([{ id: "h-existente", estado: "borrador" }])));
     const resultado = await crearHorarioManual("p-1");
-    expect(resultado).toEqual({ exito: false, error: "Ya existe un horario para este período. Edítalo desde el editor manual." });
+    expect(resultado).toEqual({ exito: true, horario_id: "h-existente", existente: true });
   });
 
   it("crearHorarioManual: crea un horario nuevo en borrador si no hay ninguno", async () => {
