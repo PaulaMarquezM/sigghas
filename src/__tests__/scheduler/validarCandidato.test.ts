@@ -55,6 +55,14 @@ describe("validarCandidato — cada regla de negocio produce el código de confl
     expect(resultado).toEqual({ valida: false, conflicto: expect.objectContaining({ codigo: "CONFIGURACION_INCOMPLETA" }) });
   });
 
+  it("DOCENTE_SEDE_NO_HABILITADA cuando la sede no fue asignada al docente", () => {
+    const ctx = baseContexto({
+      docentes: [{ id: "d-1", tipo_contrato: "por_horas", hora_entrada: null, hora_salida: null, max_horas_semana: 20, sede_principal_id: "s-1", sede_ids: ["s-1"], disponibilidad: [{ dia_semana: 1, hora_inicio: "08:00", hora_fin: "17:00", es_tiempo_oficina: false }] }],
+    });
+    const resultado = validarCandidato(slot({ sede_id: "s-2" }), ctx, []);
+    expect(resultado).toEqual({ valida: false, conflicto: expect.objectContaining({ codigo: "DOCENTE_SEDE_NO_HABILITADA" }) });
+  });
+
   it("FRANJA_INVALIDA cuando el horario no cae en bloques de 30 minutos", () => {
     const ctx = baseContexto();
     const resultado = validarCandidato(slot({ hora_inicio: "09:10", hora_fin: "10:10" }), ctx, []);

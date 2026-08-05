@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
@@ -59,7 +60,7 @@ export default async function DocentesPage({
           <Link href={`/dashboard/docentes/${row.id}`} className={buttonVariants({ size: "sm", variant: "outline" })}>Editar</Link>
           <Link href={`/dashboard/docentes/${row.id}/disponibilidad`} className={buttonVariants({ size: "sm", variant: "outline" })}>Disponibilidad</Link>
           <form action={toggleDocente.bind(null, row.id, !(row.perfiles?.activo ?? false))}>
-            <Button size="sm" variant="ghost" type="submit">{row.perfiles?.activo ? "Desactivar" : "Reactivar"}</Button>
+            <PendingSubmitButton pendingLabel="Procesando…" className={buttonVariants({ size: "sm", variant: "ghost" })}>{row.perfiles?.activo ? "Desactivar" : "Reactivar"}</PendingSubmitButton>
           </form>
         </div>
       ),

@@ -20,6 +20,7 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
   const [periodoId, setPeriodoId]     = useState(periodos.find((p) => p.activo)?.id ?? "");
   const [loading, setLoading]         = useState(false);
   const [verificando, setVerificando] = useState(false);
+  const [creandoManual, setCreandoManual] = useState(false);
   const [resultado, setResultado]     = useState<ResultadoGeneracion | null>(null);
   const [logs, setLogs]               = useState<string[]>([]);
   const [grupoId, setGrupoId]         = useState("");
@@ -62,11 +63,16 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
 
   async function iniciarManual() {
     if (!periodoId) return;
-    setLoading(true);
-    const resultado = await crearHorarioManual(periodoId);
-    setLoading(false);
-    if (resultado.exito && resultado.horario_id) router.push(`/dashboard/editar/${resultado.horario_id}`);
-    else setLogs([resultado.error ?? "No se pudo iniciar el horario manual."]);
+    setCreandoManual(true);
+    try {
+      const resultado = await crearHorarioManual(periodoId);
+      if (resultado.exito && resultado.horario_id) router.push(`/dashboard/editar/${resultado.horario_id}`);
+      else setLogs([resultado.error ?? "No se pudo iniciar el horario manual."]);
+    } catch (error) {
+      setLogs([error instanceof Error ? error.message : "No se pudo iniciar el horario manual."]);
+    } finally {
+      setCreandoManual(false);
+    }
   }
 
   return (
@@ -85,7 +91,7 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
               value={periodoId}
               onChange={(e) => setPeriodoId(e.target.value)}
               className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white text-base focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20"
-              disabled={loading || verificando}
+              disabled={loading || verificando || creandoManual}
             >
               <option value="">Seleccionar periodo...</option>
               {periodos.map((p) => (
@@ -97,18 +103,18 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
           </div>
           <div className="flex-1">
             <label htmlFor="sede" className="block text-base font-medium text-gray-800 mb-1.5">Sede <span className="text-gray-400 text-xs">(opcional)</span></label>
-            <select id="sede" value={sedeId} onChange={(e) => { setSedeId(e.target.value); setGrupoId(""); }} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando}>
+            <select id="sede" value={sedeId} onChange={(e) => { setSedeId(e.target.value); setGrupoId(""); }} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando || creandoManual}>
               <option value="">Todas las sedes</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}</select>
           </div>
           <div className="flex-1">
             <label htmlFor="curso" className="block text-base font-medium text-gray-800 mb-1.5">Curso <span className="text-gray-400 text-xs">(opcional)</span></label>
-            <select id="curso" value={grupoId} onChange={(e) => setGrupoId(e.target.value)} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando}>
+            <select id="curso" value={grupoId} onChange={(e) => setGrupoId(e.target.value)} className="w-full h-11 px-3 rounded-lg border border-[#C7BFA6] bg-white" disabled={loading || verificando || creandoManual}>
               <option value="">Todos los cursos</option>{grupos.filter((g) => !sedeId || g.sede_id === sedeId).map((g) => <option key={g.id} value={g.id}>{g.nombre}</option>)}</select>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row"><Button
             type="submit"
-            disabled={loading || verificando || !periodoId}
+            disabled={loading || verificando || creandoManual || !periodoId}
             className="h-11 bg-[#1D3FD9] px-6 text-white hover:bg-[#1733B5]"
           >
             {loading || verificando ? (
@@ -119,7 +125,7 @@ export function GenerarForm({ periodos, grupos, sedes }: { periodos: Periodo[]; 
             ) : (
               "Generar automáticamente"
             )}
-          </Button><Button type="button" variant="outline" disabled={loading || !periodoId} onClick={iniciarManual} className="h-11 border-[#0E1116] px-6">Crear manualmente</Button></div>
+          </Button><Button type="button" variant="outline" disabled={loading || verificando || creandoManual || !periodoId} onClick={iniciarManual} className="h-11 border-[#0E1116] px-6">{creandoManual ? <><Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />Creando…</> : "Crear manualmente"}</Button></div>
         </div>
 
         {logs.length > 0 && (

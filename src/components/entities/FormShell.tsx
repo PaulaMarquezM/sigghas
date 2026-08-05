@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertCircle, ArrowLeft, Save } from "lucide-react";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 export function FormShell({
   title,
@@ -58,7 +59,7 @@ export function FormActions({ cancelHref }: { cancelHref: string }) {
       }}>
         Cancelar
       </Link>
-      <button type="submit" style={{
+      <PendingSubmitButton pendingLabel="Guardando…" style={{
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "10px 18px", borderRadius: 8,
         background: "#0E1116", color: "#F5F1E8",
@@ -67,7 +68,7 @@ export function FormActions({ cancelHref }: { cancelHref: string }) {
       }}>
         <Save style={{ width: 14, height: 14 }} />
         Guardar
-      </button>
+      </PendingSubmitButton>
     </div>
   );
 }

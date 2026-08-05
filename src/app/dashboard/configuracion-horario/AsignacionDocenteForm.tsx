@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { guardarAsignacionDocente } from "./actions";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 type Opcion = { id: string; nombre: string; semestre?: number };
 
@@ -51,7 +52,7 @@ export function AsignacionDocenteForm({
         </label>
       </div>
       <div className="flex justify-end">
-        <button className="rounded-lg bg-[#1D3FD9] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1733B5]">Asignar docente</button>
+        <PendingSubmitButton pendingLabel="Asignando…" className="inline-flex items-center gap-2 rounded-lg bg-[#1D3FD9] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1733B5]">Asignar docente</PendingSubmitButton>
       </div>
     </form>
   );

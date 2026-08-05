@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { login } from "./actions";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 type Role = "coordinador" | "docente";
 
@@ -232,12 +233,12 @@ function LoginPageContent() {
           </div>
 
           {/* Submit */}
-          <button type="submit" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "center", height: 48 }}>
+          <PendingSubmitButton pendingLabel="Iniciando sesión…" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "center", height: 48 }}>
             Iniciar sesión
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
-          </button>
+          </PendingSubmitButton>
 
           <p className="s-small" style={{ textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
             ¿No tienes cuenta?{" "}

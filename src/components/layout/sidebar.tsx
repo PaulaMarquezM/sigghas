@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Calendar, Users, BookOpen, Building2,
-  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, SlidersHorizontal
+  Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, SlidersHorizontal, Loader2
 } from "lucide-react";
 import type { RolUsuario } from "@/types/database";
 
@@ -68,6 +69,12 @@ interface SidebarProps {
 export function Sidebar({ nombre, rol }: SidebarProps) {
   const pathname = usePathname();
   const items = NAV_ITEMS[rol] ?? [];
+  const [navegandoA, setNavegandoA] = useState<string | null>(null);
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
+
+  useEffect(() => {
+    setNavegandoA(null);
+  }, [pathname]);
 
   const iniciales = nombre
     .split(" ")
@@ -148,6 +155,14 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-busy={navegandoA === item.href}
+              onClick={(event) => {
+                if (navegandoA && navegandoA !== item.href) {
+                  event.preventDefault();
+                  return;
+                }
+                if (!isActive) setNavegandoA(item.href);
+              }}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "8px 12px", borderRadius: 8, marginBottom: 2,
@@ -157,8 +172,10 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
                 color: isActive ? "#F5F1E8" : "color-mix(in oklab, #F5F1E8 65%, transparent)",
               }}
             >
-              <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
-              {item.label}
+              {navegandoA === item.href
+                ? <Loader2 className="animate-spin" style={{ width: 15, height: 15, flexShrink: 0 }} aria-hidden="true" />
+                : <Icon style={{ width: 15, height: 15, flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />}
+              {navegandoA === item.href ? "Cargando…" : item.label}
             </Link>
           );
         })}
@@ -168,7 +185,11 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
       <div style={{ padding: "10px", borderTop: "1px solid color-mix(in oklab, #F5F1E8 10%, transparent)" }}>
         <button
           type="button"
+          disabled={cerrandoSesion}
+          aria-busy={cerrandoSesion}
           onClick={async () => {
+            if (cerrandoSesion) return;
+            setCerrandoSesion(true);
             const { createClient } = await import("@/lib/supabase/client");
             const supabase = createClient();
             await supabase.auth.signOut();
@@ -186,7 +207,7 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "color-mix(in oklab, #C8523B 25%, transparent)"; (e.currentTarget as HTMLButtonElement).style.color = "#F5F1E8"; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "color-mix(in oklab, #F5F1E8 45%, transparent)"; }}
         >
-          <LogOut style={{ width: 15, height: 15 }} />
+          {cerrandoSesion ? <Loader2 className="animate-spin" style={{ width: 15, height: 15 }} aria-hidden="true" /> : <LogOut style={{ width: 15, height: 15 }} />}
           Cerrar sesión
         </button>
       </div>

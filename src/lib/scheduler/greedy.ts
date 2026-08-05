@@ -114,6 +114,9 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
   if (!docente || !grupo || !materia) return fallo("CONFIGURACION_INCOMPLETA", "Falta docente, grupo o materia en la configuración.");
   if (minutos(candidato.hora_inicio) % 30 || minutos(candidato.hora_fin) % 30 || duracion(candidato.hora_inicio, candidato.hora_fin) > 3.5) return fallo("FRANJA_INVALIDA", "La sesión debe usar franjas de 30 minutos y durar como máximo 3 h 30 min.");
   if (candidato.dia === 6 && grupo.semestre !== 7 && grupo.semestre !== 8) return fallo("SABADO_NO_PERMITIDO", "Solo los grupos de 7.º y 8.º semestre pueden tener clases el sábado.");
+  if (candidato.modalidad === "presencial" && (docente.sede_ids ?? []).length > 0 && !(docente.sede_ids ?? []).includes(candidato.sede_id)) {
+    return fallo("DOCENTE_SEDE_NO_HABILITADA", "El docente no est\\u00e1 habilitado para impartir clases en la sede de este curso.");
+  }
   const disponible = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && !b.es_tiempo_oficina && b.hora_inicio <= candidato.hora_inicio && b.hora_fin >= candidato.hora_fin);
   const oficina = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && b.es_tiempo_oficina && seSolapan(candidato.hora_inicio, candidato.hora_fin, b.hora_inicio, b.hora_fin));
   if (!disponible || oficina) return fallo("DOCENTE_NO_DISPONIBLE", "El docente no está disponible para toda la sesión o tiene tiempo de oficina.");

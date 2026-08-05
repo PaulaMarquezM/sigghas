@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { actualizarDisponibilidadEspacio, eliminarDisponibilidadEspacio } from "./actions";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -37,7 +38,7 @@ export function DisponibilidadEspacioRow({ row }: { row: DisponibilidadEspacioRo
               <input name="disponible" type="checkbox" defaultChecked={row.disponible} />
               Disponible
             </label>
-            <button type="submit" className="rounded-lg bg-[#1D3FD9] px-3 py-1.5 text-xs font-semibold text-white">Guardar</button>
+            <PendingSubmitButton pendingLabel="Guardando…" className="inline-flex items-center gap-1 rounded-lg bg-[#1D3FD9] px-3 py-1.5 text-xs font-semibold text-white">Guardar</PendingSubmitButton>
             <button type="button" onClick={() => setEditando(false)} className="text-xs font-medium text-gray-500">Cancelar</button>
           </form>
         </td>
@@ -54,7 +55,7 @@ export function DisponibilidadEspacioRow({ row }: { row: DisponibilidadEspacioRo
       <td className="text-right space-x-3">
         <button type="button" onClick={() => setEditando(true)} className="font-medium text-[#1D3FD9]">Editar</button>
         <form action={eliminarDisponibilidadEspacio.bind(null, row.id)} className="inline">
-          <button type="submit" className="font-medium text-[#B33A2B]">Quitar</button>
+          <PendingSubmitButton pendingLabel="Quitando…" className="inline-flex items-center gap-1 font-medium text-[#B33A2B]">Quitar</PendingSubmitButton>
         </form>
       </td>
     </tr>

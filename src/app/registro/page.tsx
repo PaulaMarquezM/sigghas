@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register } from "./actions";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 type Role = "docente";
 
@@ -155,12 +156,12 @@ function RegisterFormContent() {
           </div>
 
           {/* Submit */}
-          <button type="submit" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "center", height: 48 }}>
+          <PendingSubmitButton pendingLabel="Creando cuenta…" className="s-btn s-btn-primary s-btn-lg" style={{ width: "100%", justifyContent: "center", height: 48 }}>
             Crear cuenta
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
-          </button>
+          </PendingSubmitButton>
 
           <p className="s-small" style={{ textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
             ¿Ya tienes cuenta?{" "}

@@ -45,6 +45,7 @@ export interface DocenteConDisponibilidad {
   hora_salida: string | null;
   max_horas_semana: number;
   sede_principal_id: string | null;
+  sede_ids?: string[];
   disponibilidad: BloqueDisponibilidad[];
 }
 

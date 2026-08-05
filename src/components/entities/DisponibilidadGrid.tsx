@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { saveDisponibilidad } from "@/app/dashboard/docentes/actions";
-import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
 const DAYS = [
   { id: 1, label: "Lun" },
@@ -112,10 +112,10 @@ export function DisponibilidadGrid({
         </div>
       </div>
       <p className="text-xs text-gray-500">Haz clic o arrastra sobre varias celdas para marcar una franja. Arrastra desde una celda marcada para desmarcarla.</p>
-      <Button type="submit">
+      <PendingSubmitButton pendingLabel="Guardando…" className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90">
         <Save className="size-4" />
         Guardar disponibilidad
-      </Button>
+      </PendingSubmitButton>
     </form>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type TableColumn } from "@/components/entities/DataTable";
 import { NativeSelect } from "@/components/entities/FormShell";
@@ -50,7 +51,7 @@ export default async function UsuariosPage({
             Editar
           </Link>
           <form action={toggleUsuario.bind(null, row.id, !row.activo)}>
-            <Button size="sm" variant="ghost" type="submit">{row.activo ? "Desactivar" : "Reactivar"}</Button>
+            <PendingSubmitButton pendingLabel="Procesando…" className={buttonVariants({ size: "sm", variant: "ghost" })}>{row.activo ? "Desactivar" : "Reactivar"}</PendingSubmitButton>
           </form>
         </div>
       ),

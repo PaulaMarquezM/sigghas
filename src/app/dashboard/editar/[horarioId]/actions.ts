@@ -43,7 +43,7 @@ export async function getHorarioEditorData(horarioId: string) {
     supabase.from("materias").select("*"),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("disponible", true),
-    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*)")
+    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*), docente_sedes(sede_id)")
   ]);
 
   const materias = materiasRes.data || [];
@@ -57,6 +57,9 @@ export async function getHorarioEditorData(horarioId: string) {
     hora_salida: d.hora_salida ?? null,
     max_horas_semana: d.max_horas_semana ?? 20,
     sede_principal_id: d.sede_principal_id ?? null,
+    sede_ids: (d.docente_sedes ?? []).length
+      ? d.docente_sedes.map((sede: { sede_id: string }) => sede.sede_id)
+      : d.sede_principal_id ? [d.sede_principal_id] : [],
     disponibilidad: (d.disponibilidad_docente ?? []).map((dd: any) => ({
       dia_semana: dd.dia_semana,
       hora_inicio: dd.hora_inicio.slice(0, 5),

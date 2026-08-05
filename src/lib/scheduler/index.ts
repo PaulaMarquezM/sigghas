@@ -35,7 +35,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     supabase.from("materias").select("*").eq("activo", true),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("activo", true).eq("disponible", true),
-    supabase.from("docentes").select("*, disponibilidad_docente(*)"),
+    supabase.from("docentes").select("*, disponibilidad_docente(*), docente_sedes(sede_id)"),
     supabase.from("asignaciones_docente_periodo").select("periodo_id, materia_id, grupo_id, docente_id").eq("periodo_id", periodoId),
     supabase.from("disponibilidad_espacio").select("espacio_id, dia_semana, hora_inicio, hora_fin, disponible"),
   ]);
@@ -57,6 +57,9 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     hora_salida: docente.hora_salida,
     max_horas_semana: docente.max_horas_semana,
     sede_principal_id: docente.sede_principal_id,
+    sede_ids: (docente.docente_sedes ?? []).length
+      ? docente.docente_sedes.map((sede: { sede_id: string }) => sede.sede_id)
+      : docente.sede_principal_id ? [docente.sede_principal_id] : [],
     disponibilidad: (docente.disponibilidad_docente ?? []).map((bloque: any) => ({
       dia_semana: bloque.dia_semana,
       hora_inicio: bloque.hora_inicio.slice(0, 5),

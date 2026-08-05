@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 export function SBadge({ activo, labelOn = "Activo", labelOff = "Inactivo" }: { activo: boolean; labelOn?: string; labelOff?: string }) {
   return (
@@ -30,19 +34,22 @@ export function RowLink({ href, children }: { href: string; children: React.Reac
 }
 
 export function RowButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { pending } = useFormStatus();
   return (
     <button
       {...props}
+      disabled={props.disabled || pending}
+      aria-busy={pending}
       style={{
         display: "inline-flex", alignItems: "center",
         padding: "5px 12px", borderRadius: 7,
         border: "1px solid transparent", background: "transparent",
         fontSize: 12.5, fontWeight: 500, color: "#4A515E",
-        cursor: "pointer", fontFamily: "Poppins, sans-serif",
+        cursor: pending ? "wait" : "pointer", fontFamily: "Poppins, sans-serif",
         whiteSpace: "nowrap",
       }}
     >
-      {children}
+      {pending ? <><Loader2 className="size-3.5 animate-spin" aria-hidden="true" />Procesando…</> : children}
     </button>
   );
 }

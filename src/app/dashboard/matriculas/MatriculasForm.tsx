@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { BookOpen, CalendarDays, CircleCheck, Tag, UserRound, UsersRound } from "lucide-react";
+import { BookOpen, CalendarDays, CircleCheck, Loader2, Tag, UserRound, UsersRound } from "lucide-react";
 import { crearMatricula } from "./actions";
 
 type Opcion = { id: string; nombre: string; email?: string; semestre?: number };
@@ -51,7 +51,7 @@ export function MatriculasForm({ estudiantes, periodos, materias, grupos, opcion
 
     <div className="flex flex-col gap-3 border-t border-[#E6E0D0] bg-[#FEFCF6] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-xs leading-relaxed text-[#697180]">Solo se muestran cursos con una clase publicada para la materia seleccionada.</p>
-      <button disabled={loading} className="s-btn s-btn-primary min-w-[190px] justify-center" type="submit">{loading ? "Guardando..." : "Registrar matrícula"}</button>
+      <button disabled={loading} aria-busy={loading} className="s-btn s-btn-primary min-w-[190px] justify-center" type="submit">{loading ? <><Loader2 className="size-4 animate-spin" aria-hidden="true" />Guardando…</> : "Registrar matrícula"}</button>
     </div>
 
     {mensaje && <div className={`mx-6 mb-6 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm ${mensaje.ok ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-[#E7A796] bg-[#FFF1ED] text-[#7F2E20]"}`} aria-live="polite"><CircleCheck className="h-4 w-4 shrink-0" aria-hidden />{mensaje.texto}</div>}
