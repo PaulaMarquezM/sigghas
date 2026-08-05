@@ -23,6 +23,24 @@ describe("NuevaSesionDialog", () => {
     expect(screen.getByText("Ana Pérez")).toBeTruthy();
   });
 
+  it("preselecciona el curso del filtro activo al abrir", () => {
+    const opcionesVarias: OpcionesManuales = {
+      ...opciones,
+      cursos: [
+        { id: "g-1", nombre: "SW-5A", semestre: 5, sede_id: "s-1" },
+        { id: "g-2", nombre: "SW-1A", semestre: 1, sede_id: "s-1" },
+      ],
+      materias: [
+        ...opciones.materias,
+        { id: "m-2", nombre: "Programación Intro", semestre: 1, modalidad: "presencial" },
+      ],
+    };
+    render(<NuevaSesionDialog horarioId="h-1" opciones={opcionesVarias} grupoIdInicial="g-2" />);
+    fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));
+    expect((screen.getByLabelText(/curso/i) as HTMLSelectElement).value).toBe("g-2");
+    expect((screen.getByLabelText(/semestre/i) as HTMLSelectElement).value).toBe("1");
+  });
+
   it("se cierra con el botón Cancelar", () => {
     render(<NuevaSesionDialog horarioId="h-1" opciones={opciones} />);
     fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));

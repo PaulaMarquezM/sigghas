@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState, useTransition } from "react";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { HorarioGrid } from "@/components/horario/HorarioGrid";
-import { ConflictPanel } from "@/components/horario/ConflictPanel";
 import { toast } from "sonner";
 import { ArrowLeft, Check, FileText, Filter, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -307,7 +306,7 @@ export default function HorarioEditor({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <NuevaSesionDialog horarioId={horario.id} opciones={opcionesManuales} />
+          <NuevaSesionDialog horarioId={horario.id} opciones={opcionesManuales} grupoIdInicial={cursoFiltroId} />
           {/* Botón Descargar PDF */}
           <a
             href={`/api/pdf/horario/${horario.id}`}
@@ -350,21 +349,13 @@ export default function HorarioEditor({
 
       {/* Grid del editor con DndContext */}
       <DndContext id={`horario-editor-${horario.id}`} sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-          <div className="space-y-4">
-            <HorarioGrid
-              sesiones={sesionesVisibles}
-              editable
-              onEspacioChange={handleEspacioChange}
-              onEditSession={(sesion) => setSesionEnEdicion(sesion as SesionVista)}
-              espaciosDisponibles={espaciosDisponibles}
-            />
-          </div>
-
-          <div className="lg:sticky lg:top-24">
-            <ConflictPanel conflictos={conflictos} />
-          </div>
-        </div>
+        <HorarioGrid
+          sesiones={sesionesVisibles}
+          editable
+          onEspacioChange={handleEspacioChange}
+          onEditSession={(sesion) => setSesionEnEdicion(sesion as SesionVista)}
+          espaciosDisponibles={espaciosDisponibles}
+        />
       </DndContext>
       {sesionEnEdicion && <EditarSesionDialog horarioId={horario.id} sesion={sesionEnEdicion} opciones={opcionesManuales} onClose={() => setSesionEnEdicion(null)} />}
     </div>
