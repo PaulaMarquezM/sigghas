@@ -9,6 +9,7 @@ import type { Database } from "@/types/database";
 
 type DocenteDetail = Database["public"]["Tables"]["docentes"]["Row"] & {
   perfiles: { nombre: string; email: string; activo: boolean } | null;
+  docente_sedes: { sede_id: string }[] | null;
 };
 
 export default async function EditarDocentePage({
@@ -22,7 +23,7 @@ export default async function EditarDocentePage({
   const sedes = await getSedes();
   const { data } = await asUntypedDb(supabase)
     .from("docentes")
-    .select("*, perfiles(nombre,email,activo)")
+    .select("*, perfiles(nombre,email,activo), docente_sedes(sede_id)")
     .eq("id", id)
     .single();
 
@@ -39,6 +40,7 @@ export default async function EditarDocentePage({
           tipo_contrato: row.tipo_contrato,
           max_horas_semana: row.max_horas_semana,
           sede_principal_id: row.sede_principal_id,
+          sede_ids: row.docente_sedes?.map((sede) => sede.sede_id),
           activo: row.perfiles?.activo ?? true,
         }}
       />

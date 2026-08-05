@@ -37,6 +37,12 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      docente_sedes: {
+        Row: { docente_id: string; sede_id: string; creado_en: string };
+        Insert: Omit<Database["public"]["Tables"]["docente_sedes"]["Row"], "creado_en">;
+        Update: never;
+        Relationships: [];
+      };
       matriculas_estudiante: {
         Row: { id: string; estudiante_id: string; periodo_id: string; materia_id: string; grupo_id: string; motivo: "regular" | "arrastre" | "repeticion" | "convalidacion"; creado_en: string };
         Insert: Omit<Database["public"]["Tables"]["matriculas_estudiante"]["Row"], "id" | "creado_en">;

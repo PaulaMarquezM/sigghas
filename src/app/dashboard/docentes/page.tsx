@@ -12,6 +12,7 @@ import type { Database } from "@/types/database";
 type DocenteRow = Database["public"]["Tables"]["docentes"]["Row"] & {
   perfiles: { nombre: string; email: string; activo: boolean } | null;
   sedes: { nombre: string } | null;
+  docente_sedes: { sede_id: string; sedes: { nombre: string } | null }[] | null;
 };
 
 export default async function DocentesPage({
@@ -29,7 +30,7 @@ export default async function DocentesPage({
 
   const { data, error } = await supabase
     .from("docentes")
-    .select("*, perfiles(nombre,email,activo), sedes:sede_principal_id(nombre)")
+    .select("*, perfiles(nombre,email,activo), sedes:sede_principal_id(nombre), docente_sedes(sede_id, sedes(nombre))")
     .order("max_horas_semana", { ascending: false });
 
   if (error) notFound();
@@ -38,7 +39,7 @@ export default async function DocentesPage({
     const active = row.perfiles?.activo ? "activo" : "inactivo";
     return (
       contains(row.perfiles?.nombre, q) &&
-      (!sede || row.sede_principal_id === sede) &&
+      (!sede || row.sede_principal_id === sede || row.docente_sedes?.some((item) => item.sede_id === sede)) &&
       (!contrato || row.tipo_contrato === contrato) &&
       (!estado || active === estado)
     );
@@ -48,7 +49,7 @@ export default async function DocentesPage({
     { key: "nombre", header: "Docente", cell: (row) => <div><p className="font-medium">{row.perfiles?.nombre}</p><p className="text-xs text-gray-500">{row.perfiles?.email}</p></div> },
     { key: "contrato", header: "Contrato", cell: (row) => row.tipo_contrato === "tiempo_completo" ? "Tiempo completo" : "Por horas" },
     { key: "horas", header: "Horas max.", cell: (row) => row.max_horas_semana },
-    { key: "sede", header: "Sede", cell: (row) => row.sedes?.nombre ?? "Sin sede" },
+    { key: "sede", header: "Sedes", cell: (row) => row.docente_sedes?.map((item) => item.sedes?.nombre).filter(Boolean).join(", ") || row.sedes?.nombre || "Sin sede" },
     { key: "estado", header: "Estado", cell: (row) => <Badge variant={row.perfiles?.activo ? "secondary" : "outline"}>{row.perfiles?.activo ? "Activo" : "Inactivo"}</Badge> },
     {
       key: "actions",
@@ -68,7 +69,7 @@ export default async function DocentesPage({
   return (
     <DataTable
       title="Docentes"
-      description="Gestiona contratos, carga horaria, sede y disponibilidad docente."
+      description="Gestiona contratos, carga horaria, sedes y disponibilidad docente."
       createHref="/dashboard/docentes/nuevo"
       rows={rows}
       columns={columns}
