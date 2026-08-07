@@ -135,15 +135,17 @@ export function NativeSelect({
   onChange?: React.ChangeEventHandler<HTMLSelectElement>;
   children: React.ReactNode;
 }) {
+  const isControlled = value !== undefined;
+
   return (
     <select
       id={id}
       name={name}
-      defaultValue={defaultValue ?? ""}
+      {...(isControlled
+        ? { value, onChange }
+        : { defaultValue: defaultValue ?? "", onChange })}
       required={required}
       disabled={disabled}
-      value={value}
-      onChange={onChange}
       style={{
         height: 38, width: "100%", padding: "0 12px",
         border: disabled ? "1px dashed #B9B2A1" : "1px solid #C7BFA6", borderRadius: 8,
