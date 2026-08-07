@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { asUntypedDb, errorMessage, type ActionResult } from "@/lib/entities";
+import { localizeErrorMessage } from "@/lib/errors";
 import { payload } from "./validation";
 
 type PeriodoFechas = { id: string; nombre: string; fecha_inicio: string; fecha_fin: string };
@@ -15,7 +16,7 @@ async function validarSinSolapamiento(
 ) {
   const supabase = await createClient();
   const { data, error } = await asUntypedDb(supabase).from("periodos").select("id,nombre,fecha_inicio,fecha_fin");
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeErrorMessage(error.message));
   const periodos = Array.isArray(data) ? data as PeriodoFechas[] : [];
   const conflicto = periodos.find((existente) => (
     existente.id !== exceptId &&
@@ -33,7 +34,7 @@ async function deactivateOthers(active: boolean, exceptId?: string) {
   let query = asUntypedDb(supabase).from("periodos").update({ activo: false }).eq("activo", true);
   if (exceptId) query = query.neq("id", exceptId);
   const { error } = await query;
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeErrorMessage(error.message));
 }
 
 export async function createPeriodo(_state: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -44,7 +45,7 @@ export async function createPeriodo(_state: ActionResult, formData: FormData): P
     await validarSinSolapamiento(data);
     await deactivateOthers(data.activo);
     const { error } = await asUntypedDb(supabase).from("periodos").insert(data);
-    if (error) return { ok: false, message: error.message };
+    if (error) return { ok: false, message: localizeErrorMessage(error.message) };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
@@ -60,7 +61,7 @@ export async function updatePeriodo(id: string, _state: ActionResult, formData: 
     await validarSinSolapamiento(data, id);
     await deactivateOthers(data.activo, id);
     const { error } = await asUntypedDb(supabase).from("periodos").update(data).eq("id", id);
-    if (error) return { ok: false, message: error.message };
+    if (error) return { ok: false, message: localizeErrorMessage(error.message) };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
@@ -73,11 +74,11 @@ export async function togglePeriodo(id: string, activo: boolean) {
   const supabase = await createClient();
   if (activo) {
     const { data, error } = await asUntypedDb(supabase).from("periodos").select("id,nombre,fecha_inicio,fecha_fin").eq("id", id).single();
-    if (error || !data) throw new Error(error?.message ?? "No se encontró el período.");
+    if (error || !data) throw new Error(localizeErrorMessage(error?.message, "No se encontró el período."));
     await validarSinSolapamiento(data as PeriodoFechas, id);
   }
   await deactivateOthers(activo, id);
   const { error } = await asUntypedDb(supabase).from("periodos").update({ activo }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeErrorMessage(error.message));
   revalidatePath("/dashboard/periodos");
 }

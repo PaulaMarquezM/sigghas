@@ -48,10 +48,16 @@ describe("limpiarDuplicadosAction", () => {
     ];
     fromMock.mockImplementation((table: string) => {
       if (table === "horarios") return createChainableQuery(ok(horarios));
-      if (table === "sesiones") return createChainableQuery(fail("FK violation"));
+      if (table === "sesiones") {
+        return createChainableQuery(fail("update or delete on table \"sesiones\" violates foreign key constraint"));
+      }
       return createChainableQuery(ok());
     });
     const resultado = await limpiarDuplicadosAction("p-1");
-    expect(resultado).toEqual({ exito: false, eliminados: 0, error: "FK violation" });
+    expect(resultado).toEqual({
+      exito: false,
+      eliminados: 0,
+      error: "No se puede completar la operación porque hay datos relacionados.",
+    });
   });
 });

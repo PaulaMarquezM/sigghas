@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { asUntypedDb, errorMessage, type ActionResult } from "@/lib/entities";
+import { localizeErrorMessage } from "@/lib/errors";
 import { payload } from "./validation";
 
 export async function createSede(_state: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -12,7 +13,7 @@ export async function createSede(_state: ActionResult, formData: FormData): Prom
   const supabase = await createClient();
   try {
     const { error } = await asUntypedDb(supabase).from("sedes").insert(payload(formData));
-    if (error) return { ok: false, message: error.message };
+    if (error) return { ok: false, message: localizeErrorMessage(error.message) };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
@@ -25,7 +26,7 @@ export async function updateSede(id: string, _state: ActionResult, formData: For
   const supabase = await createClient();
   try {
     const { error } = await asUntypedDb(supabase).from("sedes").update(payload(formData)).eq("id", id);
-    if (error) return { ok: false, message: error.message };
+    if (error) return { ok: false, message: localizeErrorMessage(error.message) };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }

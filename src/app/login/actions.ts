@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { localizeErrorMessage } from "@/lib/errors";
 import { redirect } from "next/navigation";
 
 export async function login(formData: FormData) {
@@ -13,9 +14,7 @@ export async function login(formData: FormData) {
 
   if (error) {
     console.error("[login] signIn falló:", error);
-    const msg = error.message?.toLowerCase().includes("not confirmed")
-      ? "Tu correo aún no está confirmado. Revisa tu bandeja de entrada."
-      : "Correo o contraseña incorrectos.";
+    const msg = localizeErrorMessage(error.message, "Correo o contraseña incorrectos.");
     redirect(`/login?error=${encodeURIComponent(msg)}`);
   }
 

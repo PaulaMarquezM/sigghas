@@ -68,6 +68,12 @@ describe("errorMessage", () => {
     expect(errorMessage(new Error("algo falló"))).toBe("algo falló");
   });
 
+  it("traduce errores conocidos de Auth/DB", () => {
+    expect(
+      errorMessage(new Error("A user with this email address has already been registered")),
+    ).toBe("Este correo ya está registrado.");
+  });
+
   it("devuelve el fallback si no es un Error", () => {
     expect(errorMessage("no soy un error")).toBe(
       "No se pudo guardar. Revisa los datos e intenta nuevamente."

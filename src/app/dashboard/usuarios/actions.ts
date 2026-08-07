@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { asUntypedDb, errorMessage, formBoolean, formNullableString, formString, requireFields, type ActionResult } from "@/lib/entities";
+import { localizeErrorMessage } from "@/lib/errors";
 import type { RolUsuario } from "@/types/database";
 
 export async function createUsuario(_state: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -15,7 +16,7 @@ export async function createUsuario(_state: ActionResult, formData: FormData): P
     const rol = formString(formData, "rol") as RolUsuario;
     const sede_id = formNullableString(formData, "sede_id");
 
-    requireFields({ Nombre: nombre, Email: email, Rol: rol });
+    requireFields({ Nombre: nombre, Correo: email, Rol: rol });
     if (rol === "docente") {
       throw new Error("Para crear un docente usa la sección Docentes (necesita datos adicionales de contrato).");
     }
@@ -78,6 +79,6 @@ export async function updateUsuario(id: string, _state: ActionResult, formData: 
 export async function toggleUsuario(id: string, activo: boolean) {
   const { admin } = await requireRolAndAdminClient("administrador");
   const { error } = await asUntypedDb(admin).from("perfiles").update({ activo }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeErrorMessage(error.message));
   revalidatePath("/dashboard/usuarios");
 }

@@ -53,16 +53,19 @@ describe("usuarios actions", () => {
   });
 
   it("createUsuario: devuelve ok:false si falla la creación del usuario en auth", async () => {
-    createUserMock.mockResolvedValue({ data: { user: null }, error: { message: "email ya registrado" } });
+    createUserMock.mockResolvedValue({
+      data: { user: null },
+      error: { message: "A user with this email address has already been registered" },
+    });
     const result = await createUsuario({ ok: true }, validForm());
-    expect(result).toEqual({ ok: false, message: "email ya registrado" });
+    expect(result).toEqual({ ok: false, message: "Este correo ya está registrado." });
   });
 
   it("createUsuario: devuelve ok:false si falla el upsert del perfil", async () => {
     createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
-    fromMock.mockReturnValue(createChainableQuery(fail("constraint violada")));
+    fromMock.mockReturnValue(createChainableQuery(fail("duplicate key value violates unique constraint")));
     const result = await createUsuario({ ok: true }, validForm());
-    expect(result).toEqual({ ok: false, message: "constraint violada" });
+    expect(result).toEqual({ ok: false, message: "Ya existe un registro con esos datos." });
   });
 
   it("updateUsuario: actualiza el perfil y redirige", async () => {

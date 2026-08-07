@@ -39,7 +39,7 @@ describe("materias actions", () => {
   it("createMateria: devuelve ok:false si Supabase falla", async () => {
     fromMock.mockReturnValue(createChainableQuery(fail("duplicate key")));
     const result = await createMateria({ ok: true }, validForm());
-    expect(result).toEqual({ ok: false, message: "duplicate key" });
+    expect(result).toEqual({ ok: false, message: "Ya existe un registro con esos datos." });
     expect(redirectMock).not.toHaveBeenCalled();
   });
 

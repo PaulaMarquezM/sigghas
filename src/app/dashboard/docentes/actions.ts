@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { consolidarBloquesDisponibilidad } from "@/lib/disponibilidad";
 import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, requireFields, type ActionResult } from "@/lib/entities";
+import { localizeErrorMessage } from "@/lib/errors";
 import type { TipoContrato } from "@/types/database";
 
 function sedesSeleccionadas(formData: FormData) {
@@ -24,9 +25,9 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
       ? Math.max(40, formNumber(formData, "max_horas_semana", 40))
       : formNumber(formData, "max_horas_semana", 20);
 
-    requireFields({ Nombre: nombre, Email: email, Sede: sede_principal_id });
+    requireFields({ Nombre: nombre, Correo: email, Sede: sede_principal_id });
     if (!sedes_ids.length || !sede_principal_id || !sedes_ids.includes(sede_principal_id)) {
-      throw new Error("Selecciona al menos una sede e indica cu\\u00e1l es la principal.");
+      throw new Error("Selecciona al menos una sede e indica cuál es la principal.");
     }
 
     const tempPassword = crypto.randomUUID();
@@ -84,7 +85,7 @@ export async function updateDocente(id: string, _state: ActionResult, formData: 
     const activo = formBoolean(formData, "activo");
 
     if (!sedes_ids.length || !sede_principal_id || !sedes_ids.includes(sede_principal_id)) {
-      throw new Error("Selecciona al menos una sede e indica cu\\u00e1l es la principal.");
+      throw new Error("Selecciona al menos una sede e indica cuál es la principal.");
     }
 
     const db = asUntypedDb(admin);
@@ -115,7 +116,7 @@ export async function updateDocente(id: string, _state: ActionResult, formData: 
 export async function toggleDocente(id: string, activo: boolean) {
   const { admin } = await requireRolAndAdminClient("coordinador", "administrador");
   const { error } = await asUntypedDb(admin).from("perfiles").update({ activo }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeErrorMessage(error.message));
   revalidatePath("/dashboard/docentes");
 }
 

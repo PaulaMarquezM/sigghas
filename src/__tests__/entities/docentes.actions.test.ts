@@ -47,9 +47,12 @@ describe("docentes actions", () => {
   });
 
   it("createDocente: devuelve ok:false si falla la creación del usuario en auth", async () => {
-    createUserMock.mockResolvedValue({ data: { user: null }, error: { message: "email ya registrado" } });
+    createUserMock.mockResolvedValue({
+      data: { user: null },
+      error: { message: "A user with this email address has already been registered" },
+    });
     const result = await createDocente({ ok: true }, validForm());
-    expect(result).toEqual({ ok: false, message: "email ya registrado" });
+    expect(result).toEqual({ ok: false, message: "Este correo ya está registrado." });
   });
 
   it("createDocente: devuelve ok:false si falla el insert en docentes", async () => {

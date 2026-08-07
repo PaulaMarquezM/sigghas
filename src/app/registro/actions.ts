@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { localizeErrorMessage } from "@/lib/errors";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { RolUsuario } from "@/types/database";
@@ -36,18 +37,15 @@ export async function register(formData: FormData) {
 
   if (error || !data.user) {
     console.error("[registro] signUp falló:", error);
-    const raw = error?.message?.toLowerCase() ?? "";
     const status = (error as { status?: number })?.status;
-    let msg: string;
-    if (raw.includes("already registered")) {
-      msg = "Este correo ya tiene una cuenta. Inicia sesión.";
-    } else if (raw.includes("rate limit")) {
-      msg = "Demasiados intentos de registro seguidos. Espera unos minutos e inténtalo de nuevo.";
-    } else if (status === 521 || raw === "{}" || raw === "") {
-      msg = "No se pudo conectar con el servidor. Verifica tu conexión o inténtalo más tarde.";
-    } else {
-      msg = `No se pudo crear la cuenta: ${error?.message || "error desconocido"}`;
-    }
+    const raw = error?.message?.toLowerCase() ?? "";
+    const msg =
+      status === 521 || raw === "{}" || raw === ""
+        ? "No se pudo conectar con el servidor. Verifica tu conexión o inténtalo más tarde."
+        : localizeErrorMessage(
+            error?.message,
+            "No se pudo crear la cuenta. Inténtalo de nuevo.",
+          );
     redirect(`/registro?error=${encodeURIComponent(msg)}`);
   }
 

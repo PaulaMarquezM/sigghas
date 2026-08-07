@@ -1,6 +1,7 @@
 "use server";
 
 import { requireRol } from "@/lib/auth";
+import { localizeErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -25,7 +26,7 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
     .order("generado_en", { ascending: false });
 
   if (error) {
-    return { exito: false, eliminados: 0, error: error.message };
+    return { exito: false, eliminados: 0, error: localizeErrorMessage(error.message) };
   }
 
   if (!horarios || horarios.length <= 1) {
@@ -43,7 +44,7 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
     .in("horario_id", idsDuplicados);
 
   if (errHistorial) {
-    return { exito: false, eliminados: 0, error: errHistorial.message };
+    return { exito: false, eliminados: 0, error: localizeErrorMessage(errHistorial.message) };
   }
 
   // 2. Eliminar sesiones (FK a horarios)
@@ -53,7 +54,7 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
     .in("horario_id", idsDuplicados);
 
   if (errSesiones) {
-    return { exito: false, eliminados: 0, error: errSesiones.message };
+    return { exito: false, eliminados: 0, error: localizeErrorMessage(errSesiones.message) };
   }
 
   // 3. Eliminar los horarios duplicados
@@ -63,7 +64,7 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
     .in("id", idsDuplicados);
 
   if (errHorarios) {
-    return { exito: false, eliminados: 0, error: errHorarios.message };
+    return { exito: false, eliminados: 0, error: localizeErrorMessage(errHorarios.message) };
   }
 
   revalidatePath("/dashboard/editar");

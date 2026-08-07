@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { localizeErrorMessage } from "@/lib/errors";
 import type { Database } from "@/types/database";
 
 export type Sede = Database["public"]["Tables"]["sedes"]["Row"];
@@ -40,7 +41,9 @@ export function asUntypedDb(client: unknown): UntypedDb {
 }
 
 export function errorMessage(error: unknown, fallback = "No se pudo guardar. Revisa los datos e intenta nuevamente.") {
-  if (error instanceof Error && error.message) return error.message;
+  if (error instanceof Error && error.message) {
+    return localizeErrorMessage(error.message, fallback);
+  }
   return fallback;
 }
 

@@ -4,6 +4,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireRol } from "@/lib/auth";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
+import { localizeErrorMessage } from "@/lib/errors";
 import type { ContextoProgramacion, Asignacion, Conflicto, DocenteConDisponibilidad } from "@/lib/scheduler/types";
 import { CONFIG_DEFAULT } from "@/lib/scheduler/types";
 import { validarCandidato } from "@/lib/scheduler/greedy";
@@ -35,7 +36,7 @@ export async function getHorarioEditorData(horarioId: string) {
     .eq("horario_id", horarioId);
 
   if (sesionesError) {
-    throw new Error(`Error al obtener sesiones: ${sesionesError.message}`);
+    throw new Error(`Error al obtener sesiones: ${localizeErrorMessage(sesionesError.message)}`);
   }
 
   // 3. Obtener todas las entidades para el validador
@@ -162,7 +163,7 @@ export async function crearSesionManualAction(horarioId: string, input: NuevaSes
     hora_fin: input.hora_fin,
     sede_id: candidato.sede_id,
   }).select("id").single();
-  if (error || !sesion) return { exito: false, error: error?.message ?? "No se pudo crear la clase." };
+  if (error || !sesion) return { exito: false, error: localizeErrorMessage(error?.message, "No se pudo crear la clase.") };
   await supabase.from("historial_cambios").insert({ sesion_id: sesion.id, horario_id: horarioId, usuario_id: usuarioId, accion: "creacion", detalle: input });
   revalidatePath(`/dashboard/editar/${horarioId}`);
   return { exito: true };
@@ -188,7 +189,7 @@ export async function editarSesionManualAction(horarioId: string, sesionId: stri
   const validacion = validarCandidato(candidato, data.contexto, data.asignaciones.filter((item) => item.id !== sesionId));
   if (!validacion.valida) return { exito: false, error: validacion.conflicto.mensaje };
   const { error } = await supabase.from("sesiones").update({ materia_id: materia.id, grupo_id: curso.id, docente_id: docente.id, espacio_id: espacioId, modalidad: materia.modalidad, dia_semana: input.dia_semana, hora_inicio: input.hora_inicio, hora_fin: input.hora_fin, sede_id: candidato.sede_id }).eq("id", sesionId).eq("horario_id", horarioId);
-  if (error) return { exito: false, error: error.message };
+  if (error) return { exito: false, error: localizeErrorMessage(error.message) };
   await supabase.from("historial_cambios").insert({ sesion_id: sesionId, horario_id: horarioId, usuario_id: perfil.id, accion: "edicion", detalle: { antes: anterior, despues: candidato } });
   revalidatePath(`/dashboard/editar/${horarioId}`);
   return { exito: true };
@@ -199,9 +200,9 @@ export async function eliminarSesionManualAction(horarioId: string, sesionId: st
   const { data: sesion } = await supabase.from("sesiones").select("*").eq("id", sesionId).eq("horario_id", horarioId).maybeSingle();
   if (!sesion) return { exito: false, error: "La clase que intentas eliminar no existe en este horario." };
   const { error: historialError } = await supabase.from("historial_cambios").insert({ sesion_id: sesionId, horario_id: horarioId, usuario_id: perfil.id, accion: "eliminacion", detalle: { sesion } });
-  if (historialError) return { exito: false, error: `No se pudo registrar el cambio: ${historialError.message}` };
+  if (historialError) return { exito: false, error: localizeErrorMessage(historialError.message, "No se pudo registrar el cambio.") };
   const { error } = await supabase.from("sesiones").delete().eq("id", sesionId).eq("horario_id", horarioId);
-  if (error) return { exito: false, error: error.message };
+  if (error) return { exito: false, error: localizeErrorMessage(error.message) };
   revalidatePath(`/dashboard/editar/${horarioId}`);
   return { exito: true };
 }
@@ -322,7 +323,7 @@ export async function guardarMovimientoAction(
     .eq("id", sesionId);
 
   if (error) {
-    return { exito: false, error: error.message };
+    return { exito: false, error: localizeErrorMessage(error.message) };
   }
 
   // Registrar en historial_cambios
@@ -365,7 +366,7 @@ export async function publicarHorarioAction(horarioId: string) {
     .maybeSingle();
 
   if (error) {
-    return { exito: false, error: error.message };
+    return { exito: false, error: localizeErrorMessage(error.message) };
   }
   if (!horario) {
     return { exito: false, error: "El horario no existe, ya fue publicado o no está en borrador." };
@@ -379,7 +380,7 @@ export async function publicarHorarioAction(horarioId: string) {
     detalle: { estado_anterior: "borrador", estado_nuevo: "publicado", publicado_en: publicadoEn },
   });
   if (historialError) {
-    return { exito: false, error: `El horario fue publicado, pero no se pudo registrar la auditoría: ${historialError.message}` };
+    return { exito: false, error: localizeErrorMessage(historialError.message, "El horario fue publicado, pero no se pudo registrar la auditoría.") };
   }
 
   revalidatePath(`/dashboard/editar/${horarioId}`);
