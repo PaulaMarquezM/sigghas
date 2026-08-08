@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/app/dashboard/editar/[horarioId]/actions", () => ({ crearSesionManualAction: vi.fn() }));
@@ -9,9 +9,19 @@ import { NuevaSesionDialog, type OpcionesManuales } from "@/app/dashboard/editar
 const opciones: OpcionesManuales = {
   materias: [{ id: "m-1", nombre: "Programación I", semestre: 5, modalidad: "presencial" }],
   cursos: [{ id: "g-1", nombre: "SW-5A", semestre: 5, sede_id: "s-1" }],
-  docentes: [{ id: "d-1", nombre: "Ana Pérez" }],
-  aulas: [{ id: "e-1", nombre: "Aula 101", sede_id: "s-1" }],
+  docentes: [
+    { id: "d-1", nombre: "Ana Pérez", sede_ids: ["s-1"] },
+    { id: "d-2", nombre: "Luis otra sede", sede_ids: ["s-2"] },
+  ],
+  aulas: [
+    { id: "e-1", nombre: "Aula 101", sede_id: "s-1" },
+    { id: "e-2", nombre: "Aula otra sede", sede_id: "s-2" },
+  ],
 };
+
+function opcionesDe(select: HTMLElement) {
+  return within(select).getAllByRole("option").map((option) => option.textContent);
+}
 
 describe("NuevaSesionDialog", () => {
   it("el diálogo empieza cerrado y se abre al hacer clic en 'Agregar clase'", () => {
@@ -20,7 +30,6 @@ describe("NuevaSesionDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("SW-5A")).toBeTruthy();
-    expect(screen.getByText("Ana Pérez")).toBeTruthy();
   });
 
   it("preselecciona el curso del filtro activo al abrir", () => {
@@ -39,6 +48,17 @@ describe("NuevaSesionDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));
     expect((screen.getByLabelText(/curso/i) as HTMLSelectElement).value).toBe("g-2");
     expect((screen.getByLabelText(/semestre/i) as HTMLSelectElement).value).toBe("1");
+  });
+
+  it("filtra materias por semestre y docentes/aulas por sede del curso", () => {
+    render(<NuevaSesionDialog horarioId="h-1" opciones={opciones} grupoIdInicial="g-1" />);
+    fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));
+
+    expect(opcionesDe(screen.getByLabelText(/materia/i))).toContain("Programación I");
+    expect(opcionesDe(screen.getByLabelText(/docente/i))).toContain("Ana Pérez");
+    expect(opcionesDe(screen.getByLabelText(/docente/i))).not.toContain("Luis otra sede");
+    expect(opcionesDe(screen.getByLabelText(/aula/i))).toContain("Aula 101");
+    expect(opcionesDe(screen.getByLabelText(/aula/i))).not.toContain("Aula otra sede");
   });
 
   it("se cierra con el botón Cancelar", () => {

@@ -62,7 +62,7 @@ describe("editar/[horarioId] actions", () => {
       expect(data.horario).toMatchObject({ id: "h-1" });
       expect(data.contexto.docentes[0].disponibilidad[0].hora_inicio).toBe("08:00");
       expect(data.asignaciones[0].hora_inicio).toBe("09:00");
-      expect(data.opcionesManuales.docentes[0]).toEqual({ id: "d-1", nombre: "Ana" });
+      expect(data.opcionesManuales.docentes[0]).toEqual({ id: "d-1", nombre: "Ana", sede_ids: ["s-1"] });
     });
 
     it("lanza si el horario no existe", async () => {

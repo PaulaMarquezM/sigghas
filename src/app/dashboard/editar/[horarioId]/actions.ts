@@ -107,7 +107,13 @@ export async function getHorarioEditorData(horarioId: string) {
     opcionesManuales: {
       materias: materias.map((materia: any) => ({ id: materia.id, nombre: materia.nombre, semestre: materia.semestre, modalidad: materia.modalidad })),
       cursos: grupos.map((grupo: any) => ({ id: grupo.id, nombre: grupo.nombre, semestre: grupo.semestre, sede_id: grupo.sede_id })),
-      docentes: ((docentesRaw.data ?? []) as any[]).map((docente) => ({ id: docente.id, nombre: docente.perfiles?.nombre ?? "Docente sin nombre" })),
+      docentes: ((docentesRaw.data ?? []) as any[]).map((docente) => ({
+        id: docente.id,
+        nombre: docente.perfiles?.nombre ?? "Docente sin nombre",
+        sede_ids: (docente.docente_sedes ?? []).length
+          ? docente.docente_sedes.map((sede: { sede_id: string }) => sede.sede_id)
+          : docente.sede_principal_id ? [docente.sede_principal_id] : [],
+      })),
       aulas: espacios.map((espacio: any) => ({ id: espacio.id, nombre: espacio.nombre, sede_id: espacio.sede_id })),
     },
   };
