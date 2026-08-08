@@ -40,6 +40,8 @@ export type ReglaResultado = { valida: true } | { valida: false; conflicto: Conf
 
 export interface DocenteConDisponibilidad {
   id: string;
+  /** Nombre del perfil asociado; opcional en fixtures de prueba. */
+  nombre?: string;
   tipo_contrato: Database["public"]["Tables"]["docentes"]["Row"]["tipo_contrato"];
   hora_entrada: string | null;
   hora_salida: string | null;

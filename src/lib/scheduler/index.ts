@@ -35,7 +35,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     supabase.from("materias").select("*").eq("activo", true),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("activo", true).eq("disponible", true),
-    supabase.from("docentes").select("*, disponibilidad_docente(*), docente_sedes(sede_id)"),
+    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*), docente_sedes(sede_id)"),
     supabase.from("asignaciones_docente_periodo").select("periodo_id, materia_id, grupo_id, docente_id").eq("periodo_id", periodoId),
     supabase.from("disponibilidad_espacio").select("espacio_id, dia_semana, hora_inicio, hora_fin, disponible"),
   ]);
@@ -52,6 +52,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   const espacios = espaciosRes.data ?? [];
   const docentes: DocenteConDisponibilidad[] = ((docentesRes.data ?? []) as any[]).map((docente) => ({
     id: docente.id,
+    nombre: docente.perfiles?.nombre?.trim() || "Docente sin nombre",
     tipo_contrato: docente.tipo_contrato,
     hora_entrada: docente.hora_entrada,
     hora_salida: docente.hora_salida,

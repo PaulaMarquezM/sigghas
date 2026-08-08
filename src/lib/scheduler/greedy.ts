@@ -9,6 +9,14 @@ export interface AsignacionPendiente {
   total_sesiones: number;
 }
 
+const NOMBRE_DIA: Record<DiaSemana, string> = {
+  1: "lunes",
+  2: "martes",
+  3: "miércoles",
+  4: "jueves",
+  5: "viernes",
+  6: "sábado",
+};
 const minutos = (hora: string) => {
   const [h, m] = hora.slice(0, 5).split(":").map(Number);
   return h * 60 + m;
@@ -18,6 +26,9 @@ const duracion = (inicio: string, fin: string) => (minutos(fin) - minutos(inicio
 const seSolapan = (aInicio: string, aFin: string, bInicio: string, bFin: string) =>
   minutos(aInicio) < minutos(bFin) && minutos(aFin) > minutos(bInicio);
 const esPresencial = (modalidad: Slot["modalidad"]) => modalidad === "presencial";
+const nombreDocente = (docente: { nombre?: string }) => docente.nombre?.trim() || "Docente sin nombre";
+const franjaLabel = (dia: DiaSemana, inicio: string, fin: string) =>
+  `${NOMBRE_DIA[dia]} ${inicio}–${fin}`;
 
 export function distribuirHoras(horas: number): number[] {
   if (horas <= 3.5) return [horas];
@@ -112,33 +123,66 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
   const materia = ctx.materias.find((m) => m.id === candidato.materia_id);
   const fallo = (codigo: string, mensaje: string): ReglaResultado => ({ valida: false, conflicto: { regla: "PLANIFICADOR", codigo, tipo: "error", mensaje, materia_id: candidato.materia_id, grupo_id: candidato.grupo_id, docente_id: candidato.docente_id, espacio_id: candidato.espacio_id ?? undefined, dia: candidato.dia, hora_inicio: candidato.hora_inicio, hora_fin: candidato.hora_fin } });
   if (!docente || !grupo || !materia) return fallo("CONFIGURACION_INCOMPLETA", "Falta docente, grupo o materia en la configuración.");
+  const docenteLabel = nombreDocente(docente);
+  const sesionLabel = `${materia.codigo} · ${grupo.nombre} (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)})`;
   if (minutos(candidato.hora_inicio) % 30 || minutos(candidato.hora_fin) % 30 || duracion(candidato.hora_inicio, candidato.hora_fin) > 3.5) return fallo("FRANJA_INVALIDA", "La sesión debe usar franjas de 30 minutos y durar como máximo 3 h 30 min.");
   if (candidato.dia === 6 && grupo.semestre !== 7 && grupo.semestre !== 8) return fallo("SABADO_NO_PERMITIDO", "Solo los grupos de 7.º y 8.º semestre pueden tener clases el sábado.");
   if (candidato.modalidad === "presencial" && (docente.sede_ids ?? []).length > 0 && !(docente.sede_ids ?? []).includes(candidato.sede_id)) {
-    return fallo("DOCENTE_SEDE_NO_HABILITADA", "El docente no est\\u00e1 habilitado para impartir clases en la sede de este curso.");
+    return fallo("DOCENTE_SEDE_NO_HABILITADA", `${docenteLabel} no está habilitado para impartir ${sesionLabel} en la sede de este curso.`);
   }
   const disponible = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && !b.es_tiempo_oficina && b.hora_inicio <= candidato.hora_inicio && b.hora_fin >= candidato.hora_fin);
   const oficina = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && b.es_tiempo_oficina && seSolapan(candidato.hora_inicio, candidato.hora_fin, b.hora_inicio, b.hora_fin));
-  if (!disponible || oficina) return fallo("DOCENTE_NO_DISPONIBLE", "El docente no está disponible para toda la sesión o tiene tiempo de oficina.");
+  if (oficina) {
+    return fallo(
+      "DOCENTE_NO_DISPONIBLE",
+      `${docenteLabel} tiene tiempo de oficina que se solapa con ${sesionLabel}. Revisa su disponibilidad.`
+    );
+  }
+  if (!disponible) {
+    return fallo(
+      "DOCENTE_NO_DISPONIBLE",
+      `${docenteLabel} no está disponible para ${sesionLabel}: no hay un bloque de disponibilidad que cubra toda la sesión.`
+    );
+  }
   const compartida = (a: Asignacion) => !esPresencial(a.modalidad) && !esPresencial(candidato.modalidad) && a.docente_id === candidato.docente_id && a.materia_id === candidato.materia_id && a.dia_semana === candidato.dia && a.hora_inicio === candidato.hora_inicio && a.hora_fin === candidato.hora_fin;
   const yaCompartida = asignadas.some(compartida);
   const cargaNueva = yaCompartida ? 0 : duracion(candidato.hora_inicio, candidato.hora_fin);
-  if (horasDocente(asignadas, docente.id) + cargaNueva > docente.max_horas_semana) return fallo("EXCEDE_MAX_HORAS", "La sesión excede la carga semanal del docente.");
-  if (horasDocente(asignadas, docente.id, candidato.dia) + cargaNueva > (ctx.config.max_horas_diarias ?? 6)) return fallo("EXCEDE_MAX_HORAS_DIARIAS", "La sesión excede el máximo diario de 6 horas del docente.");
-  if (asignadas.filter((a) => a.grupo_id === grupo.id && a.dia_semana === candidato.dia).reduce((s, a) => s + duracion(a.hora_inicio, a.hora_fin), 0) + duracion(candidato.hora_inicio, candidato.hora_fin) > (ctx.config.max_horas_diarias ?? 6)) return fallo("GRUPO_EXCEDE_MAX_HORAS_DIARIAS", "El grupo excede el máximo diario de 6 horas.");
+  if (horasDocente(asignadas, docente.id) + cargaNueva > docente.max_horas_semana) {
+    return fallo("EXCEDE_MAX_HORAS", `${docenteLabel}: la sesión de ${sesionLabel} excede su carga semanal máxima.`);
+  }
+  if (horasDocente(asignadas, docente.id, candidato.dia) + cargaNueva > (ctx.config.max_horas_diarias ?? 6)) {
+    return fallo("EXCEDE_MAX_HORAS_DIARIAS", `${docenteLabel}: la sesión de ${sesionLabel} excede su máximo diario de 6 horas.`);
+  }
+  if (asignadas.filter((a) => a.grupo_id === grupo.id && a.dia_semana === candidato.dia).reduce((s, a) => s + duracion(a.hora_inicio, a.hora_fin), 0) + duracion(candidato.hora_inicio, candidato.hora_fin) > (ctx.config.max_horas_diarias ?? 6)) {
+    return fallo("GRUPO_EXCEDE_MAX_HORAS_DIARIAS", `El grupo ${grupo.nombre} excede el máximo diario de 6 horas (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}).`);
+  }
   for (const asignada of asignadas) {
-    if (asignada.grupo_id === candidato.grupo_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin)) return fallo("GRUPO_OCUPADO", "El grupo ya tiene una sesión en esta franja.");
-    if (asignada.docente_id === candidato.docente_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin) && !compartida(asignada)) return fallo("DOCENTE_OCUPADO", "El docente ya tiene otra sesión en esta franja.");
-    if (candidato.espacio_id && asignada.espacio_id === candidato.espacio_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin)) return fallo("ESPACIO_OCUPADO", "El espacio ya está ocupado en esta franja.");
+    if (asignada.grupo_id === candidato.grupo_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin)) {
+      return fallo("GRUPO_OCUPADO", `El grupo ${grupo.nombre} ya tiene una sesión el ${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}.`);
+    }
+    if (asignada.docente_id === candidato.docente_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin) && !compartida(asignada)) {
+      return fallo("DOCENTE_OCUPADO", `${docenteLabel} ya tiene otra sesión el ${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}.`);
+    }
+    if (candidato.espacio_id && asignada.espacio_id === candidato.espacio_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin)) {
+      const espacio = ctx.espacios.find((e) => e.id === candidato.espacio_id);
+      return fallo("ESPACIO_OCUPADO", `${espacio?.nombre ?? "El espacio"} ya está ocupado el ${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}.`);
+    }
     const mismaPersonaOGrupo = (asignada.grupo_id === candidato.grupo_id || asignada.docente_id === candidato.docente_id) && asignada.dia_semana === candidato.dia;
     if (mismaPersonaOGrupo && (esPresencial(asignada.modalidad) || esPresencial(candidato.modalidad)) && !compartida(asignada)) {
       const distancia = Math.max(minutos(asignada.hora_inicio), minutos(candidato.hora_inicio)) - Math.min(minutos(asignada.hora_fin), minutos(candidato.hora_fin));
-      if (distancia < (ctx.config.separacion_presencial_minutos ?? 120)) return fallo("DESCANSO_INSUFICIENTE", "Se requieren al menos 2 horas entre sesiones cuando una de ellas es presencial.");
+      if (distancia < (ctx.config.separacion_presencial_minutos ?? 120)) {
+        return fallo(
+          "DESCANSO_INSUFICIENTE",
+          `${docenteLabel} / ${grupo.nombre}: se requieren al menos 2 horas entre sesiones cuando una de ellas es presencial (${sesionLabel}).`
+        );
+      }
     }
   }
   if (esPresencial(candidato.modalidad)) {
     const otraSede = asignadas.some((a) => a.docente_id === candidato.docente_id && a.dia_semana === candidato.dia && esPresencial(a.modalidad) && a.sede_id !== candidato.sede_id);
-    if (otraSede) return fallo("DOCENTE_DOS_SEDES", "El docente no puede dictar presencialmente en dos sedes el mismo día.");
+    if (otraSede) {
+      return fallo("DOCENTE_DOS_SEDES", `${docenteLabel} no puede dictar presencialmente en dos sedes el mismo día (${NOMBRE_DIA[candidato.dia]}).`);
+    }
   }
   if (candidato.modalidad === "presencial" && !candidato.espacio_id) return fallo("ESPACIO_REQUERIDO", "Una materia presencial requiere un espacio físico.");
   if (candidato.modalidad !== "presencial" && candidato.espacio_id) return fallo("ESPACIO_NO_PERMITIDO", "Las materias virtuales e híbridas no reservan un espacio físico.");

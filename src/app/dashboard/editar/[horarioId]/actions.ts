@@ -53,6 +53,7 @@ export async function getHorarioEditorData(horarioId: string) {
 
   const docentes: DocenteConDisponibilidad[] = ((docentesRaw.data ?? []) as any[]).map((d) => ({
     id: d.id,
+    nombre: d.perfiles?.nombre?.trim() || "Docente sin nombre",
     tipo_contrato: d.tipo_contrato ?? "por_horas",
     hora_entrada: d.hora_entrada ?? null,
     hora_salida: d.hora_salida ?? null,
