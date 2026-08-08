@@ -13,6 +13,10 @@ export type SelectOption = {
 export type ActionResult = {
   ok: boolean;
   message?: string;
+  /** Contraseña temporal (solo al crear docente/usuario aprovisionado). */
+  tempPassword?: string;
+  email?: string;
+  nombre?: string;
 };
 
 type DbResult = {

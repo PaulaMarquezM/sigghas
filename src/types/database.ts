@@ -16,7 +16,8 @@ export interface Database {
       perfiles: {
         Row: {
           id: string; nombre: string; email: string; rol: RolUsuario;
-          sede_id: string | null; activo: boolean; creado_en: string; actualizado_en: string;
+          sede_id: string | null; activo: boolean; debe_cambiar_password: boolean;
+          creado_en: string; actualizado_en: string;
         };
         Insert: Omit<Database["public"]["Tables"]["perfiles"]["Row"], "creado_en" | "actualizado_en">;
         Update: Partial<Database["public"]["Tables"]["perfiles"]["Insert"]>;

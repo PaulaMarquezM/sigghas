@@ -6,6 +6,7 @@ import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { consolidarBloquesDisponibilidad } from "@/lib/disponibilidad";
 import { asUntypedDb, errorMessage, formBoolean, formNullableString, formNumber, formString, requireFields, type ActionResult } from "@/lib/entities";
 import { localizeErrorMessage } from "@/lib/errors";
+import { generateTempPassword } from "@/lib/temp-password";
 import type { TipoContrato } from "@/types/database";
 
 function sedesSeleccionadas(formData: FormData) {
@@ -30,12 +31,12 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
       throw new Error("Selecciona al menos una sede e indica cuál es la principal.");
     }
 
-    const tempPassword = crypto.randomUUID();
+    const tempPassword = generateTempPassword();
     const { data: userData, error: userError } = await admin.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
-      user_metadata: { nombre },
+      user_metadata: { nombre, rol: "docente" },
     });
     if (userError || !userData.user) throw new Error(userError?.message ?? "No se pudo crear el usuario docente.");
 
@@ -48,6 +49,7 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
       rol: "docente",
       sede_id: sede_principal_id,
       activo: true,
+      debe_cambiar_password: true,
     });
     if (profileError) throw new Error(profileError.message);
 
@@ -65,12 +67,12 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
       sedes_ids.map((sede_id) => ({ docente_id: id, sede_id })),
     );
     if (sedesError) throw new Error(sedesError.message);
+
+    revalidatePath("/dashboard/docentes");
+    return { ok: true, tempPassword, email, nombre };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
-
-  revalidatePath("/dashboard/docentes");
-  redirect("/dashboard/docentes");
 }
 
 export async function updateDocente(id: string, _state: ActionResult, formData: FormData): Promise<ActionResult> {

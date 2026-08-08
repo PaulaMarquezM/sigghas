@@ -43,7 +43,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Si hay usuario y está en el login → redirigir al dashboard
-  if (user && pathname === "/login") {
+  // (el layout del dashboard enviará a /cambiar-password si hace falta).
+  if (user && (pathname === "/login" || pathname === "/registro")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

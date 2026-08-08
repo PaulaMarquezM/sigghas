@@ -10,6 +10,7 @@ export interface Perfil {
   rol: RolUsuario;
   sede_id: string | null;
   activo: boolean;
+  debe_cambiar_password: boolean;
   creado_en: string;
   actualizado_en: string;
 }
@@ -28,7 +29,7 @@ export async function getSession(): Promise<Session> {
 
   const { data } = await supabase
     .from("perfiles")
-    .select("id, nombre, email, rol, sede_id, activo, creado_en, actualizado_en")
+    .select("id, nombre, email, rol, sede_id, activo, debe_cambiar_password, creado_en, actualizado_en")
     .eq("id", user.id)
     .single();
 

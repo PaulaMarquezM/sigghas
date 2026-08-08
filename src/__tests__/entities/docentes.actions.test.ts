@@ -37,12 +37,25 @@ describe("docentes actions", () => {
     setAdminClient();
   });
 
-  it("createDocente: crea el usuario auth, el perfil y el registro de docente, luego redirige", async () => {
+  it("createDocente: crea el usuario auth, el perfil y el registro de docente, y devuelve la contraseña temporal", async () => {
     createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
-    fromMock.mockReturnValue(createChainableQuery(ok()));
-    await expect(createDocente({ ok: true }, validForm())).rejects.toThrow("NEXT_REDIRECT:/dashboard/docentes");
-    expect(createUserMock).toHaveBeenCalledWith(expect.objectContaining({ email: "ana@puce.edu.ec" }));
-    expect(fromMock).toHaveBeenCalledWith("perfiles");
+    const perfilesQuery = createChainableQuery(ok()) as { upsert: ReturnType<typeof vi.fn> };
+    perfilesQuery.upsert = vi.fn(() => perfilesQuery);
+    fromMock.mockImplementation((table: string) => (table === "perfiles" ? perfilesQuery : createChainableQuery(ok())));
+
+    const result = await createDocente({ ok: true }, validForm());
+
+    expect(result.ok).toBe(true);
+    expect(result.email).toBe("ana@puce.edu.ec");
+    expect(result.nombre).toBe("Ana Pérez");
+    expect(result.tempPassword).toEqual(expect.any(String));
+    expect(result.tempPassword!.length).toBeGreaterThanOrEqual(8);
+    expect(createUserMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "ana@puce.edu.ec", password: result.tempPassword }),
+    );
+    expect(perfilesQuery.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ debe_cambiar_password: true, rol: "docente" }),
+    );
     expect(fromMock).toHaveBeenCalledWith("docentes");
   });
 
@@ -70,13 +83,21 @@ describe("docentes actions", () => {
     expect(createUserMock).not.toHaveBeenCalled();
   });
 
-  it("createDocente: conserva una carga mÃ­nima de 40 horas para tiempo completo", async () => {
+  it("createDocente: conserva una carga mínima de 40 horas para tiempo completo", async () => {
     createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
     const docenteQuery = createChainableQuery(ok()) as { insert: ReturnType<typeof vi.fn> };
     docenteQuery.insert = vi.fn(() => docenteQuery);
-    fromMock.mockImplementation((table: string) => table === "docentes" ? docenteQuery : createChainableQuery(ok()));
-    const form = fd({ nombre: "Ana PÃ©rez", email: "ana@puce.edu.ec", tipo_contrato: "tiempo_completo", sede_principal_id: "sede-1", sedes_ids: "sede-1", max_horas_semana: "20" });
-    await expect(createDocente({ ok: true }, form)).rejects.toThrow("NEXT_REDIRECT:/dashboard/docentes");
+    fromMock.mockImplementation((table: string) => (table === "docentes" ? docenteQuery : createChainableQuery(ok())));
+    const form = fd({
+      nombre: "Ana Pérez",
+      email: "ana@puce.edu.ec",
+      tipo_contrato: "tiempo_completo",
+      sede_principal_id: "sede-1",
+      sedes_ids: "sede-1",
+      max_horas_semana: "20",
+    });
+    const result = await createDocente({ ok: true }, form);
+    expect(result.ok).toBe(true);
     expect(docenteQuery.insert).toHaveBeenCalledWith(expect.objectContaining({ max_horas_semana: 40 }));
   });
 

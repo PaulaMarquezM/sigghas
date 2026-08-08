@@ -10,12 +10,22 @@ export async function login(formData: FormData) {
   const email    = (formData.get("email") as string).trim().toLowerCase();
   const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) {
+  if (error || !data.user) {
     console.error("[login] signIn falló:", error);
-    const msg = localizeErrorMessage(error.message, "Correo o contraseña incorrectos.");
+    const msg = localizeErrorMessage(error?.message, "Correo o contraseña incorrectos.");
     redirect(`/login?error=${encodeURIComponent(msg)}`);
+  }
+
+  const { data: perfil } = await supabase
+    .from("perfiles")
+    .select("debe_cambiar_password")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  if (perfil?.debe_cambiar_password) {
+    redirect("/cambiar-password");
   }
 
   redirect("/dashboard");

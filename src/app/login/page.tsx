@@ -241,8 +241,13 @@ function LoginPageContent() {
           </PendingSubmitButton>
 
           <p className="s-small" style={{ textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-            ¿No tienes cuenta?{" "}
-            <a href="/registro" style={{ color: "#1D3FD9", fontWeight: 500 }}>Crear cuenta</a>
+            ¿Eres docente y te acaba de registrar el coordinador?{" "}
+            <span style={{ color: "#4A515E" }}>Usa el correo y la contraseña temporal que te compartieron.</span>
+          </p>
+
+          <p className="s-small" style={{ textAlign: "center", margin: "4px 0 0", lineHeight: 1.5 }}>
+            ¿Necesitas ayuda para registrarte?{" "}
+            <a href="/registro" style={{ color: "#1D3FD9", fontWeight: 500 }}>Ver instrucciones</a>
           </p>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16, paddingTop: 24, borderTop: "1px solid #D8D1BD", fontFamily: "JetBrains Mono, monospace", fontSize: 10.5, color: "#8A8F99", letterSpacing: "0.05em" }}>

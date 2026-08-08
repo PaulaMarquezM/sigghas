@@ -38,6 +38,13 @@ describe("middleware", () => {
     expect(res.headers.get("location")).toContain("/dashboard");
   });
 
+  it("redirige a /dashboard si hay sesión y visita /registro", async () => {
+    getUserMock.mockResolvedValue({ data: { user: { id: "u-1" } } });
+    const res = await middleware(makeRequest("/registro"));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/dashboard");
+  });
+
   it("deja pasar rutas protegidas cuando sí hay sesión", async () => {
     getUserMock.mockResolvedValue({ data: { user: { id: "u-1" } } });
     const res = await middleware(makeRequest("/dashboard"));

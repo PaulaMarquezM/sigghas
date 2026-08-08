@@ -25,10 +25,15 @@ describe("DashboardLayout", () => {
   });
 
   it("renderiza el sidebar, el topbar y el contenido cuando hay sesión", async () => {
-    getSessionMock.mockResolvedValue({ perfil: { nombre: "Ana Pérez", rol: "coordinador" } });
+    getSessionMock.mockResolvedValue({ perfil: { nombre: "Ana Pérez", rol: "coordinador", debe_cambiar_password: false } });
     const jsx = await DashboardLayout({ children: <div>contenido hijo</div> });
     render(jsx);
     expect(screen.getByText("contenido hijo")).toBeTruthy();
     expect(screen.getByText("Ana Pérez")).toBeTruthy();
+  });
+
+  it("redirige a /cambiar-password si el perfil debe cambiar la contraseña", async () => {
+    getSessionMock.mockResolvedValue({ perfil: { nombre: "Ana Pérez", rol: "docente", debe_cambiar_password: true } });
+    await expect(DashboardLayout({ children: <div /> })).rejects.toThrow(/NEXT_REDIRECT:\/cambiar-password/);
   });
 });

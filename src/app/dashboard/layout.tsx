@@ -15,6 +15,10 @@ export default async function DashboardLayout({
     redirect("/registro?error=" + encodeURIComponent("Tu perfil no fue creado. Regístrate de nuevo."));
   }
 
+  if (perfil.debe_cambiar_password) {
+    redirect("/cambiar-password");
+  }
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#F5F1E8" }}>
       <Sidebar nombre={perfil.nombre} rol={perfil.rol} />
