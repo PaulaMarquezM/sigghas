@@ -37,7 +37,7 @@ describe("ConfiguracionHorarioPage (Server Component)", () => {
       if (table === "grupos") return makeQuery([{ id: "g-1", nombre: "SW-5A", semestre: 5 }]);
       if (table === "docentes") return makeQuery([{ id: "d-1", perfiles: { nombre: "Ana Pérez" } }]);
       if (table === "espacios") return makeQuery([{ id: "e-1", nombre: "Aula 101" }]);
-      if (table === "asignaciones_docente_periodo") return makeQuery([{ periodo_id: "p-1", materia_id: "m-1", grupo_id: "g-1", materias: { nombre: "Programación I" }, grupos: { nombre: "SW-5A" }, docentes: { perfiles: { nombre: "Ana Pérez" } } }]);
+      if (table === "asignaciones_docente_periodo") return makeQuery([{ periodo_id: "p-1", materia_id: "m-1", grupo_id: "g-1", docente_id: "d-1", materias: { nombre: "Programación I" }, grupos: { nombre: "SW-5A" }, docentes: { perfiles: { nombre: "Ana Pérez" } } }]);
       return makeQuery([{ id: "b-1", espacio_id: "e-1", dia_semana: 1, hora_inicio: "08:00:00", hora_fin: "17:00:00", disponible: true, espacios: { nombre: "Aula 101" } }]);
     });
     const jsx = await ConfiguracionHorarioPage();

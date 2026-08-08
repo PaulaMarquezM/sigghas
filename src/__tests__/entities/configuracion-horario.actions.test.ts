@@ -8,7 +8,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const fromMock = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn().mockResolvedValue({ from: (table: string) => fromMock(table) }) }));
 
-import { actualizarDisponibilidadEspacio } from "@/app/dashboard/configuracion-horario/actions";
+import { actualizarAsignacionDocente, actualizarDisponibilidadEspacio } from "@/app/dashboard/configuracion-horario/actions";
 
 function fd(fields: Record<string, string>) {
   const formData = new FormData();
@@ -17,6 +17,28 @@ function fd(fields: Record<string, string>) {
 }
 
 const validForm = () => fd({ dia_semana: "2", hora_inicio: "08:00", hora_fin: "10:00", disponible: "on" });
+
+describe("actualizarAsignacionDocente", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    requireRolMock.mockResolvedValue({ id: "u-1", rol: "coordinador" });
+  });
+
+  it("actualiza el docente de la asignación existente", async () => {
+    fromMock.mockReturnValue(createChainableQuery(ok()));
+    await expect(actualizarAsignacionDocente("p-1", "m-1", "g-1", fd({ docente_id: "d-2" }))).resolves.toBeUndefined();
+    expect(fromMock).toHaveBeenCalledWith("asignaciones_docente_periodo");
+  });
+
+  it("lanza si no se selecciona docente", async () => {
+    await expect(actualizarAsignacionDocente("p-1", "m-1", "g-1", fd({}))).rejects.toThrow("Selecciona un docente");
+  });
+
+  it("lanza si Supabase falla al actualizar", async () => {
+    fromMock.mockReturnValue(createChainableQuery(fail("conflicto de asignación")));
+    await expect(actualizarAsignacionDocente("p-1", "m-1", "g-1", fd({ docente_id: "d-2" }))).rejects.toThrow("conflicto de asignación");
+  });
+});
 
 describe("actualizarDisponibilidadEspacio", () => {
   beforeEach(() => {

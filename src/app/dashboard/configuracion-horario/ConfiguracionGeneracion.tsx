@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { requireRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { eliminarAsignacionDocente, guardarDisponibilidadEspacio } from "./actions";
+import { guardarDisponibilidadEspacio } from "./actions";
 import { AsignacionDocenteForm } from "./AsignacionDocenteForm";
+import { AsignacionDocenteRow } from "./AsignacionDocenteRow";
 import { DisponibilidadEspacioRow } from "./DisponibilidadEspacioRow";
 import { PendingSubmitButton } from "@/components/ui/PendingSubmitButton";
 
@@ -22,6 +23,10 @@ export async function ConfiguracionGeneracion() {
     (supabase as any).from("disponibilidad_espacio").select("*, espacios(nombre)").order("dia_semana").order("hora_inicio"),
   ]);
   const periodo = periodos.data?.[0];
+  const docentesOpciones = (docentes.data as any[] ?? []).map((d) => ({
+    id: d.id,
+    nombre: d.perfiles?.nombre ?? "Docente sin nombre",
+  }));
 
   return <div className="space-y-6">
     <div>
@@ -31,8 +36,8 @@ export async function ConfiguracionGeneracion() {
     </div>
     {!periodo ? <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Activa un período académico para configurar sus asignaciones.</div> : <section className="rounded-xl border bg-white p-5 space-y-5">
       <div><span className="font-mono text-xs uppercase tracking-wider text-[#1D3FD9]">Paso 1</span><h3 className="mt-1 text-lg font-semibold">Asignar docente a materia y curso</h3><p className="text-sm text-gray-600">Primero elige el semestre; luego verás únicamente las materias y cursos correspondientes.</p></div>
-      <AsignacionDocenteForm periodoId={periodo.id} materias={(materias.data ?? []).map((m) => ({ id: m.id, nombre: m.nombre, semestre: m.semestre }))} cursos={(grupos.data ?? []).map((g) => ({ id: g.id, nombre: g.nombre, semestre: g.semestre }))} docentes={(docentes.data as any[] ?? []).map((d) => ({ id: d.id, nombre: d.perfiles?.nombre ?? "Docente sin nombre" }))} />
-      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="py-2">Materia</th><th>Curso</th><th>Docente</th><th /></tr></thead><tbody>{(asignaciones.data as any[] ?? []).map((a) => <tr key={`${a.periodo_id}:${a.materia_id}:${a.grupo_id}`} className="border-t"><td className="py-2">{a.materias?.nombre}</td><td>{a.grupos?.nombre}</td><td>{a.docentes?.perfiles?.nombre}</td><td className="text-right"><form action={eliminarAsignacionDocente.bind(null, a.periodo_id, a.materia_id, a.grupo_id)}><PendingSubmitButton pendingLabel="Quitando…" className="inline-flex items-center gap-1 font-medium text-[#B33A2B]">Quitar</PendingSubmitButton></form></td></tr>)}</tbody></table></div>
+      <AsignacionDocenteForm periodoId={periodo.id} materias={(materias.data ?? []).map((m) => ({ id: m.id, nombre: m.nombre, semestre: m.semestre }))} cursos={(grupos.data ?? []).map((g) => ({ id: g.id, nombre: g.nombre, semestre: g.semestre }))} docentes={docentesOpciones} />
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-gray-500"><th className="py-2">Materia</th><th>Curso</th><th>Docente</th><th /></tr></thead><tbody>{(asignaciones.data as any[] ?? []).map((a) => <AsignacionDocenteRow key={`${a.periodo_id}:${a.materia_id}:${a.grupo_id}`} row={{ periodoId: a.periodo_id, materiaId: a.materia_id, grupoId: a.grupo_id, docenteId: a.docente_id, materiaNombre: a.materias?.nombre ?? "", cursoNombre: a.grupos?.nombre ?? "", docenteNombre: a.docentes?.perfiles?.nombre ?? "" }} docentes={docentesOpciones} />)}</tbody></table></div>
     </section>}
     <section className="rounded-xl border bg-white p-5 space-y-5">
       <div><span className="font-mono text-xs uppercase tracking-wider text-[#1D3FD9]">Paso 2</span><h3 className="mt-1 text-lg font-semibold">Disponibilidad de aulas</h3><p className="text-sm text-gray-600">Las aulas nuevas quedan disponibles de lunes a viernes, de 08:00 a 17:00. Aquí puedes editar excepciones, incluido el sábado.</p></div>

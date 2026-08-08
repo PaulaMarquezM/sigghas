@@ -19,6 +19,26 @@ export async function guardarAsignacionDocente(formData: FormData) {
   revalidatePath("/dashboard/generar");
 }
 
+export async function actualizarAsignacionDocente(
+  periodoId: string,
+  materiaId: string,
+  grupoId: string,
+  formData: FormData,
+) {
+  await requireRol("coordinador", "administrador");
+  const docente_id = formString(formData, "docente_id");
+  if (!docente_id) throw new Error("Selecciona un docente.");
+  const supabase = await createClient();
+  const { error } = await asUntypedDb(supabase).from("asignaciones_docente_periodo")
+    .update({ docente_id })
+    .eq("periodo_id", periodoId)
+    .eq("materia_id", materiaId)
+    .eq("grupo_id", grupoId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/dashboard/configuracion-horario");
+  revalidatePath("/dashboard/generar");
+}
+
 export async function eliminarAsignacionDocente(periodoId: string, materiaId: string, grupoId: string) {
   await requireRol("coordinador", "administrador");
   const supabase = await createClient();
