@@ -79,6 +79,8 @@ export interface ContextoProgramacion {
   grupos: Database["public"]["Tables"]["grupos"]["Row"][];
   docentes: DocenteConDisponibilidad[];
   espacios: Database["public"]["Tables"]["espacios"]["Row"][];
+  /** Nombres de sede para mensajes de conflicto; opcional en fixtures. */
+  sedes?: { id: string; nombre: string }[];
   asignaciones_docente?: AsignacionDocentePeriodo[];
   disponibilidad_espacio?: BloqueDisponibilidadEspacio[];
   horario_id: string;

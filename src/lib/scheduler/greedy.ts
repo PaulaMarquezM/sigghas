@@ -30,6 +30,18 @@ const nombreDocente = (docente: { nombre?: string }) => docente.nombre?.trim() |
 const franjaLabel = (dia: DiaSemana, inicio: string, fin: string) =>
   `${NOMBRE_DIA[dia]} ${inicio}–${fin}`;
 
+export function etiquetaMateria(materia: { codigo: string; nombre: string }) {
+  return `${materia.codigo} ${materia.nombre}`;
+}
+
+export function etiquetaSesion(
+  materia: { codigo: string; nombre: string },
+  grupo: { nombre: string },
+  candidato: { dia: DiaSemana; hora_inicio: string; hora_fin: string }
+) {
+  return `${etiquetaMateria(materia)} · ${grupo.nombre} (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)})`;
+}
+
 export function distribuirHoras(horas: number): number[] {
   if (horas <= 3.5) return [horas];
   const primera = Math.ceil((horas / 2) * 2) / 2;
@@ -124,11 +136,15 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
   const fallo = (codigo: string, mensaje: string): ReglaResultado => ({ valida: false, conflicto: { regla: "PLANIFICADOR", codigo, tipo: "error", mensaje, materia_id: candidato.materia_id, grupo_id: candidato.grupo_id, docente_id: candidato.docente_id, espacio_id: candidato.espacio_id ?? undefined, dia: candidato.dia, hora_inicio: candidato.hora_inicio, hora_fin: candidato.hora_fin } });
   if (!docente || !grupo || !materia) return fallo("CONFIGURACION_INCOMPLETA", "Falta docente, grupo o materia en la configuración.");
   const docenteLabel = nombreDocente(docente);
-  const sesionLabel = `${materia.codigo} · ${grupo.nombre} (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)})`;
+  const sesionLabel = etiquetaSesion(materia, grupo, candidato);
   if (minutos(candidato.hora_inicio) % 30 || minutos(candidato.hora_fin) % 30 || duracion(candidato.hora_inicio, candidato.hora_fin) > 3.5) return fallo("FRANJA_INVALIDA", "La sesión debe usar franjas de 30 minutos y durar como máximo 3 h 30 min.");
   if (candidato.dia === 6 && grupo.semestre !== 7 && grupo.semestre !== 8) return fallo("SABADO_NO_PERMITIDO", "Solo los grupos de 7.º y 8.º semestre pueden tener clases el sábado.");
   if (candidato.modalidad === "presencial" && (docente.sede_ids ?? []).length > 0 && !(docente.sede_ids ?? []).includes(candidato.sede_id)) {
-    return fallo("DOCENTE_SEDE_NO_HABILITADA", `${docenteLabel} no está habilitado para impartir ${sesionLabel} en la sede de este curso.`);
+    const sedeNombre = ctx.sedes?.find((s) => s.id === candidato.sede_id)?.nombre;
+    return fallo(
+      "DOCENTE_SEDE_NO_HABILITADA",
+      `${docenteLabel} no está habilitado para impartir ${sesionLabel}${sedeNombre ? ` en sede ${sedeNombre}` : " en la sede de este curso"}.`
+    );
   }
   const disponible = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && !b.es_tiempo_oficina && b.hora_inicio <= candidato.hora_inicio && b.hora_fin >= candidato.hora_fin);
   const oficina = docente.disponibilidad.some((b) => b.dia_semana === candidato.dia && b.es_tiempo_oficina && seSolapan(candidato.hora_inicio, candidato.hora_fin, b.hora_inicio, b.hora_fin));

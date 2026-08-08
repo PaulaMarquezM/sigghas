@@ -31,15 +31,16 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("HORARIO_PERIODO_EXISTENTE", "Ya existe un horario para este período. Edítalo desde el editor manual.")], log: [...log, "No se creó un segundo horario para el mismo período."] };
   }
 
-  const [materiasRes, gruposRes, espaciosRes, docentesRes, asignacionesRes, disponibilidadEspaciosRes] = await Promise.all([
+  const [materiasRes, gruposRes, espaciosRes, docentesRes, asignacionesRes, disponibilidadEspaciosRes, sedesRes] = await Promise.all([
     supabase.from("materias").select("*").eq("activo", true),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("activo", true).eq("disponible", true),
     supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*), docente_sedes(sede_id)"),
     supabase.from("asignaciones_docente_periodo").select("periodo_id, materia_id, grupo_id, docente_id").eq("periodo_id", periodoId),
     supabase.from("disponibilidad_espacio").select("espacio_id, dia_semana, hora_inicio, hora_fin, disponible"),
+    supabase.from("sedes").select("id, nombre"),
   ]);
-  if (materiasRes.error || gruposRes.error || espaciosRes.error || docentesRes.error || asignacionesRes.error || disponibilidadEspaciosRes.error) {
+  if (materiasRes.error || gruposRes.error || espaciosRes.error || docentesRes.error || asignacionesRes.error || disponibilidadEspaciosRes.error || sedesRes.error) {
     return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_CARGANDO_DATOS", "No se pudieron cargar todos los datos de configuración del horario.")], log: [...log, "Error cargando datos: revisa que la migración 009 esté aplicada."] };
   }
   let materias = materiasRes.data ?? [];
@@ -86,7 +87,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   const faltantesDocente = materias.flatMap((materia) => grupos
     .filter((grupo) => grupo.semestre === materia.semestre)
     .filter((grupo) => !docentesAsignados.has(`${materia.id}:${grupo.id}`))
-    .map((grupo) => ({ regla: "CONFIGURACION", codigo: "DOCENTE_SIN_ASIGNAR", tipo: "error" as const, mensaje: `La materia ${materia.codigo} no tiene docente asignado para el grupo ${grupo.nombre} en este período.`, materia_id: materia.id, grupo_id: grupo.id })));
+    .map((grupo) => ({ regla: "CONFIGURACION", codigo: "DOCENTE_SIN_ASIGNAR", tipo: "error" as const, mensaje: `La materia ${materia.codigo} ${materia.nombre} no tiene docente asignado para el grupo ${grupo.nombre} en este período.`, materia_id: materia.id, grupo_id: grupo.id })));
   if (faltantesDocente.length) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: faltantesDocente, log: [...log, `Faltan ${faltantesDocente.length} asignaciones docente–materia–grupo.`] };
 
   const ctx: ContextoProgramacion = {
@@ -95,6 +96,7 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     grupos,
     docentes,
     espacios,
+    sedes: sedesRes.data ?? [],
     asignaciones_docente: asignacionesRes.data ?? [],
     disponibilidad_espacio: (disponibilidadEspaciosRes.data ?? []).map((bloque) => ({ ...bloque, dia_semana: bloque.dia_semana as 1 | 2 | 3 | 4 | 5 | 6, hora_inicio: bloque.hora_inicio.slice(0, 5), hora_fin: bloque.hora_fin.slice(0, 5) })),
     horario_id: "",

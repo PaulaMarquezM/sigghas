@@ -1,11 +1,11 @@
-import { generarSlots, ordenarMateriasPorPrioridad, validarCandidato } from "./greedy";
+import { etiquetaMateria, generarSlots, ordenarMateriasPorPrioridad, validarCandidato } from "./greedy";
 import type { Asignacion, Conflicto, ContextoProgramacion } from "./types";
 
 function etiquetaPendiente(pendiente: { materia_id: string; grupo_id: string; docente_id: string }, ctx: ContextoProgramacion) {
   const materia = ctx.materias.find((m) => m.id === pendiente.materia_id);
   const grupo = ctx.grupos.find((g) => g.id === pendiente.grupo_id);
   const docente = ctx.docentes.find((d) => d.id === pendiente.docente_id);
-  const materiaLabel = materia ? `${materia.codigo}` : "materia";
+  const materiaLabel = materia ? etiquetaMateria(materia) : "materia";
   const grupoLabel = grupo?.nombre ?? "grupo";
   const docenteLabel = docente?.nombre?.trim() || "Docente sin nombre";
   return { materiaLabel, grupoLabel, docenteLabel };

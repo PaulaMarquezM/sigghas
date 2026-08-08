@@ -40,11 +40,12 @@ export async function getHorarioEditorData(horarioId: string) {
   }
 
   // 3. Obtener todas las entidades para el validador
-  const [materiasRes, gruposRes, espaciosRes, docentesRaw] = await Promise.all([
+  const [materiasRes, gruposRes, espaciosRes, docentesRaw, sedesRes] = await Promise.all([
     supabase.from("materias").select("*"),
     supabase.from("grupos").select("*").eq("activo", true),
     supabase.from("espacios").select("*").eq("disponible", true),
-    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*), docente_sedes(sede_id)")
+    supabase.from("docentes").select("*, perfiles(nombre), disponibilidad_docente(*), docente_sedes(sede_id)"),
+    supabase.from("sedes").select("id, nombre"),
   ]);
 
   const materias = materiasRes.data || [];
@@ -76,6 +77,7 @@ export async function getHorarioEditorData(horarioId: string) {
     grupos: grupos as any,
     docentes,
     espacios: espacios as any,
+    sedes: sedesRes.data ?? [],
     horario_id: horarioId,
     config: CONFIG_DEFAULT,
   };

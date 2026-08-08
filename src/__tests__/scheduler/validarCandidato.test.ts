@@ -10,6 +10,7 @@ function baseContexto(overrides: Partial<ContextoProgramacion> = {}): ContextoPr
     grupos: [{ id: "g-1", nombre: "SW-5A", semestre: 5, cantidad_estudiantes: 20, sede_id: "s-1", requiere_accesibilidad: false, activo: true, creado_en: "" }],
     docentes: [{ id: "d-1", nombre: "Ana Pérez", tipo_contrato: "por_horas", hora_entrada: null, hora_salida: null, max_horas_semana: 20, sede_principal_id: "s-1", disponibilidad: [1, 2, 3, 4, 5].map((dia_semana) => ({ dia_semana: dia_semana as 1 | 2 | 3 | 4 | 5, hora_inicio: "08:00", hora_fin: "17:00", es_tiempo_oficina: false })) }],
     espacios: [{ id: "e-1", nombre: "Aula 101", tipo: "aula", capacidad: 30, accesible: true, sede_id: "s-1", disponible: true, activo: true, tiene_proyector: true, tiene_internet: true, creado_en: "" }],
+    sedes: [{ id: "s-1", nombre: "Norte" }, { id: "s-2", nombre: "Sur" }],
     asignaciones_docente: [{ periodo_id: "p-1", materia_id: "m-1", grupo_id: "g-1", docente_id: "d-1" }],
     horario_id: "h-1",
     config: CONFIG_DEFAULT,
@@ -97,7 +98,7 @@ describe("validarCandidato — cada regla de negocio produce el código de confl
       valida: false,
       conflicto: expect.objectContaining({
         codigo: "DOCENTE_NO_DISPONIBLE",
-        mensaje: "Ana Pérez no está disponible para SW-01 · SW-5A (martes 09:00–10:00): no hay un bloque de disponibilidad que cubra toda la sesión.",
+        mensaje: "Ana Pérez no está disponible para SW-01 Materia · SW-5A (martes 09:00–10:00): no hay un bloque de disponibilidad que cubra toda la sesión.",
       }),
     });
   });
@@ -117,7 +118,7 @@ describe("validarCandidato — cada regla de negocio produce el código de confl
       valida: false,
       conflicto: expect.objectContaining({
         codigo: "DOCENTE_NO_DISPONIBLE",
-        mensaje: "Ana Pérez tiene tiempo de oficina que se solapa con SW-01 · SW-5A (lunes 09:00–10:00). Revisa su disponibilidad.",
+        mensaje: "Ana Pérez tiene tiempo de oficina que se solapa con SW-01 Materia · SW-5A (lunes 09:00–10:00). Revisa su disponibilidad.",
       }),
     });
   });
