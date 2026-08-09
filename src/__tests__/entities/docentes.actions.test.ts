@@ -101,6 +101,58 @@ describe("docentes actions", () => {
     expect(docenteQuery.insert).toHaveBeenCalledWith(expect.objectContaining({ max_horas_semana: 40 }));
   });
 
+  it("createDocente: asigna disponibilidad total a tiempo completo y titular", async () => {
+    createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+
+    for (const tipo_contrato of ["tiempo_completo", "titular"] as const) {
+      vi.clearAllMocks();
+      setAdminClient();
+      createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+      const disponibilidadQuery = createChainableQuery(ok()) as { insert: ReturnType<typeof vi.fn> };
+      disponibilidadQuery.insert = vi.fn(() => disponibilidadQuery);
+      fromMock.mockImplementation((table: string) =>
+        table === "disponibilidad_docente" ? disponibilidadQuery : createChainableQuery(ok()),
+      );
+
+      const result = await createDocente(
+        { ok: true },
+        fd({
+          nombre: "Ana Pérez",
+          email: "ana@puce.edu.ec",
+          tipo_contrato,
+          sede_principal_id: "sede-1",
+          sedes_ids: "sede-1",
+          max_horas_semana: tipo_contrato === "tiempo_completo" ? "40" : "20",
+        }),
+      );
+
+      expect(result.ok).toBe(true);
+      expect(disponibilidadQuery.insert).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            docente_id: "user-1",
+            dia_semana: 1,
+            hora_inicio: "08:00",
+            hora_fin: "17:00",
+            es_tiempo_oficina: false,
+          }),
+          expect.objectContaining({ dia_semana: 6, hora_inicio: "08:00", hora_fin: "17:00" }),
+        ]),
+      );
+      expect(disponibilidadQuery.insert.mock.calls[0][0]).toHaveLength(6);
+    }
+  });
+
+  it("createDocente: no asigna disponibilidad automática a por horas", async () => {
+    createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    fromMock.mockImplementation(() => createChainableQuery(ok()));
+
+    const result = await createDocente({ ok: true }, validForm());
+
+    expect(result.ok).toBe(true);
+    expect(fromMock).not.toHaveBeenCalledWith("disponibilidad_docente");
+  });
+
   it("updateDocente: actualiza docente y perfil, luego redirige", async () => {
     fromMock.mockReturnValue(createChainableQuery(ok()));
     await expect(updateDocente("d-1", { ok: true }, validForm())).rejects.toThrow("NEXT_REDIRECT:/dashboard/docentes");

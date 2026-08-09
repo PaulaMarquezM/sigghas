@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { consolidarBloquesDisponibilidad, expandirBloquesDisponibilidad } from "@/lib/disponibilidad";
+import {
+  bloquesDisponibilidadTotal,
+  consolidarBloquesDisponibilidad,
+  expandirBloquesDisponibilidad,
+} from "@/lib/disponibilidad";
 
 describe("consolidarBloquesDisponibilidad", () => {
   it("une las celdas contiguas de la misma jornada", () => {
@@ -20,5 +24,17 @@ describe("consolidarBloquesDisponibilidad", () => {
     expect([...expandirBloquesDisponibilidad([
       { dia_semana: 1, hora_inicio: "08:00", hora_fin: "09:30" },
     ])]).toEqual(["1-08:00", "1-08:30", "1-09:00"]);
+  });
+});
+
+describe("bloquesDisponibilidadTotal", () => {
+  it("cubre lunes a sábado de 08:00 a 17:00", () => {
+    expect(bloquesDisponibilidadTotal()).toEqual(
+      [1, 2, 3, 4, 5, 6].map((dia_semana) => ({
+        dia_semana,
+        hora_inicio: "08:00",
+        hora_fin: "17:00",
+      })),
+    );
   });
 });

@@ -40,8 +40,8 @@ export default async function DisponibilidadDocentePage({
         <p className="text-sm text-gray-500">{perfil?.nombre} · Bloques de 30 minutos, lunes a sábado de 08:00 a 17:00.</p>
       </div>
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">
-        <p className="font-medium">Configuración obligatoria para todos los tipos de jornada</p>
-        <p className="mt-1">Los docentes de tiempo completo también deben registrar manualmente aquí sus bloques disponibles. La jornada contractual define sus límites, pero no reemplaza esta configuración ni los bloques de tiempo de oficina.</p>
+        <p className="font-medium">Disponibilidad para la planificación</p>
+        <p className="mt-1">Los docentes de tiempo completo y titular se crean con toda la grilla marcada como disponible (lunes a sábado, 08:00–17:00). Puedes ajustar estos bloques aquí; la jornada contractual y el tiempo de oficina no los reemplazan.</p>
       </div>
       <Card className="shadow-sm">
         <CardHeader><CardTitle className="text-base">Bloques disponibles</CardTitle></CardHeader>

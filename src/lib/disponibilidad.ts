@@ -5,6 +5,18 @@ export type BloqueDisponibilidad = {
 };
 
 const DURACION_BLOQUE_MINUTOS = 30;
+const DIAS_GRILLA = [1, 2, 3, 4, 5, 6] as const;
+const HORA_INICIO_GRILLA = "08:00";
+const HORA_FIN_GRILLA = "17:00";
+
+/** Franja completa de la grilla docente: lunes a sábado, 08:00–17:00. */
+export function bloquesDisponibilidadTotal(): BloqueDisponibilidad[] {
+  return DIAS_GRILLA.map((dia_semana) => ({
+    dia_semana,
+    hora_inicio: HORA_INICIO_GRILLA,
+    hora_fin: HORA_FIN_GRILLA,
+  }));
+}
 
 function minutosDesdeHora(hora: string) {
   const [horas, minutos] = hora.split(":").map(Number);
