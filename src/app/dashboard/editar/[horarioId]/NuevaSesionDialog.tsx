@@ -11,6 +11,7 @@ export type OpcionesManuales = {
   cursos: { id: string; nombre: string; semestre: number; sede_id: string }[];
   docentes: { id: string; nombre: string; sede_ids: string[] }[];
   aulas: { id: string; nombre: string; sede_id: string }[];
+  sedes: { id: string; nombre: string }[];
 };
 
 export function docentesDeSede(

@@ -44,6 +44,9 @@ function horasEntre(inicio: string, fin: string): number {
   return (parseTime(fin) - parseTime(inicio)) / 60;
 }
 
+const selectClass =
+  "h-10 rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15";
+
 export default function HorarioEditor({
   horario,
   periodo,
@@ -57,7 +60,8 @@ export default function HorarioEditor({
   const [asignaciones, setAsignaciones] = useState<Asignacion[]>(initialAsignaciones);
   const [sesiones, setSesiones] = useState<SesionVista[]>(initialSesiones);
   const [isPending, startTransition] = useTransition();
-  const [cursoFiltroId, setCursoFiltroId] = useState(opcionesManuales.cursos[0]?.id ?? "");
+  const [sedeFiltroId, setSedeFiltroId] = useState(opcionesManuales.sedes[0]?.id ?? "");
+  const [cursoFiltroId, setCursoFiltroId] = useState("");
   const [sesionEnEdicion, setSesionEnEdicion] = useState<SesionVista | null>(null);
 
   useEffect(() => {
@@ -68,6 +72,36 @@ export default function HorarioEditor({
     setAsignaciones(initialAsignaciones);
     setSesiones(initialSesiones);
   }, [initialAsignaciones, initialSesiones]);
+
+  const cursosFiltrados = useMemo(() => {
+    const list = sedeFiltroId
+      ? opcionesManuales.cursos.filter((curso) => curso.sede_id === sedeFiltroId)
+      : opcionesManuales.cursos;
+    return [...list].sort((a, b) => a.semestre - b.semestre || a.nombre.localeCompare(b.nombre));
+  }, [opcionesManuales.cursos, sedeFiltroId]);
+
+  const cursoIdsVisibles = useMemo(() => {
+    if (cursoFiltroId) return new Set([cursoFiltroId]);
+    return new Set(cursosFiltrados.map((curso) => curso.id));
+  }, [cursoFiltroId, cursosFiltrados]);
+
+  const sesionesVisibles = useMemo(
+    () => sesiones.filter((sesion) => cursoIdsVisibles.has(sesion.grupo_id)),
+    [cursoIdsVisibles, sesiones],
+  );
+
+  const espaciosVisibles = useMemo(
+    () =>
+      sedeFiltroId
+        ? espaciosDisponibles.filter((espacio) => {
+            const aula = opcionesManuales.aulas.find((item) => item.id === espacio.id);
+            return !aula || aula.sede_id === sedeFiltroId;
+          })
+        : espaciosDisponibles,
+    [espaciosDisponibles, opcionesManuales.aulas, sedeFiltroId],
+  );
+
+  const grupoIdParaNueva = cursoFiltroId || cursosFiltrados[0]?.id || "";
 
   // Sensors for dnd-kit
   const sensors = useSensors(
@@ -107,10 +141,11 @@ export default function HorarioEditor({
     }
     return localConflictos;
   }, [asignaciones, contexto]);
-  const sesionesVisibles = useMemo(
-    () => cursoFiltroId ? sesiones.filter((sesion) => sesion.grupo_id === cursoFiltroId) : [],
-    [cursoFiltroId, sesiones]
-  );
+
+  function cambiarSede(siguienteSedeId: string) {
+    setSedeFiltroId(siguienteSedeId);
+    setCursoFiltroId("");
+  }
 
   // Manejar el arrastre y soltado de bloques
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -306,7 +341,7 @@ export default function HorarioEditor({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <NuevaSesionDialog horarioId={horario.id} opciones={opcionesManuales} grupoIdInicial={cursoFiltroId} />
+          <NuevaSesionDialog horarioId={horario.id} opciones={opcionesManuales} grupoIdInicial={grupoIdParaNueva} />
           {/* Botón Descargar PDF */}
           <a
             href={`/api/pdf/horario/${horario.id}`}
@@ -336,15 +371,44 @@ export default function HorarioEditor({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border border-[#D8D1BD] bg-[#FEFCF6] p-4 sm:flex-row sm:items-end sm:justify-between">
-        <label className="grid gap-1.5 text-sm font-medium text-[#252B36] sm:w-80">
-          <span className="flex items-center gap-2"><Filter className="size-4 text-[#1D3FD9]" />Filtrar por curso</span>
-          <select value={cursoFiltroId} onChange={(event) => setCursoFiltroId(event.target.value)} className="h-10 rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm outline-none focus:border-[#1D3FD9] focus:ring-2 focus:ring-[#1D3FD9]/15">
-            <option value="" disabled>Selecciona un curso</option>
-            {opcionesManuales.cursos.map((curso) => <option key={curso.id} value={curso.id}>{curso.nombre}</option>)}
-          </select>
-        </label>
-        <p className="text-xs text-[#697180]">Mostrando {sesionesVisibles.length} de {sesiones.length} clases. Pasa el cursor sobre una clase para editarla o eliminarla.</p>
+      <div className="flex flex-col gap-3 rounded-xl border border-[#D8D1BD] bg-[#FEFCF6] p-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="grid gap-1.5 text-sm font-medium text-[#252B36] sm:w-56">
+            <span className="flex items-center gap-2"><Filter className="size-4 text-[#1D3FD9]" />Sede</span>
+            <select
+              value={sedeFiltroId}
+              onChange={(event) => cambiarSede(event.target.value)}
+              className={selectClass}
+            >
+              <option value="">Todas las sedes</option>
+              {opcionesManuales.sedes.map((sede) => (
+                <option key={sede.id} value={sede.id}>{sede.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1.5 text-sm font-medium text-[#252B36] sm:w-72">
+            <span>Curso</span>
+            <select
+              value={cursoFiltroId}
+              onChange={(event) => setCursoFiltroId(event.target.value)}
+              className={selectClass}
+            >
+              <option value="">
+                {sedeFiltroId ? "Todos los cursos de esta sede" : "Todos los cursos"}
+              </option>
+              {cursosFiltrados.map((curso) => (
+                <option key={curso.id} value={curso.id}>
+                  {curso.nombre} · Semestre {curso.semestre}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="text-xs text-[#697180]">
+          Mostrando {sesionesVisibles.length} de {sesiones.length} clases
+          {cursoFiltroId ? "" : " (color por curso)"}.
+          {" "}Pasa el cursor sobre una clase para editarla o eliminarla.
+        </p>
       </div>
 
       {/* Grid del editor con DndContext */}
@@ -352,9 +416,10 @@ export default function HorarioEditor({
         <HorarioGrid
           sesiones={sesionesVisibles}
           editable
+          colorPor="curso"
           onEspacioChange={handleEspacioChange}
           onEditSession={(sesion) => setSesionEnEdicion(sesion as SesionVista)}
-          espaciosDisponibles={espaciosDisponibles}
+          espaciosDisponibles={espaciosVisibles}
         />
       </DndContext>
       {sesionEnEdicion && <EditarSesionDialog horarioId={horario.id} sesion={sesionEnEdicion} opciones={opcionesManuales} onClose={() => setSesionEnEdicion(null)} />}

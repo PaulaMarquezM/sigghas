@@ -13,6 +13,8 @@ interface HorarioGridProps {
   onEspacioChange?: (sesionId: string, nuevoEspacioId: string | null) => void;
   onEditSession?: (sesion: any) => void;
   espaciosDisponibles?: any[];
+  /** Color de bloques: por docente (default) o por curso/grupo. */
+  colorPor?: "docente" | "curso";
 }
 
 const DIAS = [
@@ -64,13 +66,16 @@ export function HorarioGrid({
   onEspacioChange,
   onEditSession,
   espaciosDisponibles = [],
+  colorPor = "docente",
 }: HorarioGridProps) {
   const dias = DIAS;
   const horas = generarSlots30(sesiones);
-  const docenteColorMap: Record<string, string> = {};
+  const colorKeyOf = (s: any) => (colorPor === "curso" ? s.grupo_id : s.docente_id) as string;
+  const colorMap: Record<string, string> = {};
   sesiones.forEach((s) => {
-    if (!docenteColorMap[s.docente_id]) {
-      docenteColorMap[s.docente_id] = COLORS[indiceColorEstable(s.docente_id, COLORS.length)];
+    const key = colorKeyOf(s);
+    if (key && !colorMap[key]) {
+      colorMap[key] = COLORS[indiceColorEstable(key, COLORS.length)];
     }
   });
 
@@ -123,7 +128,7 @@ export function HorarioGrid({
               const diaIdx = dias.findIndex((d) => d.id === s.dia_semana);
               if (diaIdx < 0) return null;
               const { start, end } = rangoFilas(horas, s.hora_inicio, s.hora_fin);
-              const colorClass = docenteColorMap[s.docente_id] || "blue";
+              const colorClass = colorMap[colorKeyOf(s)] || "blue";
 
               return (
                 <div
@@ -193,20 +198,28 @@ export function HorarioGrid({
 
       <div className="sc-foot mt-6 space-y-3 border-t border-[#E5DFCC] pt-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-xs font-semibold text-[#1F242D]">Color: docente</span>
-          {Object.entries(docenteColorMap).map(([docenteId, color]) => {
-            const sesion = sesiones.find((s) => s.docente_id === docenteId);
+          <span className="text-xs font-semibold text-[#1F242D]">
+            Color: {colorPor === "curso" ? "curso" : "docente"}
+          </span>
+          {Object.entries(colorMap).map(([key, color]) => {
+            const sesion = sesiones.find((s) => colorKeyOf(s) === key);
             if (!sesion) return null;
+            const label =
+              colorPor === "curso"
+                ? sesion.grupos?.nombre || "Curso"
+                : sesion.docentes?.perfiles?.nombre || "Docente";
             return (
-              <span key={docenteId} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
+              <span key={key} className="flex items-center gap-1.5 text-xs text-[#4A515E]">
                 <i className={`w-3 h-3 rounded ${LEGEND_BG[color] ?? LEGEND_BG.blue}`} />
-                {sesion.docentes?.perfiles?.nombre || "Docente"}
+                {label}
               </span>
             );
           })}
         </div>
         <div className="text-xs text-[#4A515E] font-mono">
-          * Todas las clases de un mismo docente usan el mismo color.
+          {colorPor === "curso"
+            ? "* Todas las clases de un mismo curso usan el mismo color."
+            : "* Todas las clases de un mismo docente usan el mismo color."}
         </div>
       </div>
     </div>

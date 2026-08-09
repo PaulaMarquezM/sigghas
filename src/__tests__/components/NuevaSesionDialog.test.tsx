@@ -17,6 +17,10 @@ const opciones: OpcionesManuales = {
     { id: "e-1", nombre: "Aula 101", sede_id: "s-1" },
     { id: "e-2", nombre: "Aula otra sede", sede_id: "s-2" },
   ],
+  sedes: [
+    { id: "s-1", nombre: "Portoviejo" },
+    { id: "s-2", nombre: "Manta" },
+  ],
 };
 
 function opcionesDe(select: HTMLElement) {

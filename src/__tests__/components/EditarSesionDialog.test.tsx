@@ -29,6 +29,10 @@ const opciones: OpcionesManuales = {
     { id: "e-porto", nombre: "Laboratorio general", sede_id: "sede-porto" },
     { id: "e-manta", nombre: "Aula Manta 101", sede_id: "sede-manta" },
   ],
+  sedes: [
+    { id: "sede-porto", nombre: "Portoviejo" },
+    { id: "sede-manta", nombre: "Manta" },
+  ],
 };
 
 const sesion = {

@@ -115,6 +115,7 @@ export async function getHorarioEditorData(horarioId: string) {
           : docente.sede_principal_id ? [docente.sede_principal_id] : [],
       })),
       aulas: espacios.map((espacio: any) => ({ id: espacio.id, nombre: espacio.nombre, sede_id: espacio.sede_id })),
+      sedes: (sedesRes.data ?? []).map((sede: any) => ({ id: sede.id, nombre: sede.nombre })),
     },
   };
 }
