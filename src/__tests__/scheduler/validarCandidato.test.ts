@@ -163,13 +163,6 @@ describe("validarCandidato — cada regla de negocio produce el código de confl
     expect(resultado).toEqual({ valida: false, conflicto: expect.objectContaining({ codigo: "ESPACIO_OCUPADO" }) });
   });
 
-  it("DESCANSO_INSUFICIENTE cuando dos sesiones del mismo grupo quedan pegadas sin 2h de por medio", () => {
-    const ctx = baseContexto();
-    const existente = asignacion({ docente_id: "d-2", espacio_id: "e-2", hora_inicio: "08:00", hora_fin: "09:00" });
-    const resultado = validarCandidato(slot({ hora_inicio: "09:00", hora_fin: "10:00" }), ctx, [existente]);
-    expect(resultado).toEqual({ valida: false, conflicto: expect.objectContaining({ codigo: "DESCANSO_INSUFICIENTE" }) });
-  });
-
   it("DOCENTE_DOS_SEDES cuando el docente ya dicta presencial en otra sede ese día", () => {
     const ctx = baseContexto();
     const existente = asignacion({ grupo_id: "g-2", espacio_id: "e-2", sede_id: "s-2", hora_inicio: "07:00", hora_fin: "07:30" });

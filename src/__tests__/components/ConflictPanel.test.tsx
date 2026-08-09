@@ -13,12 +13,13 @@ describe("ConflictPanel", () => {
   it("agrupa errores críticos y advertencias por separado", () => {
     const conflictos: Conflicto[] = [
       { regla: "PLANIFICADOR", codigo: "DOCENTE_OCUPADO", tipo: "error", mensaje: "El docente ya tiene otra sesión." },
-      { regla: "PLANIFICADOR", codigo: "DESCANSO_INSUFICIENTE", tipo: "advertencia", mensaje: "Se recomiendan 2h de descanso." },
+      { regla: "PLANIFICADOR", codigo: "EXCEDE_MAX_HORAS", tipo: "advertencia", mensaje: "Se acerca al máximo de horas semanales." },
     ];
     render(<ConflictPanel conflictos={conflictos} />);
     expect(screen.getByText("Errores Críticos (1)")).toBeTruthy();
     expect(screen.getByText("Advertencias (1)")).toBeTruthy();
     expect(screen.getByText("El docente ya tiene otra sesión.")).toBeTruthy();
+    expect(screen.getByText("Se acerca al máximo de horas semanales.")).toBeTruthy();
     expect(screen.getByText("No Válido")).toBeTruthy();
   });
 });

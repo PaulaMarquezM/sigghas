@@ -96,7 +96,6 @@ export interface ConfiguracionScheduler {
   hora_inicio_receso?: string;
   hora_fin_receso?: string;
   max_horas_diarias?: number;
-  separacion_presencial_minutos?: number;
 }
 
 export const CONFIG_DEFAULT: ConfiguracionScheduler = {
@@ -108,7 +107,6 @@ export const CONFIG_DEFAULT: ConfiguracionScheduler = {
   hora_inicio_receso: "12:00",
   hora_fin_receso: "14:00",
   max_horas_diarias: 6,
-  separacion_presencial_minutos: 120,
 };
 
 export interface ResultadoGeneracion {

@@ -183,16 +183,6 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
       const espacio = ctx.espacios.find((e) => e.id === candidato.espacio_id);
       return fallo("ESPACIO_OCUPADO", `${espacio?.nombre ?? "El espacio"} ya está ocupado el ${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}.`);
     }
-    const mismaPersonaOGrupo = (asignada.grupo_id === candidato.grupo_id || asignada.docente_id === candidato.docente_id) && asignada.dia_semana === candidato.dia;
-    if (mismaPersonaOGrupo && (esPresencial(asignada.modalidad) || esPresencial(candidato.modalidad)) && !compartida(asignada)) {
-      const distancia = Math.max(minutos(asignada.hora_inicio), minutos(candidato.hora_inicio)) - Math.min(minutos(asignada.hora_fin), minutos(candidato.hora_fin));
-      if (distancia < (ctx.config.separacion_presencial_minutos ?? 120)) {
-        return fallo(
-          "DESCANSO_INSUFICIENTE",
-          `${docenteLabel} / ${grupo.nombre}: se requieren al menos 2 horas entre sesiones cuando una de ellas es presencial (${sesionLabel}).`
-        );
-      }
-    }
   }
   if (esPresencial(candidato.modalidad)) {
     const otraSede = asignadas.some((a) => a.docente_id === candidato.docente_id && a.dia_semana === candidato.dia && esPresencial(a.modalidad) && a.sede_id !== candidato.sede_id);

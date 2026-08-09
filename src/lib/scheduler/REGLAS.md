@@ -33,7 +33,7 @@ rellenar el número.
 | RN14 | No se asignan grupos a aulas con capacidad insuficiente | `generarSlots`, filtro `e.capacidad >= grupo.cantidad_estudiantes` | `generarSlots.test.ts` → "RN14: no ofrece un aula con capacidad menor..." |
 | RN16 | Las materias que requieren laboratorio solo van a laboratorios | `generarSlots`, filtro `materia.requiere_laboratorio ? e.tipo === "laboratorio" : true` | `generarSlots.test.ts` → "RN16: ...solo usa espacios tipo laboratorio" |
 | RN19 | Las clases virtuales no necesitan aula física | `validarCandidato` → `ESPACIO_NO_PERMITIDO`; `generarSlots` genera `espacio_id: null` para no presenciales | `validarCandidato.test.ts` → "ESPACIO_NO_PERMITIDO..." |
-| RN21 | Varios grupos pueden compartir una sesión virtual (misma materia/docente/horario) | `validarCandidato`, helper `compartida()` exime de `DOCENTE_OCUPADO`/`DESCANSO_INSUFICIENTE` | `generarSlots.test.ts` → "dos grupos pueden compartir la misma sesión virtual..." |
+| RN21 | Varios grupos pueden compartir una sesión virtual (misma materia/docente/horario) | `validarCandidato`, helper `compartida()` exime de `DOCENTE_OCUPADO` | `generarSlots.test.ts` → "dos grupos pueden compartir la misma sesión virtual..." |
 | RN30 | El sistema bloquea guardar si hay conflictos críticos | `guardar_horario_generado` (RPC de Postgres) + `src/lib/scheduler/index.ts`: si `resolverConBacktrack` falla, no se persiste nada | Cypress `02-crear-horario-conflicto.cy.ts` (verifica que no se guarda ningún horario); no cubierto en Vitest — `index.ts` depende de Supabase real |
 | RN37 | Todos los cambios quedan registrados en el historial | Trigger de Postgres sobre `historial_cambios` (migración `001_schema_inicial.sql` + `20260725120000_...sql`) | Nivel de base de datos, fuera del alcance de Vitest/Cypress actual — **gap conocido** |
 | RN39 | Los grupos de una sede reciben clases presenciales solo en esa sede | `generarSlots`, filtro `e.sede_id === grupo.sede_id` | `generarSlots.test.ts` → "RN39: ...solo en espacios de su propia sede" |
@@ -51,7 +51,6 @@ número:
 | `SABADO_NO_PERMITIDO` | Solo 7.º/8.º semestre tiene clase sábado | `validarCandidato.test.ts` |
 | `EXCEDE_MAX_HORAS` / `EXCEDE_MAX_HORAS_DIARIAS` | Carga semanal/diaria máxima del docente | `validarCandidato.test.ts` |
 | `GRUPO_EXCEDE_MAX_HORAS_DIARIAS` | Carga diaria máxima del grupo | `validarCandidato.test.ts` |
-| `DESCANSO_INSUFICIENTE` | 2h mínimas entre sesiones presenciales del mismo docente/grupo | `validarCandidato.test.ts` |
 | `ESPACIO_REQUERIDO` | Una sesión presencial siempre necesita aula | `validarCandidato.test.ts` |
 | `MODALIDAD_INVALIDA` | La modalidad de la sesión debe coincidir con la de la materia | `validarCandidato.test.ts` |
 | `DOCENTE_SIN_ASIGNAR` | No se genera una sesión si la combinación materia–grupo no tiene docente | `greedy.test.ts` |
