@@ -77,7 +77,7 @@ describe("Pruebas de las rutas de exportación a PDF", () => {
 
   it("genera exitosamente el PDF del horario completo", async () => {
     mockSingle.mockResolvedValueOnce({
-      data: { id: "h-1", estado: "publicado", periodos: { nombre: "2026-I" } },
+      data: { id: "h-1", estado: "borrador", periodos: { nombre: "2026-II" } },
       error: null,
     }); // For horarios select
 
@@ -87,7 +87,7 @@ describe("Pruebas de las rutas de exportación a PDF", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/pdf");
-    expect(response.headers.get("Content-Disposition")).toContain("horario-2026-I.pdf");
+    expect(response.headers.get("Content-Disposition")).toContain("horarios-2026-2-borrador.pdf");
   });
 
   it("genera exitosamente el PDF del horario del docente", async () => {
