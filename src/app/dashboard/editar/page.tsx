@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Edit, FileText, Calendar } from "lucide-react";
 import { LimpiarDuplicadosBtn } from "./LimpiarDuplicadosBtn";
+import { EliminarHorarioBtn } from "./EliminarHorarioBtn";
 
 const ESTADO_LABEL: Record<string, { label: string; color: string; bg: string }> = {
   borrador:   { label: "Borrador",   color: "#92400E", bg: "#FEF3C7" },
@@ -183,6 +184,8 @@ export default async function EditarHorarioIndexPage() {
                   >
                     <FileText style={{ width: 15, height: 15 }} />
                   </Link>
+
+                  <EliminarHorarioBtn horarioId={h.id} estado={h.estado} />
 
                   <Link
                     href={`/dashboard/editar/${h.id}`}

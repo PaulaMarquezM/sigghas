@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import { createChainableQuery, ok } from "@/__tests__/helpers/supabaseMock";
 
@@ -8,6 +9,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: 
 
 const fromMock = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn().mockResolvedValue({ from: (table: string) => fromMock(table) }) }));
+vi.mock("@/app/dashboard/editar/EliminarHorarioBtn", () => ({
+  EliminarHorarioBtn: ({ horarioId }: { horarioId: string }) =>
+    React.createElement("button", {
+      type: "button",
+      "aria-label": `Eliminar horario ${horarioId}`,
+    }, "Eliminar"),
+}));
 
 import EditarHorarioIndexPage from "@/app/dashboard/editar/page";
 
@@ -40,5 +48,7 @@ describe("EditarHorarioIndexPage", () => {
     expect(screen.getByText("Publicado")).toBeTruthy();
     expect(screen.getByText("Borrador")).toBeTruthy();
     expect(screen.getByRole("button", { name: /limpiar 1 duplicado/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /eliminar horario h-1/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /eliminar horario h-2/i })).toBeTruthy();
   });
 });

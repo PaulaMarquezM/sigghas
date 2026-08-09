@@ -71,3 +71,67 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
 
   return { exito: true, eliminados: idsDuplicados.length };
 }
+
+/**
+ * Elimina un horario (borrador o aprobado) y sus sesiones/historial.
+ * Los publicados están bloqueados por regla de negocio y por trigger en BD.
+ */
+export async function eliminarHorarioAction(horarioId: string): Promise<{
+  exito: boolean;
+  error?: string;
+}> {
+  await requireRol("coordinador", "administrador");
+  const supabase = await createClient();
+
+  const { data: horario, error: errLookup } = await supabase
+    .from("horarios")
+    .select("id, estado")
+    .eq("id", horarioId)
+    .maybeSingle();
+
+  if (errLookup) {
+    return { exito: false, error: localizeErrorMessage(errLookup.message) };
+  }
+
+  if (!horario) {
+    return { exito: false, error: "No se encontró el horario." };
+  }
+
+  if (horario.estado === "publicado") {
+    return {
+      exito: false,
+      error: "Un horario publicado no puede eliminarse.",
+    };
+  }
+
+  const { error: errHistorial } = await supabase
+    .from("historial_cambios")
+    .delete()
+    .eq("horario_id", horarioId);
+
+  if (errHistorial) {
+    return { exito: false, error: localizeErrorMessage(errHistorial.message) };
+  }
+
+  const { error: errSesiones } = await supabase
+    .from("sesiones")
+    .delete()
+    .eq("horario_id", horarioId);
+
+  if (errSesiones) {
+    return { exito: false, error: localizeErrorMessage(errSesiones.message) };
+  }
+
+  const { error: errHorario } = await supabase
+    .from("horarios")
+    .delete()
+    .eq("id", horarioId);
+
+  if (errHorario) {
+    return { exito: false, error: localizeErrorMessage(errHorario.message) };
+  }
+
+  revalidatePath("/dashboard/editar");
+
+  return { exito: true };
+}

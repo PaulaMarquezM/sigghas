@@ -8,7 +8,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const fromMock = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn().mockResolvedValue({ from: (table: string) => fromMock(table) }) }));
 
-import { limpiarDuplicadosAction } from "@/app/dashboard/editar/actions";
+import { limpiarDuplicadosAction, eliminarHorarioAction } from "@/app/dashboard/editar/actions";
 
 describe("limpiarDuplicadosAction", () => {
   beforeEach(() => {
@@ -59,5 +59,56 @@ describe("limpiarDuplicadosAction", () => {
       eliminados: 0,
       error: "No se puede completar la operación porque hay datos relacionados.",
     });
+  });
+});
+
+describe("eliminarHorarioAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    requireRolMock.mockResolvedValue({ id: "u-1", rol: "coordinador" });
+  });
+
+  it("rechaza horarios publicados", async () => {
+    fromMock.mockReturnValue(createChainableQuery(ok({ id: "h-1", estado: "publicado" })));
+    const resultado = await eliminarHorarioAction("h-1");
+    expect(resultado).toEqual({
+      exito: false,
+      error: "Un horario publicado no puede eliminarse.",
+    });
+    expect(fromMock).toHaveBeenCalledWith("horarios");
+    expect(fromMock).not.toHaveBeenCalledWith("sesiones");
+  });
+
+  it("elimina historial, sesiones y el horario en borrador", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "horarios") return createChainableQuery(ok({ id: "h-1", estado: "borrador" }));
+      return createChainableQuery(ok());
+    });
+    const resultado = await eliminarHorarioAction("h-1");
+    expect(resultado).toEqual({ exito: true });
+    expect(fromMock).toHaveBeenCalledWith("historial_cambios");
+    expect(fromMock).toHaveBeenCalledWith("sesiones");
+    expect(fromMock).toHaveBeenCalledWith("horarios");
+  });
+
+  it("devuelve error si el horario no existe", async () => {
+    fromMock.mockReturnValue(createChainableQuery(ok(null)));
+    const resultado = await eliminarHorarioAction("h-missing");
+    expect(resultado).toEqual({ exito: false, error: "No se encontró el horario." });
+  });
+
+  it("devuelve error localizado si falla el borrado", async () => {
+    let horariosCalls = 0;
+    fromMock.mockImplementation((table: string) => {
+      if (table === "horarios") {
+        horariosCalls += 1;
+        if (horariosCalls === 1) return createChainableQuery(ok({ id: "h-1", estado: "aprobado" }));
+        return createChainableQuery(fail("permission denied for table horarios"));
+      }
+      return createChainableQuery(ok());
+    });
+    const resultado = await eliminarHorarioAction("h-1");
+    expect(resultado.exito).toBe(false);
+    expect(resultado.error).toBeTruthy();
   });
 });
