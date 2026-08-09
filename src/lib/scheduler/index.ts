@@ -3,18 +3,42 @@ import { randomUUID } from "crypto";
 import { requireRolAndAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolverConBacktrack } from "./backtrack";
-import { CONFIG_DEFAULT, type Conflicto, type ContextoProgramacion, type DocenteConDisponibilidad, type ResultadoGeneracion } from "./types";
+import { CONFIG_DEFAULT, assertGeneracionNoCancelada, type Conflicto, type ContextoProgramacion, type DocenteConDisponibilidad, type OnProgresoGeneracion, type ResultadoGeneracion } from "./types";
 
 const fallo = (codigo: string, mensaje: string): Conflicto => ({ regla: "CONFIGURACION", codigo, tipo: "error", mensaje });
+
+function yieldEventLoop() {
+  return new Promise<void>((resolve) => setTimeout(resolve, 0));
+}
+
+async function reportar(onProgreso: OnProgresoGeneracion | undefined, progreso: Parameters<OnProgresoGeneracion>[0], signal?: AbortSignal) {
+  assertGeneracionNoCancelada(signal);
+  onProgreso?.(progreso);
+  await yieldEventLoop();
+  assertGeneracionNoCancelada(signal);
+}
 
 /**
  * Genera un borrador completo. No elimina ni modifica un horario existente
  * hasta haber encontrado una solución válida para todas las sesiones.
  */
-export async function generate(periodoId: string, reemplazarBorradorId?: string | null, criterio: { grupoId?: string; sedeId?: string } = {}): Promise<ResultadoGeneracion> {
+export async function generate(
+  periodoId: string,
+  reemplazarBorradorId?: string | null,
+  criterio: { grupoId?: string; sedeId?: string } = {},
+  onProgreso?: OnProgresoGeneracion,
+  signal?: AbortSignal,
+): Promise<ResultadoGeneracion> {
   const log = [`Iniciando generación para el período ${periodoId}.`];
   const sessionSupabase = await createClient();
   const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
+
+  await reportar(onProgreso, {
+    paso: "verificando",
+    titulo: "Comprobar si ya existe un horario",
+    detalle: "Revisando el período académico…",
+  }, signal);
+
   const { data: periodo, error: periodoError } = await supabase.from("periodos").select("*").eq("id", periodoId).single();
   if (periodoError || !periodo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_NO_ENCONTRADO", "No se encontró el período académico.")], log };
   if (!periodo.activo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_INACTIVO", "Solo se puede generar para el período académico activo.")], log };
@@ -30,6 +54,12 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   if (horarioExistente?.[0]) {
     return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("HORARIO_PERIODO_EXISTENTE", "Ya existe un horario para este período. Edítalo desde el editor manual.")], log: [...log, "No se creó un segundo horario para el mismo período."] };
   }
+
+  await reportar(onProgreso, {
+    paso: "cargando",
+    titulo: "Cargar materias, cursos, docentes y espacios",
+    detalle: "Obteniendo la configuración del horario…",
+  }, signal);
 
   const [materiasRes, gruposRes, espaciosRes, docentesRes, asignacionesRes, disponibilidadEspaciosRes, sedesRes] = await Promise.all([
     supabase.from("materias").select("*").eq("activo", true),
@@ -71,6 +101,12 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
   }));
   log.push(`${materias.length} materias activas, ${grupos.length} cursos activos y ${espacios.length} aulas habilitadas${criterio.grupoId || criterio.sedeId ? " para el criterio seleccionado" : ""}.`);
 
+  await reportar(onProgreso, {
+    paso: "validando",
+    titulo: "Validar reglas y asignaciones",
+    detalle: "Comprobando horas, modalidad y docentes…",
+  }, signal);
+
   const conflictosConfiguracion: Conflicto[] = [];
   for (const materia of materias) {
     const horas = Number(materia.horas_semana);
@@ -102,11 +138,18 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     horario_id: "",
     config: CONFIG_DEFAULT,
   };
-  const resultado = resolverConBacktrack(ctx, log);
+  const resultado = await resolverConBacktrack(ctx, log, ctx.config.max_intentos_backtrack, onProgreso, signal);
+  assertGeneracionNoCancelada(signal);
   const esperadas = materias.reduce((total, materia) => total + grupos.filter((grupo) => grupo.semestre === materia.semestre).length * (Number(materia.horas_semana) <= 3.5 ? 1 : 2), 0);
   if (!resultado.exito || resultado.asignaciones.length !== esperadas) {
     return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: esperadas, sesiones_generadas: 0, conflictos_no_resueltos: resultado.conflictos, log: [...log, "No se guardó ningún cambio: el horario no está completo."] };
   }
+
+  await reportar(onProgreso, {
+    paso: "guardando",
+    titulo: "Guardar borrador",
+    detalle: "Persistiendo el horario generado…",
+  }, signal);
 
   const compartidas = new Map<string, typeof resultado.asignaciones>();
   for (const asignacion of resultado.asignaciones) {
@@ -122,7 +165,16 @@ export async function generate(periodoId: string, reemplazarBorradorId?: string 
     p_sesiones: sesiones,
     p_reemplazar_borrador_id: reemplazarBorradorId ?? null,
   });
-  if (guardadoError || !horarioId) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: esperadas, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_GUARDANDO", guardadoError?.message ?? "No se pudo guardar el borrador generado.")], log };
+  if (guardadoError || !horarioId) {
+    return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: esperadas, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("ERROR_GUARDANDO", guardadoError?.message ?? "No se pudo guardar el borrador generado.")], log };
+  }
   log.push(`Horario completo guardado como borrador (${sesiones.length} sesiones físicas/lógicas; ${esperadas} visibles por grupo).`);
+  await reportar(onProgreso, {
+    paso: "completado",
+    titulo: "Horario generado",
+    detalle: `${esperadas} sesiones colocadas correctamente.`,
+    actual: esperadas,
+    total: esperadas,
+  }, signal);
   return { exito: true, horario_id: horarioId, total_asignaciones: sesiones.length, sesiones_esperadas: esperadas, sesiones_generadas: esperadas, conflictos_no_resueltos: [], log };
 }

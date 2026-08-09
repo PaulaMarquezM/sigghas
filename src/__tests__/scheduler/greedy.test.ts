@@ -14,8 +14,8 @@ const contexto: ContextoProgramacion = {
 };
 
 describe("planificador determinista", () => {
-  it("divide 4,5 horas en 2,5 + 2 y no concentra las sesiones en un día", () => {
-    const resultado = resolverConBacktrack(contexto, [], 10_000);
+  it("divide 4,5 horas en 2,5 + 2 y no concentra las sesiones en un día", async () => {
+    const resultado = await resolverConBacktrack(contexto, [], 10_000);
     expect(resultado.exito).toBe(true);
     expect(resultado.asignaciones).toHaveLength(2);
     const duraciones = resultado.asignaciones.map((sesion) => {
@@ -27,9 +27,9 @@ describe("planificador determinista", () => {
     expect(new Set(resultado.asignaciones.map((sesion) => sesion.dia_semana)).size).toBe(2);
   });
 
-  it("reporta la ausencia de docente por combinación materia–grupo", () => {
+  it("reporta la ausencia de docente por combinación materia–grupo", async () => {
     const sinDocente = { ...contexto, asignaciones_docente: [] };
-    const resultado = resolverConBacktrack(sinDocente, [], 10_000);
+    const resultado = await resolverConBacktrack(sinDocente, [], 10_000);
     expect(resultado.exito).toBe(false);
     expect(resultado.conflictos[0]?.codigo).toBe("DOCENTE_SIN_ASIGNAR");
   });

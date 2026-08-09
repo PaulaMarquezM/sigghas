@@ -190,7 +190,7 @@ describe("validarCandidato — cada regla de negocio produce el código de confl
 });
 
 describe("resolverConBacktrack — ramas adicionales del backtracking", () => {
-  it("no encuentra solución cuando el único día con aula libre ya se usó para la primera sesión", () => {
+  it("no encuentra solución cuando el único día con aula libre ya se usó para la primera sesión", async () => {
     // El docente está disponible toda la semana, pero el aula solo está
     // libre el lunes: generarSlots entonces solo produce candidatos para el
     // lunes, así que la 2.ª sesión (que debe ir en un día distinto) siempre
@@ -203,15 +203,15 @@ describe("resolverConBacktrack — ramas adicionales del backtracking", () => {
       materias: [{ id: "m-1", codigo: "SW-01", nombre: "Materia de 5h", semestre: 5, horas_semana: 5, horas_teoria: 5, horas_practica: 0, requiere_laboratorio: false, modalidad: "presencial", activo: true, nivel: 5, creado_en: "" }],
       disponibilidad_espacio: [2, 3, 4, 5].map((dia_semana) => ({ espacio_id: "e-1", dia_semana: dia_semana as 2 | 3 | 4 | 5, hora_inicio: "00:00", hora_fin: "23:59", disponible: false })),
     });
-    const resultado = resolverConBacktrack(ctx, [], 10_000);
+    const resultado = await resolverConBacktrack(ctx, [], 10_000);
     expect(resultado.exito).toBe(false);
     expect(resultado.asignaciones).toHaveLength(0);
     expect(resultado.conflictos[0]?.codigo).toBe("SIN_SLOTS_DISPONIBLES");
   });
 
-  it("reporta SIN_SLOTS_DISPONIBLES cuando no existe ningún espacio para una materia presencial", () => {
+  it("reporta SIN_SLOTS_DISPONIBLES cuando no existe ningún espacio para una materia presencial", async () => {
     const ctx = baseContexto({ espacios: [] });
-    const resultado = resolverConBacktrack(ctx, [], 10_000);
+    const resultado = await resolverConBacktrack(ctx, [], 10_000);
     expect(resultado.exito).toBe(false);
     expect(resultado.conflictos[0]?.codigo).toBe("SIN_SLOTS_DISPONIBLES");
   });

@@ -118,3 +118,42 @@ export interface ResultadoGeneracion {
   conflictos_no_resueltos: Conflicto[];
   log: string[];
 }
+
+/** Fases reales del generador (para UI de progreso en vivo). */
+export type PasoGeneracion =
+  | "verificando"
+  | "cargando"
+  | "validando"
+  | "resolviendo"
+  | "guardando"
+  | "completado"
+  | "error";
+
+export interface ProgresoGeneracion {
+  paso: PasoGeneracion;
+  titulo: string;
+  detalle?: string;
+  /** Sesión / ítem actual (p. ej. 12). */
+  actual?: number;
+  /** Total esperado (p. ej. 48). */
+  total?: number;
+}
+
+export type EventoGeneracion =
+  | { tipo: "progreso"; progreso: ProgresoGeneracion }
+  | { tipo: "resultado"; resultado: ResultadoGeneracion }
+  | { tipo: "error"; mensaje: string }
+  | { tipo: "cancelado" };
+
+export type OnProgresoGeneracion = (progreso: ProgresoGeneracion) => void;
+
+export class GeneracionCanceladaError extends Error {
+  constructor(message = "Generación cancelada por el usuario.") {
+    super(message);
+    this.name = "GeneracionCanceladaError";
+  }
+}
+
+export function assertGeneracionNoCancelada(signal?: AbortSignal) {
+  if (signal?.aborted) throw new GeneracionCanceladaError();
+}
