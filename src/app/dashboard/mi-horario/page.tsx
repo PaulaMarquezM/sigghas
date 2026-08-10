@@ -99,6 +99,7 @@ export default async function MiHorarioPage() {
             sesiones={sesiones}
             title={`Horario Docente: ${perfil.nombre}`}
             subtitle={`Periodo Académico: ${periodoActivo.nombre}`}
+            filtrarPorCurso={false}
           />
         ) : (
           <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
@@ -128,7 +129,7 @@ export default async function MiHorarioPage() {
           <div><h1 className="text-2xl font-bold tracking-tight text-[#0E1116]">Mi Horario</h1><p className="text-xs text-gray-500 mt-1">Estudiante: <span className="font-semibold text-gray-800">{perfil.nombre}</span> | Periodo: <span className="font-semibold text-gray-800">{periodoActivo.nombre}</span></p></div>
           {sesiones.length > 0 && <a href="/api/pdf/mi-horario" target="_blank" rel="noopener noreferrer" className="s-btn s-btn-ghost flex items-center gap-2 border-[#C7BFA6] hover:bg-[#EFEAD9] py-2 px-4 text-xs"><FileText className="w-4 h-4 text-gray-600" /><span>Descargar PDF</span></a>}
         </div>
-        {sesiones.length > 0 ? <HorarioReadOnly sesiones={sesiones} title={`Horario de ${perfil.nombre}`} subtitle={`Periodo Académico: ${periodoActivo.nombre}`} /> : <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">No tienes materias matriculadas con clases publicadas en este periodo.</div>}
+        {sesiones.length > 0 ? <HorarioReadOnly sesiones={sesiones} title={`Horario de ${perfil.nombre}`} subtitle={`Periodo Académico: ${periodoActivo.nombre}`} filtrarPorCurso={false} /> : <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">No tienes materias matriculadas con clases publicadas en este periodo.</div>}
       </div>
     );
   }
