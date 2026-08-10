@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import { HorarioFilters } from "@/components/horario/HorarioFilters";
+import { HorarioFilters, type HorarioFiltroModo } from "@/components/horario/HorarioFilters";
 import { HorarioReadOnly } from "@/components/horario/HorarioReadOnly";
-import { getSesionesByPeriodoyGrupoAction } from "./actions";
+import {
+  getSesionesByPeriodoyGrupoAction,
+  getSesionesByPeriodoyDocenteAction,
+} from "./actions";
 import { Loader2, Edit, FileText } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps } from "react";
@@ -26,6 +29,7 @@ export default function HorarioConsultasClient({
   grupos,
   docentes = [],
 }: HorarioConsultasClientProps) {
+  const [modo, setModo] = useState<HorarioFiltroModo>("curso");
   const [selectedPeriodoId, setSelectedPeriodoId] = useState<string>("");
   const [selectedGrupoId, setSelectedGrupoId] = useState<string>("");
   const [selectedDocenteId, setSelectedDocenteId] = useState<string>("");
@@ -33,44 +37,72 @@ export default function HorarioConsultasClient({
   const [horario, setHorario] = useState<HorarioConsulta>(null);
   const [isPending, startTransition] = useTransition();
 
-  // El curso es obligatorio: nunca se carga un horario mezclando cursos.
+  const modoCurso = modo === "curso" && Boolean(selectedPeriodoId && selectedGrupoId);
+  const modoDocente = modo === "docente" && Boolean(selectedPeriodoId && selectedDocenteId);
+  const puedeConsultar = modoCurso || modoDocente;
+
   useEffect(() => {
-    if (!selectedPeriodoId || !selectedGrupoId) {
+    if (!puedeConsultar) {
+      setSesiones([]);
+      setHorario(null);
       return;
     }
 
     startTransition(() => {
       void (async () => {
-        const res = await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId);
-        setSesiones(selectedDocenteId ? res.sesiones.filter((sesion: { docente_id?: string }) => sesion.docente_id === selectedDocenteId) : res.sesiones);
+        const res = modoCurso
+          ? await getSesionesByPeriodoyGrupoAction(selectedPeriodoId, selectedGrupoId)
+          : await getSesionesByPeriodoyDocenteAction(selectedPeriodoId, selectedDocenteId);
+        setSesiones(res.sesiones);
         setHorario(res.horario);
       })();
     });
-  }, [selectedPeriodoId, selectedGrupoId, selectedDocenteId]);
+  }, [selectedPeriodoId, selectedGrupoId, selectedDocenteId, modoCurso, puedeConsultar]);
 
-  const pdfUrl = `/api/pdf/mi-horario?grupoId=${selectedGrupoId}`;
+  const handleChangeModo = (siguiente: HorarioFiltroModo) => {
+    setModo(siguiente);
+    setSesiones([]);
+    setHorario(null);
+    if (siguiente === "curso") {
+      setSelectedDocenteId("");
+    } else {
+      setSelectedGrupoId("");
+    }
+  };
 
-  const viewTitle = `Curso: ${grupos.find((g) => g.id === selectedGrupoId)?.nombre}${selectedDocenteId ? ` · ${docentes.find((d) => d.id === selectedDocenteId)?.nombre}` : ""}`;
+  const pdfUrl = modoCurso
+    ? `/api/pdf/mi-horario?grupoId=${selectedGrupoId}`
+    : `/api/pdf/mi-horario?docenteId=${selectedDocenteId}`;
+
+  const viewTitle = modoCurso
+    ? `Curso: ${grupos.find((g) => g.id === selectedGrupoId)?.nombre}`
+    : `Docente: ${docentes.find((d) => d.id === selectedDocenteId)?.nombre}`;
+
+  const emptyMessage =
+    !selectedPeriodoId
+      ? "Seleccione un periodo académico para comenzar."
+      : modo === "curso"
+        ? "Seleccione un curso para ver su horario."
+        : "Seleccione un docente para ver su horario.";
 
   return (
     <div className="space-y-6">
-      {/* Filtros */}
       <HorarioFilters
         periodos={periodos}
         grupos={grupos}
         docentes={docentes}
+        modo={modo}
         selectedPeriodoId={selectedPeriodoId}
         selectedGrupoId={selectedGrupoId}
         selectedDocenteId={selectedDocenteId}
+        onChangeModo={handleChangeModo}
         onChangePeriodo={setSelectedPeriodoId}
         onChangeGrupo={setSelectedGrupoId}
         onChangeDocente={setSelectedDocenteId}
       />
 
-      {/* Acciones del horario seleccionado */}
-      {horario && selectedGrupoId && (
+      {horario && puedeConsultar && (
         <div className="flex justify-end gap-3">
-          {/* Descargar PDF */}
           <a
             href={pdfUrl}
             target="_blank"
@@ -81,7 +113,6 @@ export default function HorarioConsultasClient({
             <span>Descargar PDF</span>
           </a>
 
-          {/* Editar (si es borrador) */}
           {horario.estado !== "publicado" && (
             <Link
               href={`/dashboard/editar/${horario.id}`}
@@ -94,18 +125,18 @@ export default function HorarioConsultasClient({
         </div>
       )}
 
-      {/* Visualización */}
       {isPending ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <Loader2 className="w-8 h-8 animate-spin mb-2" />
           <p className="text-sm">Cargando horario...</p>
         </div>
-      ) : selectedPeriodoId && selectedGrupoId ? (
+      ) : puedeConsultar ? (
         sesiones.length > 0 ? (
           <HorarioReadOnly
             sesiones={sesiones}
             title={viewTitle}
             subtitle={`Periodo Académico: ${periodos.find((p) => p.id === selectedPeriodoId)?.nombre} | Estado: ${horario?.estado.toUpperCase()}`}
+            filtrarPorCurso={false}
           />
         ) : (
           <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
@@ -114,7 +145,7 @@ export default function HorarioConsultasClient({
         )
       ) : (
         <div className="bg-white border border-[#D8D1BD] rounded-xl p-12 text-center text-gray-500">
-          Seleccione un periodo y un curso para ver el horario.
+          {emptyMessage}
         </div>
       )}
     </div>
