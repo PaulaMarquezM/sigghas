@@ -363,6 +363,19 @@ async function limpiarHorario(fixture: { horarioId: string; periodoId: string; m
   return null;
 }
 
+// El trigger proteger_horario_publicado impide eliminar o cambiar de estado un
+// horario "publicado" (regla de negocio), así que limpiarHorario() no puede
+// borrarlo aquí. Sin desactivar el periodo explícitamente, queda huérfano con
+// activo=true y rompe cualquier página que espere un único periodo activo
+// (.maybeSingle()). Las sesiones sí se pueden borrar (ese trigger se quitó).
+async function limpiarHorarioPublicado(fixture: { horarioId: string; periodoId: string; materiaId: string; grupoIds: string[] }) {
+  const admin = adminClient();
+  await admin.from("sesiones").delete().eq("horario_id", fixture.horarioId);
+  await admin.from("periodos").update({ activo: false }).eq("id", fixture.periodoId);
+  await borrarMateriaYGrupos(admin, fixture.materiaId, fixture.grupoIds);
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Caso 5: un horario publicado es inmutable (regresión del bug 8)
 // ---------------------------------------------------------------------------
@@ -453,6 +466,7 @@ export function registerDbTasks(on: Cypress.PluginEvents) {
     "e2e:prepararHorarioConAulaOcupada": prepararHorarioConAulaOcupada,
     "e2e:limpiarHorario": limpiarHorario,
     "e2e:prepararHorarioPublicado": prepararHorarioPublicado,
+    "e2e:limpiarHorarioPublicado": limpiarHorarioPublicado,
     "e2e:borrarMateriaPorCodigo": borrarMateriaPorCodigo,
     "e2e:borrarGrupoPorNombre": borrarGrupoPorNombre,
     "e2e:borrarEspacioPorNombre": borrarEspacioPorNombre,

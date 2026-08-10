@@ -5,6 +5,12 @@ import { createChainableQuery, ok } from "@/__tests__/helpers/supabaseMock";
 const requireRolMock = vi.fn().mockResolvedValue({ id: "u-1", rol: "coordinador" });
 vi.mock("@/lib/auth", () => ({ requireRol: (...args: unknown[]) => requireRolMock(...args) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+// ConfiguracionGeneracion es un componente de servidor async propio (con sus
+// propias consultas): renderizarlo aquí requeriría el pipeline RSC de
+// Next.js, que RTL no reproduce. Se mockea para aislar el test de GenerarPage.
+vi.mock("@/app/dashboard/configuracion-horario/ConfiguracionGeneracion", () => ({
+  ConfiguracionGeneracion: () => null,
+}));
 
 const fromMock = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn().mockResolvedValue({ from: (table: string) => fromMock(table) }) }));

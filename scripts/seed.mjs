@@ -79,8 +79,20 @@ async function main() {
       max_horas_semana: d.max,
       sede_principal_id: d.sede,
     });
+    await supabase.from("docente_sedes").upsert({ docente_id: id, sede_id: d.sede }, { onConflict: "docente_id,sede_id" });
     docenteIds.push(id);
   }
+
+  // docente.horas1 y docente.horas2 quedan habilitados en ambas sedes: los
+  // fixtures de Cypress (cypress/support/tasks.ts) los usan juntos en la
+  // primera sede que devuelva la BD, sin importar cuál sea.
+  await supabase.from("docente_sedes").upsert(
+    [
+      { docente_id: docenteIds[1], sede_id: sedeManta },
+      { docente_id: docenteIds[2], sede_id: sedePortoviejo },
+    ],
+    { onConflict: "docente_id,sede_id" }
+  );
 
   await supabase.from("perfiles").update({ sede_id: sedePortoviejo }).eq("id", coordinadorId);
   await supabase.from("perfiles").update({ sede_id: sedePortoviejo }).eq("id", adminId);
@@ -136,35 +148,42 @@ async function main() {
   const { data: espacios } = await supabase.from("espacios").insert(espaciosSeed).select();
 
   console.log("== horarios ==");
-  await supabase.from("horarios").delete().eq("periodo_id", periodo.id);
-  const { data: horarios } = await supabase
+  // Un periodo solo puede tener un horario (migración
+  // 20260803120000_unico_horario_por_periodo.sql), y uno publicado no se
+  // puede borrar ni cambiar de estado (proteger_horario_publicado). Por eso
+  // esto es idempotente: reutiliza el horario del periodo si ya existe.
+  const { data: horarioExistente } = await supabase
     .from("horarios")
-    .insert([
-      { periodo_id: periodo.id, estado: "borrador" },
-      { periodo_id: periodo.id, estado: "aprobado", generado_en: new Date().toISOString(), aprobado_en: new Date().toISOString(), aprobado_por: coordinadorId },
-      { periodo_id: periodo.id, estado: "publicado", generado_en: new Date().toISOString(), aprobado_en: new Date().toISOString(), aprobado_por: coordinadorId },
-    ])
-    .select();
+    .select("id")
+    .eq("periodo_id", periodo.id)
+    .maybeSingle();
+  let horarioPublicado = horarioExistente?.id;
+  if (!horarioPublicado) {
+    const { data: horarioRows, error: errHorario } = await supabase
+      .from("horarios")
+      .insert([{ periodo_id: periodo.id, estado: "publicado", generado_en: new Date().toISOString(), aprobado_en: new Date().toISOString(), aprobado_por: coordinadorId }])
+      .select();
+    if (errHorario) throw errHorario;
+    horarioPublicado = horarioRows[0].id;
+  }
 
   const byCodigo = (c) => materias.find((m) => m.codigo === c).id;
   const byNombreGrupo = (n) => grupos.find((g) => g.nombre === n).id;
   const byNombreEspacio = (n) => espacios.find((e) => e.nombre === n).id;
 
   console.log("== sesiones ==");
-  const horarioBorrador = horarios[0].id;
-  const horarioAprobado = horarios[1].id;
-  const horarioPublicado = horarios[2].id;
 
   const sesionesSeed = [
     { horario_id: horarioPublicado, materia_id: byCodigo("SW101"), docente_id: docenteIds[0], grupo_id: byNombreGrupo("SW-1A"), espacio_id: byNombreEspacio("Lab-A"), modalidad: "presencial", dia_semana: 1, hora_inicio: "08:00", hora_fin: "10:00", sede_id: sedePortoviejo },
     { horario_id: horarioPublicado, materia_id: byCodigo("SW102"), docente_id: docenteIds[1], grupo_id: byNombreGrupo("SW-3A"), espacio_id: byNombreEspacio("Aula 101"), modalidad: "presencial", dia_semana: 2, hora_inicio: "10:00", hora_fin: "12:00", sede_id: sedePortoviejo },
     { horario_id: horarioPublicado, materia_id: byCodigo("SW104"), docente_id: docenteIds[0], grupo_id: byNombreGrupo("SW-5A"), espacio_id: byNombreEspacio("Aula 102"), modalidad: "presencial", dia_semana: 3, hora_inicio: "08:00", hora_fin: "10:00", sede_id: sedePortoviejo },
-    { horario_id: horarioAprobado, materia_id: byCodigo("SW103"), docente_id: docenteIds[2], grupo_id: byNombreGrupo("SW-5B"), espacio_id: byNombreEspacio("Aula 201"), modalidad: "hibrida", dia_semana: 4, hora_inicio: "14:00", hora_fin: "16:00", sede_id: sedeManta },
-    { horario_id: horarioAprobado, materia_id: byCodigo("SW105"), docente_id: docenteIds[2], grupo_id: byNombreGrupo("SW-7A"), espacio_id: null, modalidad: "virtual", dia_semana: 5, hora_inicio: "08:00", hora_fin: "10:00", sede_id: sedeManta },
-    { horario_id: horarioBorrador, materia_id: byCodigo("SW101"), docente_id: docenteIds[0], grupo_id: byNombreGrupo("SW-1A"), espacio_id: byNombreEspacio("Auditorio Central"), modalidad: "presencial", dia_semana: 1, hora_inicio: "10:00", hora_fin: "12:00", sede_id: sedePortoviejo },
+    { horario_id: horarioPublicado, materia_id: byCodigo("SW103"), docente_id: docenteIds[2], grupo_id: byNombreGrupo("SW-5B"), espacio_id: null, modalidad: "hibrida", dia_semana: 4, hora_inicio: "14:00", hora_fin: "16:00", sede_id: sedeManta },
+    { horario_id: horarioPublicado, materia_id: byCodigo("SW105"), docente_id: docenteIds[2], grupo_id: byNombreGrupo("SW-7A"), espacio_id: null, modalidad: "virtual", dia_semana: 5, hora_inicio: "08:00", hora_fin: "10:00", sede_id: sedeManta },
+    { horario_id: horarioPublicado, materia_id: byCodigo("SW101"), docente_id: docenteIds[0], grupo_id: byNombreGrupo("SW-1A"), espacio_id: byNombreEspacio("Auditorio Central"), modalidad: "presencial", dia_semana: 1, hora_inicio: "10:00", hora_fin: "12:00", sede_id: sedePortoviejo },
   ];
-  await supabase.from("sesiones").delete().in("horario_id", horarios.map((h) => h.id));
-  const { data: sesiones } = await supabase.from("sesiones").insert(sesionesSeed).select();
+  await supabase.from("sesiones").delete().eq("horario_id", horarioPublicado);
+  const { data: sesiones, error: errSesiones } = await supabase.from("sesiones").insert(sesionesSeed).select();
+  if (errSesiones) throw errSesiones;
 
   console.log("== sesiones compartidas (virtual, RN21) ==");
   const sesionVirtual = sesiones.find((s) => s.modalidad === "virtual");
@@ -176,7 +195,7 @@ async function main() {
   console.log("== historial de cambios ==");
   await supabase.from("historial_cambios").insert([
     { sesion_id: sesiones[0].id, horario_id: horarioPublicado, usuario_id: coordinadorId, accion: "creacion", detalle: { nota: "sesión inicial seed" } },
-    { sesion_id: sesiones[1].id, horario_id: horarioAprobado, usuario_id: coordinadorId, accion: "edicion", detalle: { cambio: "espacio asignado" } },
+    { sesion_id: sesiones[1].id, horario_id: horarioPublicado, usuario_id: coordinadorId, accion: "edicion", detalle: { cambio: "espacio asignado" } },
   ]);
 
   console.log("\n✔ seed completo");

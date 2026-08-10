@@ -24,7 +24,7 @@ describe("Regla de negocio — un horario publicado sigue siendo editable en sus
   });
 
   after(() => {
-    cy.task("e2e:limpiarHorario", fixture);
+    cy.task("e2e:limpiarHorarioPublicado", fixture);
   });
 
   it("el editor permite reasignar aula pero no vuelve a ofrecer 'Publicar Horario'", () => {

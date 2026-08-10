@@ -43,6 +43,7 @@ export default function HorarioConsultasClient({
 
   useEffect(() => {
     if (!puedeConsultar) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSesiones([]);
       setHorario(null);
       return;
