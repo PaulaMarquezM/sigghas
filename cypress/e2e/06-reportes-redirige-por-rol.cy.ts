@@ -1,8 +1,7 @@
 // Regresión del bug 12: /dashboard/reportes era un redirect incondicional a
 // /dashboard/mi-horario sin importar el rol. Ahora el docente debe llegar
-// directo a su PDF. El rol "estudiante" ya no existe (migración
-// 010_remove_rol_estudiante.sql); para un coordinador, mi-horario muestra un
-// mensaje de que esa vista es solo para docentes.
+// directo a su PDF, y el coordinador ve la página de reportes académicos
+// (indicadores del horario) directamente, sin redirección.
 describe("Exportar PDF desde el dashboard — redirige según el rol", () => {
   it("docente: /dashboard/reportes entrega directamente su PDF", () => {
     // reportes/page.tsx llama a redirect() durante un render con streaming:
@@ -19,11 +18,13 @@ describe("Exportar PDF desde el dashboard — redirige según el rol", () => {
     });
   });
 
-  it("coordinador: /dashboard/reportes lo manda a mi-horario, que avisa que es solo para docentes", () => {
+  it("coordinador: /dashboard/reportes muestra los indicadores del horario sin redirigir", () => {
     cy.login("coordinador");
     cy.visit("/dashboard/reportes");
-    cy.url({ timeout: 10000 }).should("include", "/dashboard/mi-horario");
-    cy.contains("Esta vista es solo para docentes").should("be.visible");
-    cy.screenshot("06-reportes-coordinador-mensaje", { capture: "viewport" });
+    cy.url({ timeout: 10000 }).should("include", "/dashboard/reportes");
+    cy.contains("Indicadores del horario", { timeout: 10000 }).should("be.visible");
+    cy.contains("Sesiones programadas").should("be.visible");
+    cy.contains("Carga docente").should("be.visible");
+    cy.screenshot("06-reportes-coordinador-indicadores", { capture: "viewport" });
   });
 });

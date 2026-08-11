@@ -7,7 +7,8 @@ describe("Coordinador — ver detalle de un docente", () => {
     // específicamente al link "Editar" dentro del contenido principal.
     cy.get("main").contains("a", "Editar").first().click();
     cy.url({ timeout: 10000 }).should("match", /\/dashboard\/docentes\/[0-9a-f-]+$/);
-    cy.contains(/editar docente/i).should("be.visible");
+    // El encabezado ahora muestra "Editar {email}" (antes decía "Editar Docente").
+    cy.contains(/^editar /i).should("be.visible");
     cy.screenshot("13-docente-detalle", { capture: "viewport" });
   });
 });

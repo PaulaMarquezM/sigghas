@@ -30,7 +30,10 @@ describe("Editor manual — asignación de aula ocupada", () => {
 
     cy.get(`select[data-cy="select-espacio-${fixture.sesionBId}"]`).select(fixture.espacioAId, { force: true });
 
-    cy.contains("El espacio ya está ocupado en esta franja", { timeout: 10000 }).should("be.visible");
+    // El mensaje ahora incluye el nombre del aula y la franja exacta (ver
+    // ESPACIO_OCUPADO en src/lib/scheduler/greedy.ts); se valida la parte
+    // estable del texto, no el nombre del aula ni el día que varían por fixture.
+    cy.contains("ya está ocupado el", { timeout: 10000 }).should("be.visible");
     cy.screenshot("03-aula-ocupada-bloqueada", { capture: "viewport" });
     cy.get(`select[data-cy="select-espacio-${fixture.sesionBId}"]`).should("have.value", fixture.espacioBId);
   });

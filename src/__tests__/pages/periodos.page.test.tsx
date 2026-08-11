@@ -26,14 +26,15 @@ describe("PeriodosPage (Server Component)", () => {
   it("lista todos los periodos", async () => {
     const jsx = await PeriodosPage({ searchParams: Promise.resolve({}) });
     render(jsx);
-    expect(screen.getByText("2026-I")).toBeTruthy();
+    // "2026-I" está activo: aparece en el banner de "período seleccionado" y en la tabla.
+    expect(screen.getAllByText("2026-I").length).toBeGreaterThan(0);
     expect(screen.getByText("2025-II")).toBeTruthy();
   });
 
   it("filtra por nombre de búsqueda", async () => {
     const jsx = await PeriodosPage({ searchParams: Promise.resolve({ q: "2026" }) });
     render(jsx);
-    expect(screen.getByText("2026-I")).toBeTruthy();
+    expect(screen.getAllByText("2026-I").length).toBeGreaterThan(0);
     expect(screen.queryByText("2025-II")).toBeNull();
   });
 });

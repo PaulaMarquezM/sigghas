@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   LayoutDashboard, Calendar, Users, BookOpen, Building2,
   Clock, FileText, Settings, DoorOpen, UserCheck, LogOut, Eye, Loader2
@@ -69,10 +69,12 @@ export function Sidebar({ nombre, rol }: SidebarProps) {
   const items = NAV_ITEMS[rol] ?? [];
   const [navegandoA, setNavegandoA] = useState<string | null>(null);
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
+  const [pathnameAnterior, setPathnameAnterior] = useState(pathname);
 
-  useEffect(() => {
+  if (pathname !== pathnameAnterior) {
+    setPathnameAnterior(pathname);
     setNavegandoA(null);
-  }, [pathname]);
+  }
 
   const iniciales = nombre
     .split(" ")
