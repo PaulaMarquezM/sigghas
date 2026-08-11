@@ -3,6 +3,7 @@
 // Cuentas creadas por scripts/seed.mjs (ver cypress/support/tasks.ts).
 // El rol "estudiante" se eliminó del sistema (migración 010_remove_rol_estudiante.sql).
 const CREDENCIALES = {
+  administrador: { email: "admin@sigghas.test", password: "Sigghas2026!", label: "Administrador" },
   coordinador: { email: "coordinador@sigghas.test", password: "Sigghas2026!", label: "Coordinador" },
   docente: { email: "docente.tc@sigghas.test", password: "Sigghas2026!", label: "Docente" },
 } as const;
