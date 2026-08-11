@@ -166,11 +166,14 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
   if (horasDocente(asignadas, docente.id) + cargaNueva > docente.max_horas_semana) {
     return fallo("EXCEDE_MAX_HORAS", `${docenteLabel}: la sesión de ${sesionLabel} excede su carga semanal máxima.`);
   }
-  if (horasDocente(asignadas, docente.id, candidato.dia) + cargaNueva > (ctx.config.max_horas_diarias ?? 6)) {
-    return fallo("EXCEDE_MAX_HORAS_DIARIAS", `${docenteLabel}: la sesión de ${sesionLabel} excede su máximo diario de 6 horas.`);
-  }
-  if (asignadas.filter((a) => a.grupo_id === grupo.id && a.dia_semana === candidato.dia).reduce((s, a) => s + duracion(a.hora_inicio, a.hora_fin), 0) + duracion(candidato.hora_inicio, candidato.hora_fin) > (ctx.config.max_horas_diarias ?? 6)) {
-    return fallo("GRUPO_EXCEDE_MAX_HORAS_DIARIAS", `El grupo ${grupo.nombre} excede el máximo diario de 6 horas (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}).`);
+  const maxHorasDiarias = ctx.config.max_horas_diarias;
+  if (maxHorasDiarias != null) {
+    if (horasDocente(asignadas, docente.id, candidato.dia) + cargaNueva > maxHorasDiarias) {
+      return fallo("EXCEDE_MAX_HORAS_DIARIAS", `${docenteLabel}: la sesión de ${sesionLabel} excede su máximo diario de ${maxHorasDiarias} horas.`);
+    }
+    if (asignadas.filter((a) => a.grupo_id === grupo.id && a.dia_semana === candidato.dia).reduce((s, a) => s + duracion(a.hora_inicio, a.hora_fin), 0) + duracion(candidato.hora_inicio, candidato.hora_fin) > maxHorasDiarias) {
+      return fallo("GRUPO_EXCEDE_MAX_HORAS_DIARIAS", `El grupo ${grupo.nombre} excede el máximo diario de ${maxHorasDiarias} horas (${franjaLabel(candidato.dia, candidato.hora_inicio, candidato.hora_fin)}).`);
+    }
   }
   for (const asignada of asignadas) {
     if (asignada.grupo_id === candidato.grupo_id && asignada.dia_semana === candidato.dia && seSolapan(asignada.hora_inicio, asignada.hora_fin, candidato.hora_inicio, candidato.hora_fin)) {

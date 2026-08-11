@@ -49,8 +49,8 @@ número:
 |---|---|---|
 | `FRANJA_INVALIDA` | Sesiones en bloques de 30 min, máximo 3h30 seguidas | `validarCandidato.test.ts` |
 | `SABADO_NO_PERMITIDO` | Solo 7.º/8.º semestre tiene clase sábado | `validarCandidato.test.ts` |
-| `EXCEDE_MAX_HORAS` / `EXCEDE_MAX_HORAS_DIARIAS` | Carga semanal/diaria máxima del docente | `validarCandidato.test.ts` |
-| `GRUPO_EXCEDE_MAX_HORAS_DIARIAS` | Carga diaria máxima del grupo | `validarCandidato.test.ts` |
+| `EXCEDE_MAX_HORAS` | Carga semanal máxima del docente (`docente.max_horas_semana`) | `validarCandidato.test.ts` |
+| `EXCEDE_MAX_HORAS_DIARIAS` / `GRUPO_EXCEDE_MAX_HORAS_DIARIAS` | Carga diaria máxima docente/grupo; solo si `config.max_horas_diarias` está definido (por defecto no hay tope) | `validarCandidato.test.ts` |
 | `ESPACIO_REQUERIDO` | Una sesión presencial siempre necesita aula | `validarCandidato.test.ts` |
 | `MODALIDAD_INVALIDA` | La modalidad de la sesión debe coincidir con la de la materia | `validarCandidato.test.ts` |
 | `DOCENTE_SIN_ASIGNAR` | No se genera una sesión si la combinación materia–grupo no tiene docente | `greedy.test.ts` |

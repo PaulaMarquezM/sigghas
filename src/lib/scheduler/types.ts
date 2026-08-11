@@ -95,6 +95,7 @@ export interface ConfiguracionScheduler {
   dias_laborables: DiaSemana[];
   hora_inicio_receso?: string;
   hora_fin_receso?: string;
+  /** Tope opcional de horas de clase por día (docente y grupo). Sin definir = sin límite diario. */
   max_horas_diarias?: number;
 }
 
@@ -106,7 +107,6 @@ export const CONFIG_DEFAULT: ConfiguracionScheduler = {
   dias_laborables: [1, 2, 3, 4, 5],
   hora_inicio_receso: "12:00",
   hora_fin_receso: "14:00",
-  max_horas_diarias: 6,
 };
 
 export interface ResultadoGeneracion {
