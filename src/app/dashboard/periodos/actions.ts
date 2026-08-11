@@ -75,7 +75,6 @@ export async function togglePeriodo(id: string, activo: boolean) {
   if (activo) {
     const { data, error } = await asUntypedDb(supabase).from("periodos").select("id,nombre,fecha_inicio,fecha_fin").eq("id", id).single();
     if (error || !data) throw new Error(localizeErrorMessage(error?.message, "No se encontró el período."));
-    await validarSinSolapamiento(data as PeriodoFechas, id);
   }
   await deactivateOthers(activo, id);
   const { error } = await asUntypedDb(supabase).from("periodos").update({ activo }).eq("id", id);
