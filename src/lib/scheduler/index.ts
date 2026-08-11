@@ -29,7 +29,7 @@ export async function generate(
   onProgreso?: OnProgresoGeneracion,
   signal?: AbortSignal,
 ): Promise<ResultadoGeneracion> {
-  const log = [`Iniciando generación para el período ${periodoId}.`];
+  const log: string[] = [];
   const sessionSupabase = await createClient();
   const { admin: supabase } = await requireRolAndAdminClient("coordinador", "administrador");
 
@@ -41,6 +41,7 @@ export async function generate(
 
   const { data: periodo, error: periodoError } = await supabase.from("periodos").select("*").eq("id", periodoId).single();
   if (periodoError || !periodo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_NO_ENCONTRADO", "No se encontró el período académico.")], log };
+  log.push(`Iniciando generación para el período ${periodo.nombre}.`);
   if (!periodo.activo) return { exito: false, horario_id: "", total_asignaciones: 0, sesiones_esperadas: 0, sesiones_generadas: 0, conflictos_no_resueltos: [fallo("PERIODO_INACTIVO", "Solo se puede generar para el período académico activo.")], log };
 
   const { data: horarioExistente, error: horarioExistenteError } = await supabase
