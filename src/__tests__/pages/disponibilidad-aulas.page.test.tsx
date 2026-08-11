@@ -26,7 +26,8 @@ describe("DisponibilidadAulasPage (Server Component)", () => {
     const jsx = await DisponibilidadAulasPage();
     render(jsx);
     expect(requireRolMock).toHaveBeenCalledWith("coordinador", "administrador", "apoyo");
-    expect(screen.getByText("Mapa de Disponibilidad de Aulas")).toBeTruthy();
+    expect(screen.getByText("Disponibilidad semanal de aulas")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Buscar aula o laboratorio" })).toBeTruthy();
   });
 
   it("cruza las sesiones del horario activo cuando existen", async () => {
@@ -39,7 +40,7 @@ describe("DisponibilidadAulasPage (Server Component)", () => {
     });
     const jsx = await DisponibilidadAulasPage();
     render(jsx);
-    expect(screen.getByText("Mapa de Disponibilidad de Aulas")).toBeTruthy();
+    expect(screen.getByText("Disponibilidad semanal de aulas")).toBeTruthy();
   });
 
   it("el re-export de espacios/disponibilidad apunta a la misma página", () => {

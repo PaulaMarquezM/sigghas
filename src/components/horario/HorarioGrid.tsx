@@ -5,7 +5,7 @@ import React from "react";
 import { Pencil } from "lucide-react";
 import { HorarioCell } from "./HorarioCell";
 import { BloqueDraggable } from "./BloqueDraggable";
-import { generarSlots30, indiceColorEstable } from "@/lib/horario";
+import { generarSlots30 } from "@/lib/horario";
 
 interface HorarioGridProps {
   sesiones: any[];
@@ -72,10 +72,12 @@ export function HorarioGrid({
   const horas = generarSlots30(sesiones);
   const colorKeyOf = (s: any) => (colorPor === "curso" ? s.grupo_id : s.docente_id) as string;
   const colorMap: Record<string, string> = {};
+  let siguienteColor = 0;
   sesiones.forEach((s) => {
     const key = colorKeyOf(s);
     if (key && !colorMap[key]) {
-      colorMap[key] = COLORS[indiceColorEstable(key, COLORS.length)];
+      colorMap[key] = COLORS[siguienteColor % COLORS.length];
+      siguienteColor += 1;
     }
   });
 
@@ -152,6 +154,8 @@ export function HorarioGrid({
                     aulaNombre={s.espacios?.nombre || null}
                     grupoNombre={s.grupos?.nombre || "Grupo"}
                     modalidad={s.modalidad}
+                    horaInicio={s.hora_inicio}
+                    horaFin={s.hora_fin}
                     colorClass={colorClass}
                     disabled={!editable}
                   />

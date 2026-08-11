@@ -27,17 +27,17 @@ const NAV_ITEMS: Record<RolUsuario, NavItem[]> = {
     { label: "Aulas",              href: "/dashboard/espacios",       icon: Building2 },
     { label: "Disponibilidad",     href: "/dashboard/disponibilidad", icon: Clock },
     { label: "Periodos",           href: "/dashboard/periodos",       icon: Settings },
-    { label: "Reportes PDF",       href: "/dashboard/reportes",       icon: FileText },
+    { label: "Reportes",           href: "/dashboard/reportes",       icon: FileText },
   ],
   docente: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Mi Horario",         href: "/dashboard/mi-horario",     icon: Calendar },
-    { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
+    { label: "Reportes",           href: "/dashboard/reportes",       icon: FileText },
   ],
   estudiante: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },
     { label: "Mi Horario",         href: "/dashboard/mi-horario",     icon: Calendar },
-    { label: "Exportar PDF",       href: "/dashboard/reportes",       icon: FileText },
+    { label: "Reportes",           href: "/dashboard/reportes",       icon: FileText },
   ],
   administrador: [
     { label: "Dashboard",          href: "/dashboard",                icon: LayoutDashboard },

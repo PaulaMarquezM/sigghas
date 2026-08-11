@@ -47,11 +47,20 @@ describe("NuevaSesionDialog", () => {
         ...opciones.materias,
         { id: "m-2", nombre: "Programación Intro", semestre: 1, modalidad: "presencial" },
       ],
+      aulas: [
+        ...opciones.aulas,
+        { id: "e-2", nombre: "Aula de otra sede", sede_id: "s-2" },
+      ],
     };
     render(<NuevaSesionDialog horarioId="h-1" opciones={opcionesVarias} grupoIdInicial="g-2" />);
     fireEvent.click(screen.getByRole("button", { name: /agregar clase/i }));
-    expect((screen.getByLabelText(/curso/i) as HTMLSelectElement).value).toBe("g-2");
-    expect((screen.getByLabelText(/semestre/i) as HTMLSelectElement).value).toBe("1");
+    const curso = screen.getByLabelText(/curso/i) as HTMLSelectElement;
+    const semestre = screen.getByLabelText(/semestre/i) as HTMLSelectElement;
+    expect(curso.value).toBe("g-2");
+    expect(semestre.value).toBe("1");
+    expect(curso.disabled).toBe(true);
+    expect(semestre.disabled).toBe(true);
+    expect(screen.queryByText("Aula de otra sede")).toBeNull();
   });
 
   it("filtra materias por semestre y docentes/aulas por sede del curso", () => {

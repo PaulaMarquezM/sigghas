@@ -20,12 +20,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F1E8" }}>
+    <div style={{ display: "flex", height: "100dvh", overflow: "hidden", background: "#F5F1E8" }}>
       <Sidebar nombre={perfil.nombre} rol={perfil.rol} />
 
-      <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, minHeight: 0 }}>
         <Topbar />
-        <main style={{ flex: 1, padding: "32px 36px", overflowY: "auto" }}>
+        <main style={{ flex: 1, minHeight: 0, padding: "32px 36px", overflowY: "auto" }}>
           {children}
         </main>
       </div>

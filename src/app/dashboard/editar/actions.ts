@@ -73,8 +73,7 @@ export async function limpiarDuplicadosAction(periodoId: string): Promise<{
 }
 
 /**
- * Elimina un horario (borrador o aprobado) y sus sesiones/historial.
- * Los publicados están bloqueados por regla de negocio y por trigger en BD.
+ * Elimina un horario de cualquier estado y sus sesiones/historial.
  */
 export async function eliminarHorarioAction(horarioId: string): Promise<{
   exito: boolean;
@@ -95,13 +94,6 @@ export async function eliminarHorarioAction(horarioId: string): Promise<{
 
   if (!horario) {
     return { exito: false, error: "No se encontró el horario." };
-  }
-
-  if (horario.estado === "publicado") {
-    return {
-      exito: false,
-      error: "Un horario publicado no puede eliminarse.",
-    };
   }
 
   const { error: errHistorial } = await supabase

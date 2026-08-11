@@ -12,16 +12,11 @@ interface EliminarHorarioBtnProps {
   estado: EstadoHorario;
 }
 
-export function EliminarHorarioBtn({ horarioId, estado }: EliminarHorarioBtnProps) {
+export function EliminarHorarioBtn({ horarioId }: EliminarHorarioBtnProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleEliminar() {
-    if (estado === "publicado") {
-      toast.error("Un horario publicado no puede eliminarse.");
-      return;
-    }
-
     if (!window.confirm(
       "¿Eliminar este horario? Se borrarán también sus clases e historial. Esta acción no se puede deshacer.",
     )) {
@@ -47,11 +42,7 @@ export function EliminarHorarioBtn({ horarioId, estado }: EliminarHorarioBtnProp
       type="button"
       onClick={handleEliminar}
       disabled={loading}
-      title={
-        estado === "publicado"
-          ? "Un horario publicado no puede eliminarse"
-          : "Eliminar horario"
-      }
+      title="Eliminar horario"
       aria-label="Eliminar horario"
       style={{
         display: "grid",
@@ -60,9 +51,9 @@ export function EliminarHorarioBtn({ horarioId, estado }: EliminarHorarioBtnProp
         height: 34,
         borderRadius: 8,
         border: "1px solid #FCA5A5",
-        background: estado === "publicado" ? "#F9FAFB" : "#FEF2F2",
-        color: estado === "publicado" ? "#9CA3AF" : "#DC2626",
-        cursor: loading ? "wait" : estado === "publicado" ? "not-allowed" : "pointer",
+        background: "#FEF2F2",
+        color: "#DC2626",
+        cursor: loading ? "wait" : "pointer",
         opacity: loading ? 0.7 : 1,
       }}
     >

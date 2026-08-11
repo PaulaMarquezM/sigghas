@@ -12,6 +12,8 @@ interface BloqueDraggableProps {
   aulaNombre: string | null;
   grupoNombre: string;
   modalidad: string;
+  horaInicio: string;
+  horaFin: string;
   colorClass?: string;
   disabled?: boolean;
 }
@@ -23,6 +25,8 @@ export function BloqueDraggable({
   aulaNombre,
   grupoNombre,
   modalidad,
+  horaInicio,
+  horaFin,
   colorClass = "blue",
   disabled = false,
 }: BloqueDraggableProps) {
@@ -61,6 +65,9 @@ export function BloqueDraggable({
           </div>
           <div className="b-meta truncate" title={docenteNombre}>
             Doc: {docenteNombre}
+          </div>
+          <div className="b-meta mt-0.5 font-mono text-[10px]" title={`${horaInicio.slice(0, 5)} – ${horaFin.slice(0, 5)}`}>
+            {horaInicio.slice(0, 5)} – {horaFin.slice(0, 5)}
           </div>
         </div>
         <div className="flex items-center justify-between mt-1 text-[9px] opacity-90 border-t border-white/20 pt-1">

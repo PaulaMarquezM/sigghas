@@ -17,6 +17,10 @@ export default async function DisponibilidadAulasPage() {
     .eq("disponible", true)
     .order("nombre");
 
+  const { data: disponibilidad } = await supabase
+    .from("disponibilidad_espacio")
+    .select("espacio_id, dia_semana, hora_inicio, hora_fin, disponible");
+
   // 2. Obtener periodo activo
   const { data: periodoActivo } = await supabase
     .from("periodos")
@@ -52,16 +56,18 @@ export default async function DisponibilidadAulasPage() {
     <div className="space-y-6">
       <div className="border-b border-[#D8D1BD] pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-[#0E1116]">
-          Mapa de Disponibilidad de Aulas
+          Disponibilidad semanal de aulas
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          Consulta en tiempo real qué aulas y laboratorios se encuentran libres u ocupados en un bloque horario.
+          Busca cualquier aula o laboratorio y revisa automáticamente sus bloques libres y ocupados durante toda la semana.
         </p>
       </div>
 
       <DisponibilidadAulas
         espacios={espacios || []}
         sesiones={sesiones}
+        disponibilidad={disponibilidad || []}
+        periodoNombre={periodoActivo?.nombre}
       />
     </div>
   );

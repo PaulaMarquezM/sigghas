@@ -1,202 +1,208 @@
 # SIGGHAS
 
-**Sistema Inteligente de Generación y Gestión de Horarios Académicos**  
-Pontificia Universidad Católica del Ecuador — Sede Portoviejo  
-Carrera de Ingeniería en Software · Calidad del Software · 2026
+**Sistema Inteligente de Generación y Gestión de Horarios Académicos** para la PUCE Portoviejo.
 
----
+SIGGHAS permite administrar la información académica, configurar disponibilidades, generar horarios, editarlos con validaciones y consultar o descargar los horarios resultantes.
+
+## Estado del sistema
+
+El repositorio contiene un sistema funcional con:
+
+- Autenticación mediante Supabase Auth.
+- Control de acceso por roles y protección de rutas.
+- CRUD de sedes, docentes, materias, cursos, aulas y períodos.
+- Registro de disponibilidad de docentes y aulas.
+- Matrículas de estudiantes.
+- Generación automática y creación manual de horarios.
+- Edición de sesiones con validación de solapamientos y restricciones.
+- Estados de horario: borrador, aprobado y publicado.
+- Consulta por curso y por docente.
+- Reportes PDF.
+- Historial de cambios.
+- Pruebas unitarias y de componentes con Vitest, además de configuración E2E con Playwright y Cypress.
+
+## Tecnologías
+
+- Next.js `16.2.6` y React `19.2.4`.
+- TypeScript.
+- Supabase: PostgreSQL, Auth y Row Level Security (RLS).
+- Tailwind CSS 4 y componentes de interfaz basados en shadcn/ui.
+- Vitest, Testing Library, Playwright y Cypress.
+- `@react-pdf/renderer` para generar reportes.
 
 ## Requisitos previos
 
-Antes de instalar, asegúrate de tener:
+| Herramienta | Versión |
+|---|---|
+| Node.js | `>=22.22.2 <23` |
+| npm | `9` o superior |
+| Git | Versión reciente |
+| Supabase | Proyecto remoto configurado |
 
-| Herramienta | Versión mínima | Verificar con |
-|---|---|---|
-| Node.js | 18.x o superior | `node -v` |
-| npm | 9.x o superior | `npm -v` |
-| Git | cualquier versión reciente | `git --version` |
-
----
-
-## Instalación paso a paso
-
-### 1. Clonar el repositorio
+Comprueba las versiones con:
 
 ```bash
-git clone <URL-del-repositorio>
-cd calidaddelsoft
+node -v
+npm -v
+git --version
 ```
 
-### 2. Instalar dependencias
+## Instalación rápida
 
 ```bash
+git clone <URL_DEL_REPOSITORIO>
+cd calidaddelsoft
+nvm use
 npm install
 ```
 
-### 3. Configurar las variables de entorno
-
-Crea el archivo `.env.local` en la raíz del proyecto con el siguiente contenido:
+Crea `.env.local` en la raíz. No subas este archivo al repositorio.
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://gcambzhsvizeqzpkxcig.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key-aqui
+NEXT_PUBLIC_SUPABASE_URL=https://TU_PROYECTO.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=TU_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=TU_SERVICE_ROLE_KEY
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-> Pide la `ANON_KEY` al líder del equipo. Está en Supabase → Settings → API.
+La clave `SUPABASE_SERVICE_ROLE_KEY` solo se usa en operaciones administrativas del servidor y nunca debe exponerse en el navegador.
 
-### 4. Aplicar el esquema de base de datos
+## Base de datos
 
-> **Solo la primera vez** que alguien configure el proyecto desde cero.
+La base de datos está implementada en Supabase y versionada en [`supabase/migrations`](supabase/migrations). Las migraciones se aplican en orden y contienen el esquema, restricciones, índices, funciones, triggers y políticas RLS.
 
-1. Ve a [supabase.com](https://supabase.com) e inicia sesión con la cuenta del equipo
-2. Abre el proyecto **CalidadSoft**
-3. En el menú lateral → **SQL Editor** → **New query**
-4. Copia y pega el contenido del archivo `supabase/migrations/001_schema_inicial.sql`
-5. Haz clic en **Run**
+El modelo incluye, entre otras, estas entidades:
 
-Si el proyecto ya tiene tablas (`sedes`, `perfiles`, etc.), salta este paso.
+| Entidad | Propósito |
+|---|---|
+| `perfiles` | Usuarios de la aplicación y sus roles |
+| `sedes` | Sedes universitarias |
+| `docentes` | Información y disponibilidad de docentes |
+| `materias` | Asignaturas académicas |
+| `grupos` | Cursos o paralelos |
+| `espacios` | Aulas y laboratorios |
+| `periodos` | Períodos académicos |
+| `horarios` | Cabeceras y estado de cada horario |
+| `sesiones` | Clases asignadas a día, hora, docente y aula |
+| `asignaciones_docente_periodo` | Preparación de la generación |
+| `disponibilidad_espacio` | Franjas disponibles de aulas |
+| `estudiantes` y `matriculas_estudiante` | Estudiantes y sus materias inscritas |
+| `historial_cambios` | Auditoría de cambios en horarios |
 
-### 5. Levantar el servidor de desarrollo
+### Aplicar migraciones
+
+Configura el proyecto de Supabase y ejecuta:
+
+```bash
+npx supabase login
+npm run db:migrate
+```
+
+El comando vincula el proyecto remoto y ejecuta `supabase db push`. Si el equipo aplica las migraciones desde el panel de Supabase, debe ejecutarlas en orden y no modificar migraciones que ya estén aplicadas.
+
+### Cargar datos de prueba
+
+El seed requiere la clave de servicio porque crea o actualiza datos administrativos:
+
+```bash
+npm run db:seed
+```
+
+Usa el seed únicamente en un entorno de desarrollo o pruebas.
+
+## Ejecutar el sistema
 
 ```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en el navegador. Deberías ver la landing de SIGGHAS.
+Abre [http://localhost:3000](http://localhost:3000). El flujo recomendado es:
 
----
+1. Crear un usuario en **Supabase > Authentication > Users**.
+2. Completar su perfil en `perfiles` con uno de los roles permitidos.
+3. Iniciar sesión en `/login`.
+4. Configurar un período, sedes, docentes, materias, cursos y aulas.
+5. Registrar disponibilidades y asignaciones docente-materia-curso.
+6. Generar un horario o crear un borrador manual.
+7. Revisar, editar y publicar el horario.
+8. Consultar los horarios y descargar los reportes PDF.
 
-## Estructura del proyecto
+## Roles y permisos
 
-```
+| Rol | Responsabilidades principales |
+|---|---|
+| `coordinador` | Administra entidades académicas, prepara, genera, edita y publica horarios |
+| `docente` | Consulta su horario y registra o consulta la disponibilidad que le corresponda |
+| `administrador` | Gestiona usuarios, configuración y sedes; tiene funciones administrativas |
+| `apoyo` | Consulta la disponibilidad de aulas |
+
+Los permisos se aplican en dos capas: la aplicación protege las rutas y acciones, y Supabase aplica políticas RLS en la base de datos. Los horarios publicados mantienen protecciones para evitar cambios no autorizados y registran las modificaciones en el historial.
+
+## Organización del código
+
+```text
 calidaddelsoft/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx              ← Landing pública (/)
-│   │   ├── layout.tsx            ← Layout raíz (fuentes, metadatos)
-│   │   ├── login/
-│   │   │   ├── page.tsx          ← Pantalla de login
-│   │   │   └── actions.ts        ← Server Actions: login / logout
-│   │   ├── auth/callback/
-│   │   │   └── route.ts          ← Callback OAuth de Supabase
-│   │   └── dashboard/
-│   │       ├── layout.tsx        ← Layout autenticado (sidebar + topbar)
-│   │       └── page.tsx          ← Dashboard home
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── sidebar.tsx       ← Sidebar con navegación por rol
-│   │   │   └── topbar.tsx        ← Header con título de ruta
-│   │   └── ui/                   ← Componentes shadcn/ui
-│   ├── lib/
-│   │   ├── auth.ts               ← getSession(), requireRol()
-│   │   ├── nav.ts                ← Menú por rol
-│   │   └── supabase/
-│   │       ├── client.ts         ← Cliente browser
-│   │       └── server.ts         ← Cliente servidor
-│   ├── styles/
-│   │   └── sigghas.css           ← Sistema de diseño SIGGHAS
-│   ├── types/
-│   │   └── database.ts           ← Tipos TypeScript del schema
-│   └── middleware.ts             ← Protección de rutas por autenticación
-├── supabase/
-│   └── migrations/
-│       └── 001_schema_inicial.sql ← Schema completo de base de datos
-├── .env.local                    ← Variables de entorno (NO subir a git)
-├── SIGGHAS.md                    ← Documentación detallada del sistema
-└── README.md                     ← Este archivo
+├── src/app/                 # Rutas, páginas, layouts, acciones y API
+│   ├── auth/                # Callback de autenticación
+│   ├── dashboard/           # Módulos protegidos del sistema
+│   └── api/pdf/             # Endpoints para reportes PDF
+├── src/components/          # Componentes reutilizables de interfaz
+├── src/lib/                 # Autenticación, Supabase, entidades y lógica de negocio
+│   ├── scheduler/           # Algoritmos greedy y backtracking
+│   └── pdf/                 # Plantillas y estilos de reportes
+├── src/__tests__/           # Pruebas de entidades, páginas, componentes y utilidades
+├── supabase/migrations/     # Evolución versionada de la base de datos
+├── scripts/                 # Seed de datos de desarrollo
+├── public/                  # Recursos estáticos
+├── next.config.ts           # Configuración de Next.js
+├── vitest.config.ts         # Configuración de pruebas unitarias
+└── package.json             # Dependencias y comandos del proyecto
 ```
 
----
+Las etiquetas visibles **Cursos** y **Aulas** corresponden internamente a las tablas y rutas históricas `grupos` y `espacios`, respectivamente. Esto evita una migración destructiva.
 
 ## Comandos disponibles
 
 ```bash
-# Desarrollo
-npm run dev          # Levanta el servidor en localhost:3000
-
-# Producción
-npm run build        # Compila el proyecto para producción
-npm run start        # Corre la versión compilada
-
-# Calidad de código
-npm run lint         # Revisa errores de ESLint
-npx tsc --noEmit     # Verifica tipos TypeScript sin compilar
+npm run dev                 # Desarrollo local
+npm run build               # Compilación de producción
+npm run start               # Ejecutar la compilación
+npm run lint                # Revisar estilo y errores ESLint
+npx tsc --noEmit            # Validar tipos TypeScript
+npm test                    # Ejecutar pruebas Vitest
+npm run test:watch          # Ejecutar Vitest en modo observación
+npm run test:coverage       # Generar cobertura
+npm run test:e2e            # Ejecutar pruebas E2E con Playwright
+npm run db:migrate          # Aplicar migraciones Supabase
+npm run db:seed             # Cargar datos de prueba
 ```
 
----
+## Verificación antes de entregar
 
-## Crear un usuario de prueba
+Ejecuta todos los controles desde una copia con la carpeta descargada localmente:
 
-Los usuarios se crean en Supabase Auth y luego se registra su perfil con rol:
-
-**Paso 1:** Ve a **Supabase → Authentication → Users → Add user**  
-Ingresa email y contraseña, copia el UUID generado.
-
-**Paso 2:** En **SQL Editor**, ejecuta:
-
-```sql
-INSERT INTO perfiles (id, nombre, email, rol)
-VALUES (
-  'uuid-del-usuario',          -- pega el UUID del paso 1
-  'Nombre Apellido',
-  'correo@puce.edu.ec',
-  'coordinador'                -- opciones: coordinador | docente | estudiante | administrador | apoyo
-);
-```
-
----
-
-## Roles del sistema
-
-| Rol | Acceso |
-|---|---|
-| `coordinador` | Total: generar, editar y aprobar horarios |
-| `docente` | Ver y descargar su propio horario |
-| `administrador` | Gestión de usuarios y configuración técnica |
-| `apoyo` | Consultar disponibilidad de aulas en tiempo real |
-
----
-
-## Fases de desarrollo
-
-| # | Fase | Estado |
-|---|---|---|
-| 1 | Fundación — Setup, Auth, Layout, Landing y Login | ✅ Completa |
-| 2 | Gestión de entidades (CRUD docentes, materias, grupos, aulas) | 🔄 En progreso |
-| 3 | Motor de generación automática de horarios | ⏳ Pendiente |
-| 4 | Edición manual con validaciones en tiempo real | ⏳ Pendiente |
-| 5 | Consultas por rol y exportación PDF | ⏳ Pendiente |
-| 6 | Suite de pruebas y calidad del software | ⏳ Pendiente |
-
----
-
-## Solución de problemas comunes
-
-**El servidor no arranca:**
 ```bash
-rm -rf .next node_modules
 npm install
-npm run dev
-```
-
-**Error "supabaseUrl is required":**
-- Verifica que `.env.local` existe en la raíz del proyecto
-- Asegúrate de que las variables empiecen con `NEXT_PUBLIC_`
-- Reinicia el servidor después de crear o editar `.env.local`
-
-**Login correcto pero redirige de vuelta al login:**
-- El usuario existe en Auth pero no tiene registro en la tabla `perfiles`
-- Ejecuta el INSERT del paso de creación de usuarios
-
-**Error de tipos en TypeScript:**
-```bash
+npm run lint
 npx tsc --noEmit
+npm test
+npm run build
 ```
 
----
+La entrega debe comprobar también el flujo funcional: autenticación, CRUD, disponibilidad, generación automática, edición manual, publicación, consulta por rol y descarga de ambos tipos de PDF.
+
+## Solución de problemas
+
+**`supabaseUrl is required`**: revisa que `.env.local` exista en la raíz y reinicia el servidor.
+
+**El login vuelve a `/login`**: el usuario de Supabase Auth necesita un perfil asociado en `perfiles`.
+
+**Falla `db:seed`**: verifica `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
+
+**La compilación o las pruebas quedan esperando**: comprueba que los archivos del proyecto estén descargados localmente y no sean archivos `dataless` de iCloud.
+
+**Hay errores de base de datos**: confirma que todas las migraciones se hayan aplicado en orden y que el proyecto Supabase sea el correcto.
 
 ## Equipo
 
-Proyecto desarrollado por el Grupo de Quinto Semestre  
-**Docente:** Ing. Victor Alonso · **Materia:** Calidad del Software  
-**PUCE Portoviejo — 2026**
+Proyecto desarrollado por el Grupo de Quinto Semestre de Ingeniería en Software, PUCE Portoviejo, para la asignatura Calidad del Software (2026).

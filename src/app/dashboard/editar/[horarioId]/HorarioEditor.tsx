@@ -12,6 +12,7 @@ import { validarCandidato } from "@/lib/scheduler/greedy";
 import { guardarMovimientoAction, publicarHorarioAction } from "./actions";
 import { NuevaSesionDialog, type OpcionesManuales } from "./NuevaSesionDialog";
 import { EditarSesionDialog } from "./EditarSesionDialog";
+import { mensajeLegible } from "@/lib/utils";
 
 type HorarioEditorHorario = { id: string; estado: string };
 type HorarioEditorPeriodo = { nombre: string };
@@ -192,7 +193,7 @@ export default function HorarioEditor({
 
     if (!validacion.valida && validacion.conflicto) {
       // Mostrar qué regla se viola y revertir
-      toast.error(`Conflicto de Regla (${validacion.conflicto.regla}): ${validacion.conflicto.mensaje}`);
+      toast.error(`Conflicto de Regla (${validacion.conflicto.regla}): ${mensajeLegible(validacion.conflicto.mensaje)}`);
       return;
     }
 
@@ -228,7 +229,7 @@ export default function HorarioEditor({
       toast.success("Horario actualizado correctamente.");
     } else {
       // Revertir en caso de error de red o base de datos
-      toast.error(`Error al guardar: ${res.error}`);
+      toast.error(`Error al guardar: ${mensajeLegible(res.error)}`);
       setAsignaciones(initialAsignaciones);
       setSesiones(initialSesiones);
     }
@@ -256,7 +257,7 @@ export default function HorarioEditor({
     const validacion = validarCandidato(candidato, contexto, otrasAsignaciones);
 
     if (!validacion.valida && validacion.conflicto) {
-      toast.error(`Conflicto de Regla (${validacion.conflicto.regla}): ${validacion.conflicto.mensaje}`);
+      toast.error(`Conflicto de Regla (${validacion.conflicto.regla}): ${mensajeLegible(validacion.conflicto.mensaje)}`);
       return;
     }
 
@@ -290,7 +291,7 @@ export default function HorarioEditor({
     if (res.exito) {
       toast.success("Aula asignada correctamente.");
     } else {
-      toast.error(`Error al asignar aula: ${res.error}`);
+      toast.error(`Error al asignar aula: ${mensajeLegible(res.error)}`);
       setAsignaciones(initialAsignaciones);
       setSesiones(initialSesiones);
     }
@@ -308,7 +309,7 @@ export default function HorarioEditor({
         toast.success("¡Horario publicado con éxito!");
         router.refresh();
       } else {
-        toast.error(`Error al publicar: ${res.error}`);
+        toast.error(`Error al publicar: ${mensajeLegible(res.error)}`);
       }
     });
   };
@@ -406,7 +407,7 @@ export default function HorarioEditor({
         </div>
         <p className="text-xs text-[#697180]">
           Mostrando {sesionesVisibles.length} de {sesiones.length} clases
-          {cursoFiltroId ? "" : " (color por curso)"}.
+          {cursoFiltroId ? "" : " (color por docente)"}.
           {" "}Pasa el cursor sobre una clase para editarla o eliminarla.
         </p>
       </div>
@@ -416,7 +417,7 @@ export default function HorarioEditor({
         <HorarioGrid
           sesiones={sesionesVisibles}
           editable
-          colorPor="curso"
+          colorPor="docente"
           onEspacioChange={handleEspacioChange}
           onEditSession={(sesion) => setSesionEnEdicion(sesion as SesionVista)}
           espaciosDisponibles={espaciosVisibles}

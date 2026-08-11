@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DoorOpen, ShieldCheck, ShieldAlert, Clock, Calendar } from "lucide-react";
+import { Check, Clock3, X } from "lucide-react";
 import { generarSlots30 } from "@/lib/horario";
 
-type EspacioDisponible = { id: string; nombre: string; tipo: string; capacidad: number; accesible: boolean };
-type SesionOcupante = {
+export type EspacioDisponible = {
+  id: string;
+  nombre: string;
+  tipo: string;
+  capacidad: number;
+  accesible: boolean;
+  sedes?: { nombre?: string | null } | null;
+};
+
+export type SesionOcupante = {
   espacio_id: string | null;
   dia_semana: number;
   hora_inicio: string;
@@ -16,180 +24,160 @@ type SesionOcupante = {
   grupos?: { nombre?: string | null } | null;
 };
 
+export type BloqueDisponibilidadEspacio = {
+  espacio_id: string;
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fin: string;
+  disponible: boolean;
+};
+
 interface DisponibilidadAulasProps {
   espacios: EspacioDisponible[];
   sesiones: SesionOcupante[];
+  disponibilidad?: BloqueDisponibilidadEspacio[];
+  periodoNombre?: string | null;
 }
 
 const DIAS = [
-  { id: 1, label: "Lunes" },
-  { id: 2, label: "Martes" },
-  { id: 3, label: "Miércoles" },
-  { id: 4, label: "Jueves" },
-  { id: 5, label: "Viernes" },
-  { id: 6, label: "Sábado" },
+  { id: 1, corto: "Lun", label: "Lunes" },
+  { id: 2, corto: "Mar", label: "Martes" },
+  { id: 3, corto: "Mié", label: "Miércoles" },
+  { id: 4, corto: "Jue", label: "Jueves" },
+  { id: 5, corto: "Vie", label: "Viernes" },
+  { id: 6, corto: "Sáb", label: "Sábado" },
 ];
 
-export function DisponibilidadAulas({ espacios, sesiones }: DisponibilidadAulasProps) {
-  const router = useRouter();
+function minutos(hora: string) {
+  const [h, m] = hora.slice(0, 5).split(":").map(Number);
+  return h * 60 + m;
+}
 
-  // Auto-refresh the page content every 15 seconds to get real-time availability updates
+function sumar30Minutos(hora: string) {
+  const total = minutos(hora) + 30;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function seSolapan(inicioA: string, finA: string, inicioB: string, finB: string) {
+  return minutos(inicioA) < minutos(finB) && minutos(inicioB) < minutos(finA);
+}
+
+export function DisponibilidadAulas({
+  espacios,
+  sesiones,
+  disponibilidad = [],
+}: DisponibilidadAulasProps) {
+  const router = useRouter();
+  const [espacioSeleccionadoId, setEspacioSeleccionadoId] = useState(espacios[0]?.id ?? "");
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      router.refresh();
-    }, 15000);
+    const interval = setInterval(() => router.refresh(), 15000);
     return () => clearInterval(interval);
   }, [router]);
 
-  const [selectedDia, setSelectedDia] = useState<number>(1); // Default determinista para SSR (Lunes)
-  const [selectedHora, setSelectedHora] = useState<string>("07:00"); // Default determinista
-  const horas = generarSlots30(sesiones);
+  const horas = useMemo(
+    () => generarSlots30([...sesiones, ...disponibilidad]).slice(0, -1),
+    [disponibilidad, sesiones],
+  );
+
+  const espacioSeleccionado =
+    espacios.find((espacio) => espacio.id === espacioSeleccionadoId) ??
+    espacios[0] ??
+    null;
+
+  const obtenerEstado = (dia: number, hora: string) => {
+    if (!espacioSeleccionado) return { estado: "libre" as const };
+    const fin = sumar30Minutos(hora);
+    const sesion = sesiones.find(
+      (item) =>
+        item.espacio_id === espacioSeleccionado.id &&
+        item.dia_semana === dia &&
+        seSolapan(hora, fin, item.hora_inicio, item.hora_fin),
+    );
+    if (sesion) return { estado: "ocupado" as const, sesion };
+
+    const bloqueo = disponibilidad.find(
+      (item) =>
+        item.espacio_id === espacioSeleccionado.id &&
+        item.dia_semana === dia &&
+        !item.disponible &&
+        seSolapan(hora, fin, item.hora_inicio, item.hora_fin),
+    );
+    if (bloqueo) return { estado: "bloqueado" as const };
+    return { estado: "libre" as const };
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Controles de Selección de Bloque Horario */}
-      <div className="bg-[#F9F7F2] border border-[#D8D1BD] rounded-xl p-5 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-          <div className="flex flex-col gap-1 w-full md:w-48">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Día</span>
-            </label>
-            <select
-              value={selectedDia}
-              onChange={(e) => setSelectedDia(parseInt(e.target.value, 10))}
-              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20"
-            >
-              {DIAS.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.label}
-                </option>
-              ))}
-            </select>
-          </div>
+    <div className="space-y-4">
+      <label className="block max-w-sm" htmlFor="seleccionar-espacio">
+        <span className="sr-only">Buscar aula o laboratorio</span>
+        <select
+          id="seleccionar-espacio"
+          value={espacioSeleccionado?.id ?? ""}
+          onChange={(event) => setEspacioSeleccionadoId(event.target.value)}
+          className="h-10 w-full rounded-lg border border-[#C7BFA6] bg-white px-3 text-sm font-medium text-[#1F242D] outline-none transition focus:border-[#1D3FD9] focus:ring-4 focus:ring-[#1D3FD9]/10"
+        >
+          {espacios.map((espacio) => (
+            <option key={espacio.id} value={espacio.id}>
+              {espacio.nombre} · {espacio.tipo === "laboratorio" ? "Laboratorio" : "Aula"}
+            </option>
+          ))}
+        </select>
+      </label>
 
-          <div className="flex flex-col gap-1 w-full md:w-48">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Bloque de Inicio</span>
-            </label>
-            <select
-              value={selectedHora}
-              onChange={(e) => setSelectedHora(e.target.value)}
-              className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1D3FD9]/20"
-            >
-              {horas.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      {espacioSeleccionado ? (
+        <section className="overflow-x-auto rounded-xl border border-[#D8D1BD] bg-white">
+          <div className="min-w-[860px] overflow-hidden rounded-xl bg-[#D8D1BD]">
+            <div className="grid grid-cols-[74px_repeat(6,minmax(118px,1fr))] gap-px bg-[#D8D1BD]">
+                      <div className="flex items-center justify-center bg-[#0E1116] px-2 py-3 text-white">
+                        <Clock3 aria-hidden="true" className="h-4 w-4" />
+                        <span className="sr-only">Hora</span>
+                      </div>
+                      {DIAS.map((dia) => (
+                        <div key={dia.id} className="bg-[#0E1116] px-2 py-3 text-center text-xs font-semibold text-white">
+                          <span className="sm:hidden">{dia.corto}</span>
+                          <span className="hidden sm:inline">{dia.label}</span>
+                        </div>
+                      ))}
 
-        <div className="text-xs text-gray-400 font-mono text-right w-full md:w-auto">
-          Mostrando estado para el {DIAS.find((d) => d.id === selectedDia)?.label} a las {selectedHora}.
-        </div>
-      </div>
-
-      {/* Grid de Aulas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {espacios.map((esp) => {
-          // Check if space is occupied during selectedDia and selectedHora
-          // An classroom is occupied if a session overlaps with selectedHora
-          // Overlap: s.dia_semana === selectedDia && s.hora_inicio <= selectedHora && s.hora_fin > selectedHora
-          const sesionOcupante = sesiones.find((s) => {
-            const sInicio = s.hora_inicio.slice(0, 5);
-            const sFin = s.hora_fin.slice(0, 5);
-            return (
-              s.espacio_id === esp.id &&
-              s.dia_semana === selectedDia &&
-              sInicio <= selectedHora &&
-              sFin > selectedHora
-            );
-          });
-
-          const estaOcupada = !!sesionOcupante;
-
-          return (
-            <div
-              key={esp.id}
-              className={`border rounded-xl p-5 flex flex-col justify-between h-44 shadow-sm transition-all duration-300 hover:shadow-md ${
-                estaOcupada
-                  ? "bg-red-50/30 border-red-200"
-                  : "bg-emerald-50/20 border-emerald-200"
-              }`}
-            >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`p-2 rounded-lg ${
-                        estaOcupada
-                          ? "bg-red-100/60 text-red-700"
-                          : "bg-emerald-100/60 text-emerald-700"
-                      }`}
-                    >
-                      <DoorOpen className="w-5 h-5 stroke-[1.8]" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-sm text-[#0E1116]">{esp.nombre}</h3>
-                      <span className="text-[10px] text-gray-500 capitalize bg-white/60 border border-gray-200 px-1.5 py-0.5 rounded">
-                        {esp.tipo === "laboratorio" ? "Laboratorio" : "Aula Común"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <span
-                    className={`flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                      estaOcupada
-                        ? "bg-red-100 text-red-800"
-                        : "bg-emerald-100 text-emerald-800"
-                    }`}
-                  >
-                    {estaOcupada ? (
-                      <>
-                        <ShieldAlert className="w-3 h-3" />
-                        Ocupado
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-3 h-3" />
-                        Libre
-                      </>
-                    )}
-                  </span>
-                </div>
-
-                {estaOcupada ? (
-                  <div className="text-xs space-y-1 pt-2">
-                    <div className="font-semibold text-gray-700 truncate" title={sesionOcupante.materias?.nombre ?? undefined}>
-                      {sesionOcupante.materias?.nombre}
-                    </div>
-                    <div className="text-[10px] text-gray-500 flex items-center justify-between">
-                      <span className="truncate max-w-[110px]" title={sesionOcupante.docentes?.perfiles?.nombre ?? undefined}>
-                        Doc: {sesionOcupante.docentes?.perfiles?.nombre}
-                      </span>
-                      <span className="font-semibold bg-gray-200/60 text-gray-700 px-1 rounded">
-                        {sesionOcupante.grupos?.nombre}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-500 pt-2 flex flex-col justify-center h-12">
-                    <p>Aula libre para asignación o estudio libre.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-gray-100 pt-3 mt-1 text-[10px] text-gray-400 flex justify-between">
-                <span>Capacidad: {esp.capacidad} estudiantes</span>
-                <span>{esp.accesible ? "Accesible" : ""}</span>
-              </div>
+                      {horas.map((hora) => (
+                        <React.Fragment key={hora}>
+                          <div className="flex items-center justify-center bg-[#F5F1E8] px-2 py-2 font-mono text-[11px] font-semibold text-[#4A515E]">
+                            {hora}
+                          </div>
+                          {DIAS.map((dia) => {
+                            const resultado = obtenerEstado(dia.id, hora);
+                            const libre = resultado.estado === "libre";
+                            const titulo =
+                              resultado.estado === "ocupado"
+                                ? `${resultado.sesion.materias?.nombre ?? "Clase"} · ${resultado.sesion.grupos?.nombre ?? "Grupo"} · ${resultado.sesion.hora_inicio.slice(0, 5)}–${resultado.sesion.hora_fin.slice(0, 5)}`
+                                : resultado.estado === "bloqueado"
+                                  ? "Bloque configurado como no disponible"
+                                  : `${espacioSeleccionado.nombre} disponible`;
+                            return (
+                              <div
+                                key={`${dia.id}-${hora}`}
+                                title={titulo}
+                                className={`group relative flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-center text-[10px] font-semibold transition ${
+                                  libre
+                                    ? "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                                    : "bg-rose-50 text-rose-800 hover:bg-rose-100"
+                                }`}
+                              >
+                                {libre ? <Check aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /> : <X aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />}
+                                <span>{libre ? "Disponible" : resultado.estado === "bloqueado" ? "Bloqueado" : "Ocupado"}</span>
+                                <span className="sr-only">, {titulo}</span>
+                              </div>
+                            );
+                          })}
+                        </React.Fragment>
+                      ))}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </section>
+      ) : (
+        <p className="py-10 text-center text-sm text-[#697180]">No hay aulas o laboratorios disponibles.</p>
+      )}
     </div>
   );
 }

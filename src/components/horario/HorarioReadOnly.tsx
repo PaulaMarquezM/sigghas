@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { generarSlots30, indiceColorEstable } from "@/lib/horario";
+import { generarSlots30 } from "@/lib/horario";
 
 interface HorarioReadOnlyProps {
   sesiones: any[];
@@ -49,7 +49,10 @@ function rangoFilas(horas: string[], horaInicio: string, horaFin: string): { sta
   let end = horas.findIndex((h) => minutoDe(h) >= finMin);
   if (start < 0) return { start: 0, end: 1 };
   if (end <= start) end = start + 1;
-  return { start, end };
+  // `end` ya representa la línea final exclusiva de CSS Grid. No se debe
+  // sumar otra fila porque el siguiente bloque empieza exactamente en esa
+  // hora y terminaría visualmente cubierto.
+  return { start, end: Math.min(end, horas.length) };
 }
 
 export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = true }: HorarioReadOnlyProps) {
@@ -60,10 +63,12 @@ export function HorarioReadOnly({ sesiones, title, subtitle, filtrarPorCurso = t
   const dias = DIAS;
   const horas = generarSlots30(sesionesVisibles);
   const docenteColorMap: Record<string, string> = {};
+  let siguienteColor = 0;
 
   sesionesVisibles.forEach((s) => {
     if (!docenteColorMap[s.docente_id]) {
-      docenteColorMap[s.docente_id] = COLORS[indiceColorEstable(s.docente_id, COLORS.length)];
+      docenteColorMap[s.docente_id] = COLORS[siguienteColor % COLORS.length];
+      siguienteColor += 1;
     }
   });
 

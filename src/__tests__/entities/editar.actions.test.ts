@@ -68,15 +68,15 @@ describe("eliminarHorarioAction", () => {
     requireRolMock.mockResolvedValue({ id: "u-1", rol: "coordinador" });
   });
 
-  it("rechaza horarios publicados", async () => {
-    fromMock.mockReturnValue(createChainableQuery(ok({ id: "h-1", estado: "publicado" })));
-    const resultado = await eliminarHorarioAction("h-1");
-    expect(resultado).toEqual({
-      exito: false,
-      error: "Un horario publicado no puede eliminarse.",
+  it("elimina horarios publicados", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "horarios") return createChainableQuery(ok({ id: "h-1", estado: "publicado" }));
+      return createChainableQuery(ok());
     });
+    const resultado = await eliminarHorarioAction("h-1");
+    expect(resultado).toEqual({ exito: true });
     expect(fromMock).toHaveBeenCalledWith("horarios");
-    expect(fromMock).not.toHaveBeenCalledWith("sesiones");
+    expect(fromMock).toHaveBeenCalledWith("sesiones");
   });
 
   it("elimina historial, sesiones y el horario en borrador", async () => {
