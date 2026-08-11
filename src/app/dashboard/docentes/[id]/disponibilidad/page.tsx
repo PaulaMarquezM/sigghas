@@ -41,7 +41,7 @@ export default async function DisponibilidadDocentePage({
       </div>
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">
         <p className="font-medium">Disponibilidad para la planificación</p>
-        <p className="mt-1">Los docentes de tiempo completo y titular se crean con toda la grilla marcada como disponible (lunes a sábado, 08:00–17:00). Puedes ajustar estos bloques aquí; la jornada contractual y el tiempo de oficina no los reemplazan.</p>
+        <p className="mt-1">Al crear un docente, toda la grilla queda marcada como disponible (lunes a sábado, 08:00–17:00). Puedes ajustar estos bloques aquí; la jornada contractual y el tiempo de oficina no los reemplazan.</p>
       </div>
       <Card className="shadow-sm">
         <CardHeader><CardTitle className="text-base">Bloques disponibles</CardTitle></CardHeader>

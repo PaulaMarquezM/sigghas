@@ -9,8 +9,6 @@ import { localizeErrorMessage } from "@/lib/errors";
 import { generateTempPassword } from "@/lib/temp-password";
 import type { TipoContrato } from "@/types/database";
 
-const CONTRATOS_DISPONIBILIDAD_TOTAL: ReadonlySet<TipoContrato> = new Set(["tiempo_completo", "titular"]);
-
 function sedesSeleccionadas(formData: FormData) {
   return [...new Set(formData.getAll("sedes_ids").filter((value): value is string => typeof value === "string" && value.length > 0))];
 }
@@ -70,18 +68,16 @@ export async function createDocente(_state: ActionResult, formData: FormData): P
     );
     if (sedesError) throw new Error(sedesError.message);
 
-    if (CONTRATOS_DISPONIBILIDAD_TOTAL.has(tipo_contrato)) {
-      const { error: disponibilidadError } = await adminDb.from("disponibilidad_docente").insert(
-        bloquesDisponibilidadTotal().map((bloque) => ({
-          docente_id: id,
-          dia_semana: bloque.dia_semana,
-          hora_inicio: bloque.hora_inicio,
-          hora_fin: bloque.hora_fin,
-          es_tiempo_oficina: false,
-        })),
-      );
-      if (disponibilidadError) throw new Error(disponibilidadError.message);
-    }
+    const { error: disponibilidadError } = await adminDb.from("disponibilidad_docente").insert(
+      bloquesDisponibilidadTotal().map((bloque) => ({
+        docente_id: id,
+        dia_semana: bloque.dia_semana,
+        hora_inicio: bloque.hora_inicio,
+        hora_fin: bloque.hora_fin,
+        es_tiempo_oficina: false,
+      })),
+    );
+    if (disponibilidadError) throw new Error(disponibilidadError.message);
 
     revalidatePath("/dashboard/docentes");
     return { ok: true, tempPassword, email, nombre };

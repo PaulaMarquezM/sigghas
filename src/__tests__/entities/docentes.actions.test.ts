@@ -101,10 +101,10 @@ describe("docentes actions", () => {
     expect(docenteQuery.insert).toHaveBeenCalledWith(expect.objectContaining({ max_horas_semana: 40 }));
   });
 
-  it("createDocente: asigna disponibilidad total a tiempo completo y titular", async () => {
+  it("createDocente: asigna disponibilidad total a cualquier tipo de contrato", async () => {
     createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
 
-    for (const tipo_contrato of ["tiempo_completo", "titular"] as const) {
+    for (const tipo_contrato of ["tiempo_completo", "titular", "por_horas", "contratado", "honorarios"] as const) {
       vi.clearAllMocks();
       setAdminClient();
       createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
@@ -141,16 +141,6 @@ describe("docentes actions", () => {
       );
       expect(disponibilidadQuery.insert.mock.calls[0][0]).toHaveLength(6);
     }
-  });
-
-  it("createDocente: no asigna disponibilidad automática a por horas", async () => {
-    createUserMock.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
-    fromMock.mockImplementation(() => createChainableQuery(ok()));
-
-    const result = await createDocente({ ok: true }, validForm());
-
-    expect(result.ok).toBe(true);
-    expect(fromMock).not.toHaveBeenCalledWith("disponibilidad_docente");
   });
 
   it("updateDocente: actualiza docente y perfil, luego redirige", async () => {
