@@ -3,6 +3,7 @@
 // Cuentas creadas por scripts/seed.mjs (ver cypress/support/tasks.ts).
 // El rol "estudiante" se eliminó del sistema (migración 010_remove_rol_estudiante.sql).
 const CREDENCIALES = {
+ administrador: { email: "admin@sigghas.test", password: "Sigghas2026!", label: "" },
   coordinador: { email: "coordinador@sigghas.test", password: "Sigghas2026!", label: "Coordinador" },
   docente: { email: "docente.tc@sigghas.test", password: "Sigghas2026!", label: "Docente" },
 } as const;
@@ -21,7 +22,7 @@ declare global {
 Cypress.Commands.add("login", (rol: Rol) => {
   const { email, password, label } = CREDENCIALES[rol];
   cy.visit("/login");
-  cy.contains("button", label).click();
+if (label) cy.contains("button", label).click();
   cy.get("input#email").type(email);
   cy.get("input#password").type(password);
   cy.contains("button", "Iniciar sesión").click();
