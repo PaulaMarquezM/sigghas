@@ -443,6 +443,25 @@ async function borrarEspacioPorNombre(nombre: string) {
   return null;
 }
 
+async function borrarPeriodoPorNombre(nombre: string) {
+  const admin = adminClient();
+  await admin.from("periodos").delete().eq("nombre", nombre);
+  return null;
+}
+
+async function borrarSedePorNombre(nombre: string) {
+  const admin = adminClient();
+  await admin.from("sedes").delete().eq("nombre", nombre);
+  return null;
+}
+
+async function horarioExiste(horarioId: string) {
+  const admin = adminClient();
+  const { data, error } = await admin.from("horarios").select("id").eq("id", horarioId).maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data);
+}
+
 async function primeraSedeYDocente() {
   const admin = adminClient();
   const sedeId = await sedeDePrueba(admin);
@@ -470,6 +489,9 @@ export function registerDbTasks(on: Cypress.PluginEvents) {
     "e2e:borrarMateriaPorCodigo": borrarMateriaPorCodigo,
     "e2e:borrarGrupoPorNombre": borrarGrupoPorNombre,
     "e2e:borrarEspacioPorNombre": borrarEspacioPorNombre,
+    "e2e:borrarPeriodoPorNombre": borrarPeriodoPorNombre,
+    "e2e:borrarSedePorNombre": borrarSedePorNombre,
+    "e2e:horarioExiste": horarioExiste,
     "e2e:primeraSedeYDocente": primeraSedeYDocente,
   });
 }
