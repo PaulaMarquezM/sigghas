@@ -137,7 +137,7 @@ export function validarCandidato(candidato: Slot, ctx: ContextoProgramacion, asi
   if (!docente || !grupo || !materia) return fallo("CONFIGURACION_INCOMPLETA", "Falta docente, grupo o materia en la configuración.");
   const docenteLabel = nombreDocente(docente);
   const sesionLabel = etiquetaSesion(materia, grupo, candidato);
-  if (minutos(candidato.hora_inicio) % 30 || minutos(candidato.hora_fin) % 30 || duracion(candidato.hora_inicio, candidato.hora_fin) > 3.5) return fallo("FRANJA_INVALIDA", "La sesión debe usar franjas de 30 minutos y durar como máximo 3 h 30 min.");
+  if (minutos(candidato.hora_inicio) % 30 || minutos(candidato.hora_fin) % 30) return fallo("FRANJA_INVALIDA", "La sesión debe usar franjas de 30 minutos.");
   if (candidato.dia === 6 && grupo.semestre !== 7 && grupo.semestre !== 8) return fallo("SABADO_NO_PERMITIDO", "Solo los grupos de 7.º y 8.º semestre pueden tener clases el sábado.");
   if (candidato.modalidad === "presencial" && (docente.sede_ids ?? []).length > 0 && !(docente.sede_ids ?? []).includes(candidato.sede_id)) {
     const sedeNombre = ctx.sedes?.find((s) => s.id === candidato.sede_id)?.nombre;
