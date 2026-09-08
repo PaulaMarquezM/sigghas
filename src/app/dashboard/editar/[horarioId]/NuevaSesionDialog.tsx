@@ -226,7 +226,7 @@ export function NuevaSesionDialog({
               </label>
               <label className="grid gap-1.5 text-sm font-medium">
                 Hasta *
-                <input name="hora_fin" type="time" min="08:00" max="17:00" step="1800" defaultValue="10:00" required className={inputClass} />
+                <input name="hora_fin" type="time" min="08:00" max="20:00" step="1800" defaultValue="10:00" required className={inputClass} />
               </label>
               <div className="flex justify-end gap-3 border-t border-[#D8D1BD] pt-4 sm:col-span-2">
                 <button type="button" onClick={() => setAbierto(false)} disabled={pendiente} className="rounded-lg border border-[#C7BFA6] px-4 py-2.5 text-sm font-medium disabled:opacity-50">
