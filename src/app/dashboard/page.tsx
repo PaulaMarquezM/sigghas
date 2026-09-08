@@ -54,7 +54,7 @@ export default async function DashboardPage() {
             fontSize: 36, fontWeight: 600, letterSpacing: "-0.03em",
             margin: "8px 0 6px", color: "#0E1116", lineHeight: 1.05,
           }}>
-            {nombre}.
+            {nombre}
           </h1>
           <p style={{ fontSize: 14, color: "#4A515E", margin: 0 }}>
             Sistema de Gestión de Horarios · PUCE Carrera de Software
