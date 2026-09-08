@@ -14,7 +14,7 @@ const DAYS = [
   { id: 6, label: "Sáb" },
 ];
 
-const HOURS = Array.from({ length: 18 }, (_, index) => 8 * 60 + index * 30);
+const HOURS = Array.from({ length: 24 }, (_, index) => 8 * 60 + index * 30);
 
 type Arrastre = { marcar: boolean; visitados: Set<string> };
 
