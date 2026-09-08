@@ -46,7 +46,9 @@ export function sonNombresSimilares(a: string, b: string): boolean {
 
   const maxLen = Math.max(na.length, nb.length);
   const umbral = Math.max(2, Math.floor(maxLen * 0.22));
-  return distanciaLevenshtein(na, nb) <= umbral;
+  //return distanciaLevenshtein(na, nb) <= umbral;
+
+  return false;
 }
 
 export function encontrarMateriaDuplicada(
