@@ -41,7 +41,8 @@ export function sonNombresSimilares(a: string, b: string): boolean {
 
   const corto = na.length <= nb.length ? na : nb;
   const largo = na.length <= nb.length ? nb : na;
-  if (corto.length >= 5 && largo.includes(corto)) return true;
+  // se comenta esta linea para permitir agregar materias de prácticas
+  //if (corto.length >= 5 && largo.includes(corto)) return true;
 
   const maxLen = Math.max(na.length, nb.length);
   const umbral = Math.max(2, Math.floor(maxLen * 0.22));
