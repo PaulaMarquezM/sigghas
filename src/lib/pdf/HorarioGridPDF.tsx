@@ -24,7 +24,21 @@ const MAX_ROW_HEIGHT = 28;
 const MIN_ROW_HEIGHT = 12;
 const HOUR_COL_WIDTH = 70;
 
-const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
+//const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
+
+const bgColors = [
+  "#BFDBFE", // Azul
+  "#FDE68A", // Amarillo
+  "#BBF7D0", // Verde
+  "#FCA5A5", // Rojo
+  "#C4B5FD", // Morado
+  "#67E8F9", // Cian
+  "#FDBA74", // Naranja
+  "#CBD5E1", // Gris azulado
+  "#BEF264", // Lima
+  "#F9A8D4", // Rosa
+];
+
 const borderColors = ["#BEE3F8", "#FEEB8C", "#E2E8F0", "#FEB2B2", "#9AE6B4", "#99F6E4", "#FDBA74", "#CBD5E1", "#BEF264", "#FECDD3"];
 const textColors = ["#2B6CB0", "#744210", "#2D3748", "#9B2C2C", "#22543D", "#115E59", "#9A3412", "#334155", "#3F6212", "#9F1239"];
 
