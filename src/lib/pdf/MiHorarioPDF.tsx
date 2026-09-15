@@ -12,27 +12,19 @@ interface MiHorarioPDFProps {
   userRolLabel: string;
 }
 
-//const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
-
-const bgColors = [
-  "#BFDBFE", // Azul
-  "#FDE68A", // Amarillo
-  "#BBF7D0", // Verde
-  "#FCA5A5", // Rojo
-  "#C4B5FD", // Morado
-  "#67E8F9", // Cian
-  "#FDBA74", // Naranja
-  "#CBD5E1", // Gris azulado
-  "#BEF264", // Lima
-  "#F9A8D4", // Rosa
-];
+const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
 
 export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: MiHorarioPDFProps) {
   const esCurso = userRolLabel === "Curso";
   const uniqueDocenteIds = Array.from(new Set(sesiones.map((s) => s.docente_id)));
   const docenteColors: Record<string, number> = {};
-  uniqueDocenteIds.forEach((id) => {
+  
+  /* uniqueDocenteIds.forEach((id) => {
     docenteColors[id] = indiceColorEstable(id, bgColors.length);
+  }); */
+
+  uniqueDocenteIds.forEach((id, index) => {
+    docenteColors[id] = index % bgColors.length;
   });
 
   return (
