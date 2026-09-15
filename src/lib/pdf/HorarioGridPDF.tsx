@@ -24,10 +24,80 @@ const MAX_ROW_HEIGHT = 28;
 const MIN_ROW_HEIGHT = 12;
 const HOUR_COL_WIDTH = 70;
 
-const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
+//const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
 
-const borderColors = ["#BEE3F8", "#FEEB8C", "#E2E8F0", "#FEB2B2", "#9AE6B4", "#99F6E4", "#FDBA74", "#CBD5E1", "#BEF264", "#FECDD3"];
-const textColors = ["#2B6CB0", "#744210", "#2D3748", "#9B2C2C", "#22543D", "#115E59", "#9A3412", "#334155", "#3F6212", "#9F1239"];
+const bgColors = [
+  "#93C5FD", // 0 Azul
+  "#FCD34D", // 1 Amarillo
+  "#86EFAC", // 2 Verde
+  "#FCA5A5", // 3 Rojo
+  "#C4B5FD", // 4 Violeta
+  "#67E8F9", // 5 Cian
+  "#FDBA74", // 6 Naranja
+  "#F9A8D4", // 7 Rosa
+  "#A5B4FC", // 8 Índigo
+  "#BEF264", // 9 Lima
+  "#5EEAD4", // 10 Turquesa
+  "#FB7185", // 11 Coral
+  "#D8B4FE", // 12 Púrpura
+  "#F59E0B", // 13 Ámbar
+  "#34D399", // 14 Esmeralda
+  "#38BDF8", // 15 Azul cielo
+  "#E879F9", // 16 Fucsia
+  "#A78BFA", // 17 Púrpura azulado
+  "#2DD4BF", // 18 Verde agua
+  "#F472B6", // 19 Rosa fuerte
+];
+
+//const borderColors = ["#BEE3F8", "#FEEB8C", "#E2E8F0", "#FEB2B2", "#9AE6B4", "#99F6E4", "#FDBA74", "#CBD5E1", "#BEF264", "#FECDD3"];
+
+const borderColors = [
+  "#3B82F6",
+  "#D97706",
+  "#22C55E",
+  "#EF4444",
+  "#8B5CF6",
+  "#06B6D4",
+  "#F97316",
+  "#EC4899",
+  "#6366F1",
+  "#65A30D",
+  "#14B8A6",
+  "#E11D48",
+  "#A855F7",
+  "#D97706",
+  "#059669",
+  "#0284C7",
+  "#C026D3",
+  "#7C3AED",
+  "#0D9488",
+  "#DB2777",
+];
+
+//const textColors = ["#2B6CB0", "#744210", "#2D3748", "#9B2C2C", "#22543D", "#115E59", "#9A3412", "#334155", "#3F6212", "#9F1239"];
+
+const textColors = [
+  "#1E3A8A",
+  "#713F12",
+  "#166534",
+  "#991B1B",
+  "#5B21B6",
+  "#155E75",
+  "#9A3412",
+  "#9D174D",
+  "#3730A3",
+  "#3F6212",
+  "#115E59",
+  "#9F1239",
+  "#6B21A8",
+  "#78350F",
+  "#065F46",
+  "#075985",
+  "#86198F",
+  "#4C1D95",
+  "#134E4A",
+  "#9D174D",
+];
 
 function minutoDe(hora: string): number {
   const [h, m] = hora.slice(0, 5).split(":").map(Number);

@@ -12,7 +12,30 @@ interface MiHorarioPDFProps {
   userRolLabel: string;
 }
 
-const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
+//const bgColors = ["#EBF8FF", "#FEFCBF", "#EDF2F7", "#FED7D7", "#C6F6D5", "#CCFBF1", "#FFEDD5", "#E2E8F0", "#ECFCCB", "#FFE4E6"];
+
+const bgColors = [
+  "#93C5FD", // 0 Azul
+  "#FCD34D", // 1 Amarillo
+  "#86EFAC", // 2 Verde
+  "#FCA5A5", // 3 Rojo
+  "#C4B5FD", // 4 Violeta
+  "#67E8F9", // 5 Cian
+  "#FDBA74", // 6 Naranja
+  "#F9A8D4", // 7 Rosa
+  "#A5B4FC", // 8 Índigo
+  "#BEF264", // 9 Lima
+  "#5EEAD4", // 10 Turquesa
+  "#FB7185", // 11 Coral
+  "#D8B4FE", // 12 Púrpura
+  "#F59E0B", // 13 Ámbar
+  "#34D399", // 14 Esmeralda
+  "#38BDF8", // 15 Azul cielo
+  "#E879F9", // 16 Fucsia
+  "#A78BFA", // 17 Púrpura azulado
+  "#2DD4BF", // 18 Verde agua
+  "#F472B6", // 19 Rosa fuerte
+];
 
 export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: MiHorarioPDFProps) {
   const esCurso = userRolLabel === "Curso";
