@@ -41,13 +41,23 @@ export function MiHorarioPDF({ periodo, sesiones, userNombre, userRolLabel }: Mi
   const esCurso = userRolLabel === "Curso";
   const uniqueDocenteIds = Array.from(new Set(sesiones.map((s) => s.docente_id)));
   const docenteColors: Record<string, number> = {};
-  
+
   /* uniqueDocenteIds.forEach((id) => {
     docenteColors[id] = indiceColorEstable(id, bgColors.length);
   }); */
 
   uniqueDocenteIds.forEach((id, index) => {
     docenteColors[id] = index % bgColors.length;
+  });
+
+  console.log("DOCENTES Y COLORES:");
+
+  uniqueDocenteIds.forEach((id) => {
+    console.log(
+      id,
+      docenteColors[id],
+      sesiones.find((s) => s.docente_id === id)?.docentes?.perfiles?.nombre
+    );
   });
 
   return (
